@@ -1,271 +1,474 @@
-# 🎓 MSC Project — Life Long Learning Platform
+# 🚀 GZV Growth Framework
 
-Dự án **MSC Center** gồm 2 ứng dụng Next.js 14 độc lập, dùng chung một database Supabase:
+## Enterprise Modular Growth System Documentation
 
-| Module | Đường dẫn | Vai trò | Domain (production) |
-|---|---|---|---|
-| **Frontend** | `Frontend_MSC/` | Website công khai cho học viên, mentor, khách | `msc.edu.vn` |
-| **Backend** | `Backend_MSC/`  | Admin Dashboard (CMS) + REST API | `api.msc.edu.vn` |
-| **Database** | Supabase (PostgreSQL + Storage + Auth) | Nguồn dữ liệu duy nhất | project ref: `yyqajxbkxiddfqnzkcmr` |
+> **Version:** GZV Core v1.0
+> **Architecture:** Modular Monorepo
+> **Philosophy:** *Decoupled by Design, Unified by Data*
+> **Purpose:** Build once. Clone infinitely. Scale without limits.
 
-> Hai ứng dụng "ăn khớp" với nhau qua **Supabase chung**: Backend quản trị nội dung (admin), Frontend đọc/ghi dữ liệu công khai. Một số tính năng quản trị nhạy cảm đi qua REST API của Backend (`/api/*`).
-> Nói chung nhiều khi code cũng mệt vcl ra.
 ---
 
-## 📁 Cấu trúc Monorepo
+# 🌟 Executive Summary
 
-```
-.
-├── Frontend_MSC/              # Public website (msc.edu.vn)
-│   ├── app/                   # Next.js App Router
-│   │   ├── page.tsx           # Trang chủ
-│   │   ├── gioi-thieu/        # Giới thiệu
-│   │   ├── dao-tao/           # Đào tạo / khóa học
-│   │   ├── du-an/             # Dự án
-│   │   ├── tin-tuc/           # Blog / bài viết
-│   │   ├── mentors/           # Danh sách Mentor
-│   │   ├── mscer/             # Cộng đồng MSCer
-│   │   ├── dong-hanh/         # Đối tác đồng hành
-│   │   ├── lien-he/           # Liên hệ
-│   │   ├── login/  register/  profile/  cv/  student/
-│   │   └── chinh-sach-bao-mat/ dieu-khoan-su-dung/ so-do-trang-web/
-│   ├── components/            # UI components (shadcn/ui + custom)
-│   ├── contexts/              # React Context (auth, theme…)
-│   ├── hooks/                 # Custom hooks
-│   ├── lib/
-│   │   ├── api-supabase.ts    # Supabase browser client + data helpers
-│   │   └── storage.ts         # Helper bucket "media"
-│   ├── middleware.ts          # Auth middleware (Supabase SSR)
-│   └── public/                # Tài nguyên tĩnh
+GZV Growth Framework là nền tảng tăng trưởng số được thiết kế nhằm phục vụ chiến lược triển khai hàng trăm đến hàng nghìn website, landing page và hệ thống quản trị chỉ từ một bộ khung chuẩn hóa duy nhất.
+
+Kiến trúc được xây dựng theo mô hình **Modular Monorepo Architecture**, cho phép:
+
+* Triển khai cực nhanh
+* Bảo trì dễ dàng
+* Mở rộng linh hoạt
+* Chuẩn hóa toàn bộ quy trình vận hành
+* Đồng bộ dữ liệu theo thời gian thực
+
+Toàn bộ hệ thống được vận hành trên nguyên tắc:
+
+> **"Decoupled by Design, Unified by Data."**
+
+Các ứng dụng được tách biệt về mặt triển khai nhưng kết nối với nhau thông qua một lớp dữ liệu trung tâm duy nhất.
+
+---
+
+# 🏛 System Architecture
+
+## Core Components
+
+| Module         | Responsibility                 | Technology                            |
+| -------------- | ------------------------------ | ------------------------------------- |
+| Frontend       | Public Website / Landing Pages | Next.js 14 + Tailwind CSS + Shadcn/UI |
+| Backend        | CMS, CRM, Automation Hub       | Next.js 14 + API Routes               |
+| Database       | Central Data Platform          | PostgreSQL 15 (Supabase)              |
+| Authentication | User & Role Management         | Supabase Auth                         |
+| Storage        | Media & Assets                 | Supabase Storage                      |
+| Automation     | Growth & Workflow Engine       | n8n / Edge Functions                  |
+| Deployment     | CI/CD Platform                 | Vercel                                |
+
+---
+
+# 📁 Repository Structure
+
+```plaintext
+GZV_1/
 │
-├── Backend_MSC/               # Admin CMS + REST API (api.msc.edu.vn)
-│   ├── app/
-│   │   ├── admin-login/       # Trang đăng nhập admin
-│   │   ├── admin/             # Dashboard quản trị
-│   │   │   ├── dashboard/     # Thống kê tổng quan
-│   │   │   ├── users/         # Quản lý users / profiles
-│   │   │   ├── authors/       # Tác giả
-│   │   │   ├── articles/      # Bài viết / blog
-│   │   │   ├── courses/       # Khóa học
-│   │   │   ├── projects/      # Dự án
-│   │   │   ├── mentors/       # Mentor
-│   │   │   ├── mscers/        # MSCers
-│   │   │   ├── training/      # Trang đào tạo (CMS)
-│   │   │   ├── finance/       # Tài chính
-│   │   │   └── images/        # Media library (Cloudinary)
-│   │   └── api/
-│   │       ├── auth/login,verify   # JWT auth qua Supabase
-│   │       ├── images/             # Upload / quản lý ảnh (Cloudinary)
-│   │       └── health/             # Health check
-│   ├── lib/
-│   │   ├── supabase.ts        # Server + admin client
-│   │   ├── api-auth.ts        # Middleware xác thực JWT
-│   │   ├── cors.ts            # Whitelist domain frontend
-│   │   ├── cloudinary.ts      # Cloudinary SDK
-│   │   └── *-service.ts       # Business logic (blog, training, member, user)
-│   ├── sql/                   # Schema PostgreSQL (chạy theo thứ tự 01 → 13)
-│   ├── docs/
-│   │   ├── API.md             # Tài liệu REST API
-│   │   └── FRONTEND_INTEGRATION.md
-│   └── SETUP_GUIDE.md
+├── Frontend/              # Public Website
 │
-└── supabase/                  # Quản lý migration tập trung qua Lovable Cloud
-    └── config.toml
+├── Backend/               # CMS + CRM + Automation APIs
+│
+├── supabase/              # Database Migrations
+│
+├── shared/                # Shared Types & Utilities
+│
+├── docs/                  # Documentation
+│
+└── scripts/               # Deployment & Automation Scripts
 ```
 
 ---
 
-## 🧱 Tech Stack
+# 🔌 Data Flow Architecture
 
-**Frontend & Backend (chung):** Next.js 14 (App Router) · TypeScript 5 · Tailwind CSS 3.4 · shadcn/ui + Radix · Framer Motion · React Hook Form + Zod · Lucide Icons · pnpm 10
+## Frontend Layer
 
-**Khác biệt:**
-- **Frontend**: `@supabase/ssr` (auth SSR), `react-markdown`, `html2pdf.js` (xuất CV), `qrcode.react`
-- **Backend**: `@tanstack/react-table` (admin tables), **Tiptap 3** (rich text editor), `react-dropzone`, **Cloudinary** (media), `sonner` (toast)
+Frontend đóng vai trò là lớp tương tác trực tiếp với khách hàng.
 
-**Hạ tầng:** Supabase (PostgreSQL 15 + Auth + Storage bucket `media`) · Cloudinary (CDN ảnh) · Vercel (deploy)
+Nhiệm vụ:
 
----
+* Hiển thị nội dung
+* Thu thập Leads
+* Đăng ký dịch vụ
+* Theo dõi hành vi người dùng
+* Kết nối API công khai
 
-## 🔌 Kiến trúc kết nối Frontend ↔ Backend
+Frontend giao tiếp với Supabase thông qua:
 
-```text
-┌──────────────────────┐        ┌────────────────────────┐
-│  Frontend (msc.edu.vn)│        │ Backend Admin/API      │
-│  Next.js 14           │        │ (api.msc.edu.vn)       │
-│                       │        │ Next.js 14             │
-│  - Đọc dữ liệu công   │◀──────▶│  - /admin (CMS)        │
-│    khai trực tiếp     │  REST  │  - /api/auth/*         │
-│    qua Supabase JS    │  /api  │  - /api/images/*       │
-│  - Auth qua Supabase  │        │  - service-role key    │
-└──────────┬────────────┘        └──────────┬─────────────┘
-           │                                │
-           │     anon key (RLS bảo vệ)      │  service_role key
-           ▼                                ▼
-       ┌────────────────────────────────────────────┐
-       │   Supabase  (Postgres + Auth + Storage)    │
-       │   bucket: media   |   schema: public       │
-       └────────────────────────────────────────────┘
-                            ▲
-                            │ public URL
-                       ┌────┴─────┐
-                       │Cloudinary│  (upload ảnh từ Backend Admin)
-                       └──────────┘
+```typescript
+createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+)
 ```
 
-**Nguyên tắc đồng bộ:**
-1. **Một database duy nhất** — cả 2 app chỉ trỏ về cùng `NEXT_PUBLIC_SUPABASE_URL`.
-2. **RLS làm gốc bảo mật** — Frontend dùng `anon key`, tất cả bảng đều bật Row Level Security.
-3. **Backend nắm `service_role_key`** — chỉ dùng phía server để bypass RLS khi cần ghi từ admin / edge logic.
-4. **Storage thống nhất** — bucket `media` (public). Upload ảnh đi qua Backend `/api/images/upload` (Cloudinary) hoặc trực tiếp Supabase Storage.
-5. **Auth chia sẻ** — JWT do Supabase phát hành dùng được trên cả 2 app; Backend `verify` qua `/api/auth/verify`.
+### Security Layer
+
+Toàn bộ dữ liệu được bảo vệ bởi:
+
+* Row Level Security (RLS)
+* JWT Validation
+* Access Policies
+
+RLS hoạt động như:
+
+> "Data Security Police Officer"
+
+Mọi truy cập trái phép đều bị từ chối ở tầng Database.
 
 ---
 
-## 🗄️ Database Schema
+## Backend Layer
 
-Chạy lần lượt các file trong `Backend_MSC/sql/` (theo số thứ tự):
+Backend là trung tâm xử lý nghiệp vụ.
 
-| File | Nội dung |
-|---|---|
-| `01-users.sql` | `profiles`, `user_preferences`, `user_activity`, `role_permissions` |
-| `02-articles.sql` (+updated) | `articles`, `article_comments`, `article_analytics`, `article_categories` |
-| `03-courses.sql` (+updated) | `courses`, `course_modules`, `course_lessons`, `course_enrollments`, `user_lesson_progress`, `course_reviews` |
-| `04-projects.sql` (+updated) | `projects`, `project_team_members`, `project_milestones`, `project_tasks`, `project_documents` |
-| `05-finance.sql` | `transactions` |
-| `06-media.sql`, `07-media-storage.sql` | `media_assets`, `media_files` + bucket policies |
-| `08-profiles.sql` | Mở rộng `profiles` |
-| `09-author.sql` | `authors` |
-| `10.mscers.sql` | `mscers` |
-| `11-mentors.sql` | `mentors` |
-| `12-MSCersSection.sql`, `13-DirectorsSection.SQL` | Section CMS trang giới thiệu |
+Bao gồm:
 
-Bảng đã tồn tại hiện tại (Supabase): `articles, authors, courses, media_assets, media_files, mentors, mscers, profiles, program_schedules, programs, projects, role_permissions, training_core_values, training_page_settings`.
+### CMS Engine
 
----
+Quản lý:
 
-## ⚙️ Cài đặt & Chạy local
+* Pages
+* Blogs
+* Landing Pages
+* SEO Metadata
 
-### Yêu cầu
-- Node.js ≥ 18
-- pnpm ≥ 10
-- Tài khoản Supabase + (tuỳ chọn) Cloudinary
+### CRM Engine
 
-### 1. Cài dependencies (chạy ở **mỗi** sub-project)
+Quản lý:
 
-```bash
-cd Frontend_MSC && pnpm install
-cd ../Backend_MSC && pnpm install
-```
+* Leads
+* Customers
+* Activities
+* Sales Pipeline
 
-### 2. Cấu hình môi trường
+### Automation Engine
 
-**`Frontend_MSC/.env.local`**
+Xử lý:
+
+* Email Automation
+* Lead Nurturing
+* Conversion Tracking
+* Follow-up Sequences
+
+Backend sử dụng:
+
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://yyqajxbkxiddfqnzkcmr.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...
-NEXT_PUBLIC_API_URL=http://localhost:3001        # URL của Backend
+SUPABASE_SERVICE_ROLE_KEY
 ```
 
-**`Backend_MSC/.env.local`**
-```env
-NEXT_PUBLIC_SUPABASE_URL=https://yyqajxbkxiddfqnzkcmr.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...
-SUPABASE_SERVICE_ROLE_KEY=...                    # ⚠️ KHÔNG đưa lên frontend
-SUPABASE_JWT_SECRET=...
-
-ALLOWED_ORIGINS=http://localhost:3000,https://msc.edu.vn
-
-# Cloudinary (tuỳ chọn — bật tính năng upload ảnh)
-NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=...
-CLOUDINARY_API_KEY=...
-CLOUDINARY_API_SECRET=...
-
-SESSION_SECRET=change-me
-```
-
-### 3. Khởi tạo database
-
-Mở **Supabase Dashboard → SQL Editor**, chạy lần lượt các file trong `Backend_MSC/sql/` (01 → 13).
-
-Tạo admin user:
-```sql
-INSERT INTO public.profiles (id, email, full_name, role, status)
-VALUES ('<auth-user-uuid>', 'admin@msc.edu.vn', 'Admin', 'admin', 'active');
-```
-
-### 4. Chạy dev server (2 cổng song song)
-
-```bash
-# Terminal 1 — Frontend
-cd Frontend_MSC && pnpm dev          # http://localhost:3000
-
-# Terminal 2 — Backend (Admin + API)
-cd Backend_MSC && pnpm dev -p 3001   # http://localhost:3001
-```
-
-Truy cập:
-- 🌐 Frontend: <http://localhost:3000>
-- 🛠️ Admin CMS: <http://localhost:3001/admin-login>
-- 📡 API health: <http://localhost:3001/api/health>
+để thực hiện các tác vụ quyền cao.
 
 ---
 
-## 🔐 REST API (Backend)
+## Database Layer
 
-Base URL: `https://api.msc.edu.vn`
+Supabase đóng vai trò:
 
-| Method | Endpoint | Mô tả |
-|---|---|---|
-| `POST` | `/api/auth/login` | Đăng nhập email + password → trả `access_token`, `refresh_token` |
-| `GET`  | `/api/auth/verify` | Xác thực JWT, trả profile + role |
-| `GET`  | `/api/health` | Health check |
-| `POST` | `/api/images/upload` | Upload ảnh (multipart) → Cloudinary |
-| `GET`  | `/api/images` | Danh sách ảnh + folders |
-| `GET`  | `/api/images/stats` | Thống kê dung lượng |
-| `DELETE` | `/api/images/[publicId]` | Xoá ảnh |
+### Single Source of Truth
 
-Headers chung:
+Mọi hệ thống đều đọc và ghi dữ liệu từ cùng một nguồn.
+
+Bao gồm:
+
+* PostgreSQL 15
+* Realtime Engine
+* Authentication
+* Storage
+* Edge Functions
+
+Lợi ích:
+
+* Không đồng bộ dữ liệu thủ công
+* Không phát sinh sai lệch
+* Dễ backup
+* Dễ nhân bản
+
+---
+
+# ⚙️ Core Environment Configuration
+
+## Supabase Core
+
+```env
+# Project: GZV_1
+
+NEXT_PUBLIC_SUPABASE_URL=https://fowjalibpmzyeyjcgbrx.supabase.co
+
+NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_ANON_KEY
+
+SUPABASE_SERVICE_ROLE_KEY=YOUR_SERVICE_ROLE_KEY
 ```
-Authorization: Bearer <access_token>
-Content-Type: application/json
+
+---
+
+## Growth Infrastructure
+
+```env
+NEXT_PUBLIC_API_URL=https://api.gzv.one
 ```
 
-Định dạng response chuẩn:
+---
+
+# 📡 Growth Automation Layer
+
+## Event Flow
+
+```plaintext
+Visitor
+   ↓
+Landing Page
+   ↓
+Lead Form
+   ↓
+API Endpoint
+   ↓
+Supabase
+   ↓
+n8n Workflow
+   ↓
+Email Automation
+   ↓
+CRM Tracking
+```
+
+---
+
+## Automation Capabilities
+
+### Lead Capture
+
+* Form Submission
+* Chatbot Collection
+* Webinar Registration
+
+### Lead Nurturing
+
+* Email Sequences
+* SMS Campaigns
+* Remarketing Flows
+
+### Customer Journey Tracking
+
+* Acquisition
+* Activation
+* Retention
+* Revenue
+* Referral
+
+---
+
+# 🔥 Standardized REST API
+
+## Lead Collection
+
+```http
+POST /api/growth/lead
+```
+
+Purpose:
+
+* Capture landing page leads
+* Trigger automation workflows
+* Store CRM records
+
+---
+
+## CRM Synchronization
+
+```http
+POST /api/crm/sync
+```
+
+Purpose:
+
+* Synchronize customer records
+* Update pipeline stages
+* Refresh engagement metrics
+
+---
+
+## System Health Monitoring
+
+```http
+GET /api/system/health
+```
+
+Response:
+
 ```json
-{ "success": true, "data": { ... }, "message": "..." }
-{ "success": false, "error": "...", "code": "ERROR_CODE" }
+{
+  "status": "healthy",
+  "database": "connected",
+  "automation": "active",
+  "version": "1.0.0"
+}
 ```
 
-Xem chi tiết: `Backend_MSC/docs/API.md` và `Backend_MSC/docs/FRONTEND_INTEGRATION.md`.
+---
+
+# 🎨 Design System Standardization
+
+## Official Brand Theme
+
+### Primary Navy
+
+```css
+#071D49
+```
+
+### Growth Red
+
+```css
+#E11D48
+```
+
+### Neutral White
+
+```css
+#FFFFFF
+```
+
+### Background
+
+```css
+#F8FAFC
+```
 
 ---
 
-## 🚀 Deploy
+# ⚡ Performance Standards
 
-| Phần | Nền tảng đề xuất | Domain |
-|---|---|---|
-| Frontend | Vercel | `msc.edu.vn` |
-| Backend  | Vercel (project riêng) | `api.msc.edu.vn` |
-| DB / Auth / Storage | Supabase | — |
-| Media CDN | Cloudinary | — |
+Every GZV deployment must achieve:
 
-Sau khi deploy, **đảm bảo:**
-- `ALLOWED_ORIGINS` ở Backend liệt kê đúng domain Frontend.
-- Frontend `NEXT_PUBLIC_API_URL` trỏ vào `https://api.msc.edu.vn`.
-- Supabase → Authentication → URL Configuration thêm Redirect URLs cho cả 2 domain.
-
----
-
-## 📚 Tham khảo thêm
-- `Backend_MSC/SETUP_GUIDE.md` — hướng dẫn setup chi tiết
-- `Backend_MSC/docs/API.md` — đặc tả API
-- `Backend_MSC/docs/FRONTEND_INTEGRATION.md` — code mẫu tích hợp
-- `Backend_MSC/sql/README.md` — mô tả schema
-- `Frontend_MSC/README.md` — chi tiết feature frontend
+| Metric           | Target |
+| ---------------- | ------ |
+| Lighthouse Score | 95+    |
+| LCP              | < 1.5s |
+| CLS              | < 0.1  |
+| FCP              | < 1.0s |
+| SEO Score        | 100    |
+| Accessibility    | 95+    |
 
 ---
 
-## 📝 License
+# 🚀 The "1000 Websites" Deployment Framework
 
-© MSC Center — Life Long Learning. Nội bộ sử dụng cho dự án `msc.edu.vn`.
+Triển khai dự án mới chỉ cần 4 bước:
+
+## Step 1 — Provision Database
+
+```bash
+supabase db push
+```
+
+Import toàn bộ migration từ:
+
+```plaintext
+supabase/migrations/
+```
+
+---
+
+## Step 2 — Configure Environment
+
+Điền:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY
+```
+
+---
+
+## Step 3 — Apply Branding
+
+Copy:
+
+```plaintext
+theme-gzv.css
+```
+
+ghi đè vào:
+
+```plaintext
+styles.css
+```
+
+---
+
+## Step 4 — Deploy
+
+```bash
+git push origin main
+```
+
+Vercel sẽ tự động:
+
+* Build
+* Deploy
+* Generate Preview
+* Publish Production
+
+---
+
+# 🛠 Technology Stack
+
+## Frontend
+
+* Next.js 14 App Router
+* React 19
+* TypeScript
+* Tailwind CSS
+* Shadcn/UI
+* Framer Motion
+
+---
+
+## Backend
+
+* Next.js API Routes
+* Server Actions
+* Edge Runtime
+
+---
+
+## Database
+
+* PostgreSQL 15
+* Supabase Auth
+* Supabase Storage
+* Supabase Realtime
+
+---
+
+## Growth Stack
+
+* n8n
+* Edge Functions
+* Webhooks
+* Email Automation
+
+---
+
+## DevOps
+
+* GitHub
+* Vercel
+* Supabase
+* CI/CD Pipelines
+
+---
+
+# 🧭 Strategic Vision
+
+GZV không chỉ là một website framework.
+
+Đây là một **Growth Operating System** được thiết kế để:
+
+* Clone hàng nghìn dự án
+* Quản trị tập trung
+* Tự động hóa quy trình tăng trưởng
+* Chuẩn hóa triển khai doanh nghiệp
+* Xây dựng hệ sinh thái Digital Assets quy mô lớn
+
+---
+
+# 📜 Founder's Note
+
+> Hệ thống được tạo ra với mục tiêu tối đa hóa tốc độ triển khai, giảm chi phí vận hành và chuẩn hóa mọi quy trình tăng trưởng.
+>
+> Mỗi website không còn là một dự án riêng lẻ.
+>
+> Mỗi website là một node trong cùng một Growth Ecosystem.
+>
+> **Build Once. Deploy Forever. Scale Infinitely.**
+>
+> — GZV Growth Framework
