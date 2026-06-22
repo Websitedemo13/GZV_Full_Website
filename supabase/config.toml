@@ -1,1 +1,35 @@
-project_id = "yyqajxbkxiddfqnzkcmr"
+# ============================================================
+# Supabase Configuration — GZV Digital Solutions
+# Project ID: fowjalibpmzyeyjcgbrx
+# ============================================================
+
+project_id = "fowjalibpmzyeyjcgbrx"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+
+[db]
+port = 54322
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+enabled = true
+port = 54324
+
+[storage]
+enabled = true
+
+[auth]
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/**"]
+jwt_expiry = 3600
+enable_signup = true
+
+# Các cấu hình khác giữ nguyên theo mặc định của Supabase CLI
