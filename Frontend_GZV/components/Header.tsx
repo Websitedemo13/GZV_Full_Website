@@ -113,9 +113,9 @@ const Header = () => {
             </div>
             <div className="container mx-auto flex justify-between items-center h-full px-4 sm:px-6 lg:px-8 relative z-10">
               <div className="flex items-center space-x-4 text-xs">
-                <span className="hidden sm:block">📧 msc.edu.vn@gmail.com</span>
+                <span className="hidden sm:block">📧 gzv.one@gmail.com</span>
                 <span className="hidden md:block">📞 (+84) 329 381 489</span>
-                <span className="block font-bold">🌟 MSC CENTER</span>
+                <span className="block font-bold">🌟 GZV</span>
               </div>
               <div className="flex items-center space-x-2">
                 <DropdownMenu>
@@ -134,7 +134,7 @@ const Header = () => {
                 {!isLoading && (
                   <>
                     {!isAuthenticated ? (
-                      <Link href="https://mscer.msc.edu.vn/" target="_blank" className="hidden sm:block">
+                      <Link href="https://mscer.gzv.one/" target="_blank" className="hidden sm:block">
                         <Button variant="ghost" size="sm" className="text-white hover:bg-white/20 h-7 text-xs">
                           <LogIn className="h-3 w-3 mr-1" />
                           {t("nav.mscerlogin")}
@@ -167,8 +167,21 @@ const Header = () => {
       >
         <div className="container mx-auto flex h-full items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex-shrink-0">
-            <motion.div animate={{ scale: isScrolled ? 0.75 : 1 }} transition={{ duration: 0.4, ease: "circOut" }} className="flex items-center origin-left">
-              <Image src="/logo.webp" alt="Mekong Skill Center" width={240} height={72} className="h-auto transition-all duration-300" style={{ width: isScrolled ? '270px' : '280px' }} priority />
+            <motion.div
+              animate={{ scale: isScrolled ? 0.92 : 1 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="flex items-center origin-center overflow-hidden"
+            >
+              <div className="h-10 sm:h-11 lg:h-12">
+                <Image
+                  src="/logo.webp"
+                  alt="GZV"
+                  width={240}
+                  height={72}
+                  className="h-full w-auto object-contain"
+                  priority
+                />
+              </div>
             </motion.div>
           </Link>
 

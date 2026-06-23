@@ -2,7 +2,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const ADMIN_EMAIL_DOMAIN = '@msc.com';
+const ADMIN_EMAIL_DOMAIN = '@gzv.one';
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
