@@ -18,7 +18,7 @@ const montserrat = Montserrat({
 // Nó cũng sẽ được sử dụng để tạo các thẻ OpenGraph và Twitter Card
 export const metadata: Metadata = {
   title: {
-    default: "GZV - GenZ VietNam Company",
+    default: "GZV - The Voice of Genzers",
     template: "%s | gzv Center",
   },
   description: "Trung tâm đào tạo và phát triển kỹ năng chuyên nghiệp gzv Center - Học tập và nỗ lực suốt đời",

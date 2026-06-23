@@ -69,7 +69,7 @@ const Footer = () => {
                         </Link>
 
                         <p className="text-white/80 mb-6 leading-relaxed max-w-md">
-                            GZV - GenZ VietNam Company
+                            GZV - The Voice of Genzers
                         </p>
 
                         <div className="mt-6 bg-white/10 p-1 rounded-lg backdrop-blur-sm border border-white/20" style={{ maxWidth: 320 }}>
