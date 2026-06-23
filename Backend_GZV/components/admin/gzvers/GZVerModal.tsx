@@ -34,7 +34,7 @@ const convertToSlug = (text: string) => {
     .replace(/^-+|-+$/g, '');
 };
 
-export function gzverModal({ open, onClose, gzver, onSave }: any) {
+export function GZVerModal({ open, onClose, gzver, onSave }: any) {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState<any>({
     full_name: '',
@@ -58,17 +58,42 @@ export function gzverModal({ open, onClose, gzver, onSave }: any) {
   })
 
   useEffect(() => {
-    if (gzver) setFormData(gzver)
-    else setFormData({
-        full_name: '', slug: '', company: 'gzv', position: '', avatar_url: '', cv_url: '',
-        achievement_summary: '', testimonial: '', graduation_year: '',
-        promotion_path: '', social_impact: '', course_taken: '',
-        skills: [], achievements_list: [], mentoring_content: '',
-        background: { education: '', previous_role: '', experience: '' },
-        is_active: true,
-        order: 0
-    })
-  }, [gzver, open])
+  if (gzver) {
+    // Nếu có dữ liệu gzver (Edit mode), merge dữ liệu cũ với giá trị mặc định để tránh lỗi 'undefined'
+    setFormData({
+      ...gzver,
+      // Đảm bảo các trường dữ liệu luôn tồn tại
+      skills: gzver.skills || [],
+      achievements_list: gzver.achievements_list || [],
+      background: gzver.background || { education: '', previous_role: '', experience: '' },
+      is_active: gzver.is_active ?? true,
+      order: gzver.order ?? 0
+    });
+  } else {
+    // Reset mặc định khi tạo mới (Add mode)
+    setFormData({
+      full_name: '', 
+      slug: '', 
+      company: 'gzv', 
+      position: '', 
+      avatar_url: '', 
+      cv_url: '',
+      achievement_summary: '', 
+      testimonial: '', 
+      graduation_year: '',
+      promotion_path: '', 
+      social_impact: '', 
+      course_taken: '',
+      skills: [], 
+      achievements_list: [], 
+      mentoring_content: '',
+      background: { education: '', previous_role: '', experience: '' },
+      is_active: true,
+      order: 0,
+      is_director: false // Đừng quên trường mới này ông vừa thêm ở UI
+    });
+  }
+}, [gzver, open]);
 
   const handleFileUpload = async (e: any, folder: string, field: string) => {
     const file = e.target.files[0]

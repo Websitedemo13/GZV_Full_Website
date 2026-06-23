@@ -36,7 +36,7 @@ const translations = {
     "footer.newsletter": "Đăng ký nhận tin",
     "footer.copyright": "© 2025 gzv Center. Phát triển bởi Phòng Công nghệ thông tin",
     "about.learning.title": "HỌC TẬP VÀ NỖ LỰC SUỐT ĐỜI",
-    "about.learning.subtitle": "gzv được thành lập bởi những người tâm huyết trong lĩnh vực \"Giáo Dục và Truyền Thừa\" của Việt Nam",
+    "about.learning.subtitle": "GZV được thành lập bởi những người tâm huyết trong lĩnh vực \"Giáo Dục và Truyền Thừa\" của Việt Nam",
     "about.yolo.title": "#YOLO",
     "about.yolo.subtitle": "You Only Live Once",
     "about.yolo.description": "Chúng ta chỉ sống một lần trên đời, nên hãy sống một cuộc đời thật trọn vẹn!",

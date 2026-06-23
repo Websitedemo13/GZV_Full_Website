@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
-import { gzversTable } from '@/components/admin/gzvers/gzversTable'
-import { gzverModal } from '@/components/admin/gzvers/gzverModal'
+import { GZVersTable } from '@/components/admin/gzvers/GZVersTable'
+import { GZVerModal } from '@/components/admin/gzvers/GZVerModal'
 import { Button } from '@/components/ui/button'
 import { Plus, UserCircle2, Search, Loader2, RefreshCcw, Filter } from 'lucide-react'
 import { Input } from '@/components/ui/input'
@@ -144,7 +144,7 @@ export default function AdmingzversPage() {
         </div>
       ) : (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <gzversTable 
+          <GZVersTable 
             gzvers={filteredgzvers} 
             onEdit={handleOpenModal} 
             onDelete={handleDelete} 
@@ -162,7 +162,7 @@ export default function AdmingzversPage() {
       </div>
 
       {/* MODAL COMPONENT */}
-      <gzverModal 
+      <GZVerModal 
         open={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         gzver={selectedgzver} 

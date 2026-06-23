@@ -33,7 +33,7 @@ interface gzversTableProps {
   onDelete: (gzver: any) => void
 }
 
-export function gzversTable({ gzvers, onEdit, onDelete }: gzversTableProps) {
+export function GZVersTable({ gzvers, onEdit, onDelete }: gzversTableProps) {
   return (
     <div className="rounded-[2rem] border border-white/5 bg-gray-900/20 overflow-hidden backdrop-blur-sm">
       <Table>
