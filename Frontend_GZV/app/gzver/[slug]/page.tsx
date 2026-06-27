@@ -82,6 +82,7 @@ export default function gzverDetailPage({ params }: { params: { slug: string } }
                       <Image 
                         src={gzver.avatar_url || '/gzvers/default.webp'} 
                         fill 
+                        unoptimized={true}
                         className="rounded-full border-8 border-white/20 shadow-2xl object-cover" 
                         alt={gzver.full_name} 
                       />

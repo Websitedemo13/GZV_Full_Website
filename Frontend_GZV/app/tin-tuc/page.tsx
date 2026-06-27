@@ -89,7 +89,7 @@ export default function BlogPage() {
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             <Link href={`/tin-tuc/${featuredPost.slug}`}>
               <div className="relative group overflow-hidden rounded-[3.5rem] bg-slate-900 aspect-[21/9] shadow-2xl shadow-blue-900/20">
-                <Image src={featuredPost.image || '/placeholder.jpg'} fill className="object-cover opacity-60 group-hover:scale-105 transition-transform duration-1000" alt="Cover" />
+                <img src={featuredPost.image || '/placeholder.jpg'} className="h-full w-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-1000" alt="Cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent p-10 md:p-20 flex flex-col justify-end">
                   <Badge className="w-fit mb-4 bg-red-600 text-white font-black px-4 py-1 uppercase text-[10px]">Tiêu biểu</Badge>
                   <h2 className="text-3xl md:text-6xl font-black text-white mb-6 max-w-4xl leading-tight tracking-tight">{featuredPost.title}</h2>
@@ -216,7 +216,7 @@ export default function BlogPage() {
                 <Link href={`/tin-tuc/${post.slug}`}>
                   <Card className="h-full flex flex-col group overflow-hidden rounded-[2.5rem] border-none bg-white shadow-lg hover:shadow-2xl transition-all duration-500">
                     <div className="relative aspect-video overflow-hidden">
-                      <Image src={post.image || '/placeholder-image.jpg'} alt={post.title} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
+                      <img src={post.image || '/placeholder-image.jpg'} alt={post.title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
                       <Badge className="bg-white/90 backdrop-blur-md text-slate-900 absolute top-6 left-6 font-black uppercase text-[9px] tracking-widest px-3 py-1 rounded-full shadow-xl border-none">{post.category}</Badge>
                     </div>
                     <CardContent className="p-10 flex flex-col flex-grow">

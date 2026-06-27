@@ -47,7 +47,7 @@ function LogoCard({ partner, cardClass, imgClass }: { partner: Partner; cardClas
         width={560}
         height={350}
         className={imgClass}
-        unoptimized={partner.logo_url.startsWith('/')}
+        unoptimized={true}
       />
     </Card>
   )

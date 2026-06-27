@@ -186,6 +186,7 @@ export default function MentorsPage() {
                                     src={mentor.avatar_url || "/Mentors/default.webp"} 
                                     alt={mentor.full_name}
                                     fill
+                                    unoptimized={true}
                                     className="object-cover transition-transform duration-700 group-hover:scale-110"
                                   />
                                 </div>

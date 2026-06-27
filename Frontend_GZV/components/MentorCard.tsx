@@ -38,6 +38,7 @@ export default function MentorCard({
             alt={name}
             width={160}
             height={160}
+            unoptimized={true}
             className="w-full h-full object-cover"
           />
         </div>

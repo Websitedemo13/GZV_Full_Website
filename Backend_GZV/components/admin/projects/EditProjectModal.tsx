@@ -35,6 +35,8 @@ export function EditProjectModal({ isOpen, onClose, project, onSuccess }: any) {
         video_url: project.video_url || '',
         category: project.category || '',
         description: project.description || '',
+        image: project.image || project.thumbnail_url || '',
+        thumbnail_url: project.thumbnail_url || project.image || '',
         order_index: project.order_index || 0
       });
 
@@ -60,7 +62,10 @@ export function EditProjectModal({ isOpen, onClose, project, onSuccess }: any) {
       const { error: uploadError } = await supabase.storage.from('media').upload(`${folder}/${fileName}`, file)
       if (uploadError) throw uploadError
       const { data } = supabase.storage.from('media').getPublicUrl(`${folder}/${fileName}`)
-      setFormData({ ...formData, [type === 'image' ? 'image' : 'video_url']: data.publicUrl })
+      setFormData(type === 'image'
+        ? { ...formData, image: data.publicUrl, thumbnail_url: data.publicUrl }
+        : { ...formData, video_url: data.publicUrl }
+      )
       toast({ title: "Cập nhật Media thành công!" })
     } catch (error: any) {
       toast({ title: "Lỗi", description: error.message, variant: "destructive" })

@@ -87,6 +87,7 @@ export default function DirectorsSection() {
                         src={director.avatar_url || '/gzvers/default.webp'}
                         alt={director.full_name}
                         fill
+                        unoptimized={true}
                         className="object-cover transition-transform duration-700 group-hover:scale-110"
                       />
                     </div>

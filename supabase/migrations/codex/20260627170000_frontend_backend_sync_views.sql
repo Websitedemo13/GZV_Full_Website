@@ -44,6 +44,20 @@ where status = 'published';
 
 grant select on public.programs to anon, authenticated;
 
+alter table public.projects
+  add column if not exists image text,
+  add column if not exists thumbnail_url text;
+
+update public.projects
+set thumbnail_url = image
+where nullif(thumbnail_url, '') is null
+  and nullif(image, '') is not null;
+
+update public.projects
+set image = thumbnail_url
+where nullif(image, '') is null
+  and nullif(thumbnail_url, '') is not null;
+
 alter table public.articles
   add column if not exists author_ids uuid[] default '{}'::uuid[];
 

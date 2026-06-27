@@ -235,7 +235,7 @@ export default function TrainingPage() {
               {programs.map((program) => (
                 <Card key={program.id} className="overflow-hidden hover:shadow-2xl transition-all duration-500 bg-white dark:bg-gray-800 rounded-2xl border-none">
                   <div className="relative h-56">
-                    <Image src={program.image || '/placeholder.jpg'} alt={program.title} fill className="object-cover" />
+                    <img src={program.image || '/placeholder.jpg'} alt={program.title} className="h-full w-full object-cover" />
                     <div className="absolute top-4 left-4 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold uppercase">{program.level}</div>
                   </div>
                   <CardHeader>

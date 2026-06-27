@@ -109,6 +109,7 @@ export default function gzverPage() {
                                   src={gzver.avatar_url || '/gzvers/default.webp'}
                                   alt={gzver.full_name}
                                   fill
+                                  unoptimized={true}
                                   className="object-cover transition-transform duration-700 group-hover:scale-125"
                                 />
                               </div>

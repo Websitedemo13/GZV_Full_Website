@@ -1,7 +1,6 @@
 "use client"
 
 import { motion } from "framer-motion"
-import Image from "next/image"
 import Link from "next/link"
 import { Calendar, Clock, ArrowRight, Users } from 'lucide-react'
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
@@ -38,11 +37,10 @@ const BlogCard = ({ id, title, excerpt, image, authors, publishDate, category, s
         
         {/* Header Image */}
         <div className="relative overflow-hidden aspect-[16/10]">
-          <Image
+          <img
             src={image || "/placeholder.jpg"}
             alt={title}
-            fill
-            className="object-cover transition-transform duration-700 group-hover:scale-110"
+            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <Badge className="absolute top-4 left-4 bg-blue-600/90 backdrop-blur-md text-white border-none px-3 py-1 font-black text-[9px] uppercase tracking-widest">

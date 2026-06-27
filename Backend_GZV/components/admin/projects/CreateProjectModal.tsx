@@ -29,6 +29,7 @@ export function CreateProjectModal({ isOpen, onClose, onSuccess }: any) {
     description: '', 
     detailproject: '', 
     image: '', 
+    thumbnail_url: '',
     video_url: '', 
     status: 'ongoing', 
     author_ids: [] as string[], 
@@ -77,7 +78,10 @@ export function CreateProjectModal({ isOpen, onClose, onSuccess }: any) {
       const { error: uploadError } = await supabase.storage.from('media').upload(`${folder}/${fileName}`, file)
       if (uploadError) throw uploadError
       const { data } = supabase.storage.from('media').getPublicUrl(`${folder}/${fileName}`)
-      setFormData(prev => ({ ...prev, [type === 'image' ? 'image' : 'video_url']: data.publicUrl }))
+      setFormData(prev => type === 'image'
+        ? { ...prev, image: data.publicUrl, thumbnail_url: data.publicUrl }
+        : { ...prev, video_url: data.publicUrl }
+      )
       toast({ title: `Tải lên thành công!` })
     } catch (error: any) { toast({ title: "Lỗi tải tệp", description: error.message, variant: "destructive" }) }
     finally { setUploading(false) }
@@ -164,7 +168,7 @@ export function CreateProjectModal({ isOpen, onClose, onSuccess }: any) {
                   <div className="relative w-full h-full group">
                     <img src={formData.image} className="w-full h-full object-cover" alt="Preview" />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <Button variant="destructive" size="icon" className="rounded-full shadow-xl" onClick={() => setFormData({...formData, image: ''})}><X size={18} /></Button>
+                      <Button variant="destructive" size="icon" className="rounded-full shadow-xl" onClick={() => setFormData({...formData, image: '', thumbnail_url: ''})}><X size={18} /></Button>
                     </div>
                   </div>
                 ) : (

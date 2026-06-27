@@ -1,6 +1,5 @@
 "use client"
 
-import Image from "next/image"
 import Link from "next/link"
 import { ArrowRight, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -25,12 +24,10 @@ export default function ProjectCard({ project }: ProjectCardProps) {
       {/* 1. PHẦN ẢNH DỰ ÁN */}
       <CardHeader className="p-0">
         <div className="relative aspect-[16/10] overflow-hidden">
-          <Image
+          <img
             src={project.image || '/placeholder.jpg'}
             alt={project.title}
-            fill
-            className="object-cover group-hover:scale-110 transition-transform duration-1000 ease-in-out"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-1000 ease-in-out"
           />
           <div className="absolute inset-0 bg-gradient-to-t via-transparent to-transparent opacity-60"></div>
           <Badge className="absolute top-6 left-6 bg-white/95 dark:bg-neutral-900/90 text-slate-900 font-black shadow-xl border-none px-4 py-1.5 rounded-full text-[10px] uppercase tracking-[0.2em]">

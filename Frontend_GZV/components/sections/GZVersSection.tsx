@@ -81,7 +81,7 @@ const GZVersSection = () => {
                     <CardContent className="p-8 flex flex-col items-center h-full text-center">
                       <div className="relative mb-6">
                         <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg">
-                          <Image src={gzver.avatar_url || '/gzvers/default.webp'} alt={gzver.full_name} width={96} height={96} className="object-cover w-full h-full" />
+                          <Image src={gzver.avatar_url || '/gzvers/default.webp'} alt={gzver.full_name} width={96} height={96} unoptimized={true} className="object-cover w-full h-full" />
                         </div>
                         <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center shadow-md">
                           <Star className="h-4 w-4 text-white fill-current" />
