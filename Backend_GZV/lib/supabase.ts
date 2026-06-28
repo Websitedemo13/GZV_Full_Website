@@ -127,9 +127,13 @@ export interface Program {
   slug: string
   description?: string
   short_description?: string
+  detailed_content?: string
+  highlights?: string[]
   content: any                    // Dữ liệu JSONB từ Tiptap
+  modules?: any
   thumbnail_url?: string
   video_banner_url?: string
+  video_url?: string
   gallery?: any
   level?: string                  // 'Cơ bản' | 'Trung cấp' | 'Nâng cao' | 'Chuyên gia'
   category?: string
@@ -140,6 +144,7 @@ export interface Program {
   theme_color?: string
   status: 'draft' | 'published'
   is_featured?: boolean
+  featured?: boolean
   created_by?: string
   created_at: string
   updated_at: string

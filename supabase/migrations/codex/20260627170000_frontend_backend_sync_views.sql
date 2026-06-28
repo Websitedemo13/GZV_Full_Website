@@ -58,6 +58,15 @@ set image = thumbnail_url
 where nullif(image, '') is null
   and nullif(thumbnail_url, '') is not null;
 
+update public.projects
+set thumbnail_url = image
+where nullif(image, '') is not null
+  and (
+    nullif(thumbnail_url, '') is null
+    or thumbnail_url like '/projects/%'
+    or thumbnail_url like 'projects/%'
+  );
+
 alter table public.articles
   add column if not exists author_ids uuid[] default '{}'::uuid[];
 

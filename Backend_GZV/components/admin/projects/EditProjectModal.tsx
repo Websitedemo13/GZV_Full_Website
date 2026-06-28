@@ -36,7 +36,7 @@ export function EditProjectModal({ isOpen, onClose, project, onSuccess }: any) {
         category: project.category || '',
         description: project.description || '',
         image: project.image || project.thumbnail_url || '',
-        thumbnail_url: project.thumbnail_url || project.image || '',
+        thumbnail_url: project.image || project.thumbnail_url || '',
         order_index: project.order_index || 0
       });
 

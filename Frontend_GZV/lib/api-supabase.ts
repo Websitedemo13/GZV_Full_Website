@@ -30,6 +30,13 @@
     // 2. Nếu đã là link tuyệt đối (http/https), giữ nguyên
     const trimmed = String(path).trim();
     if (!trimmed) return '/placeholder-avatar.jpg';
+    const dashboardStorageMatch = trimmed.match(/supabase\.com\/dashboard\/project\/[^/]+\/storage\/files\/buckets\/media\/(.+)$/i);
+    if (dashboardStorageMatch?.[1]) {
+      const objectPath = decodeURIComponent(dashboardStorageMatch[1]).replace(/^\/+/, '');
+      const { data } = supabase.storage.from('media').getPublicUrl(objectPath);
+      return data.publicUrl;
+    }
+
     if (/^(https?:|data:|blob:)/i.test(trimmed)) return trimmed;
     if (trimmed.startsWith('/')) return trimmed;
 
@@ -425,8 +432,7 @@
           const matched = authorsData?.filter(a => p.author_ids?.includes(a.id)) || [];
           return {
             ...p,
-            // SỬA TẠI ĐÂY: Ưu tiên thumbnail_url, nếu không có mới lấy image
-            image: getPublicUrl(p.thumbnail_url || p.image),
+            image: getPublicUrl(p.image || p.thumbnail_url),
             
             project_authors: matched.map(a => ({
               name: a.full_name,
@@ -466,7 +472,7 @@
             title: a.title || a.position
           })) || [];
         }
-        return { ...project, image: getPublicUrl(project.thumbnail_url || project.image) } as Project;
+        return { ...project, image: getPublicUrl(project.image || project.thumbnail_url) } as Project;
       } catch (error) {
         return null;
       }
