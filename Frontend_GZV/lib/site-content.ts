@@ -93,6 +93,9 @@ export type BrandingSettings = {
   default_description?: string | null
   default_keywords?: string | null
   og_image_url?: string | null
+  topbar_email_label?: string | null
+  topbar_phone_label?: string | null
+  topbar_badge_label?: string | null
 }
 
 export type PageBlock = {
@@ -123,7 +126,7 @@ export type SectionTemplate = {
 
 export const defaultNavigation: SiteNavItem[] = [
   { href: '/gioi-thieu', label_vi: 'Giới thiệu', label_en: 'About', sort_order: 10, is_visible: true, is_page_enabled: true },
-  { href: '/dao-tao', label_vi: 'Đào tạo', label_en: 'Training', sort_order: 20, is_visible: true, is_page_enabled: true },
+  { href: '/dao-tao', label_vi: 'Đào tạo', label_en: 'Training', sort_order: 20, is_visible: false, is_page_enabled: true },
   { href: '/du-an', label_vi: 'Dự án', label_en: 'Projects', sort_order: 30, is_visible: true, is_page_enabled: true },
   { href: '/mentors', label_vi: 'Mentors', label_en: 'Mentors', sort_order: 40, is_visible: true, is_page_enabled: true },
   { href: '/gzver', label_vi: 'GZVers', label_en: 'GZVers', sort_order: 50, is_visible: true, is_page_enabled: true },
@@ -180,6 +183,9 @@ export const defaultBrandingSettings: BrandingSettings = {
   default_description: 'GZV Center',
   default_keywords: 'GZV, đào tạo, mentoring, coaching',
   og_image_url: '/og-image.jpg',
+  topbar_email_label: 'gzv.one@gmail.com',
+  topbar_phone_label: '(+84) 329 381 489',
+  topbar_badge_label: 'GZV',
 }
 
 export const getPageSlugFromPath = (pathname: string) => pathname.split('/').filter(Boolean)[0] || 'home'
