@@ -116,7 +116,7 @@ function DynamicGrid({ source, title, subtitle, limit = 9, background = "#ffffff
           </div>
         )}
         {loading ? (
-          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600" />
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-[#ed1c24]" />
         ) : (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {items.map((item, index) => <DynamicCard key={item.id || item.slug || index} item={item} source={source} />)}
@@ -175,7 +175,7 @@ function ContactFormBlock({ title, subtitle }: any) {
   )
 }
 
-function HeroStats({ title, subtitle, stats = [], backgroundFrom = "#1e3a8a", backgroundTo = "#0f766e" }: any) {
+function HeroStats({ title, subtitle, stats = [], backgroundFrom = "#050505", backgroundTo = "#ed1c24" }: any) {
   return (
     <section className="py-16 sm:py-20 text-white" style={{ background: `linear-gradient(135deg, ${backgroundFrom}, ${backgroundTo})` }}>
       <div className="container px-4">
@@ -236,7 +236,7 @@ function FeatureGrid({ title, subtitle, items = [], columns = 3 }: any) {
               <motion.div key={index} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.06 }}>
                 <div className="h-full rounded-2xl border border-slate-100 bg-slate-50 p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900">
                   <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm dark:bg-slate-800">
-                    <Icon className="h-7 w-7" style={{ color: item.color || "#2563eb" }} />
+                    <Icon className="h-7 w-7" style={{ color: item.color || "#ed1c24" }} />
                   </div>
                   <h3 className="text-xl font-black text-gray-900 dark:text-white">{item.title}</h3>
                   {item.description && <p className="mt-3 leading-7 text-gray-600 dark:text-gray-300">{item.description}</p>}
@@ -276,14 +276,14 @@ function ProgramsGrid({ title, subtitle, limit = 12 }: any) {
           </div>
         )}
         {loading ? (
-          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600" />
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-[#ed1c24]" />
         ) : (
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {programs.map((program) => (
               <Card key={program.id} className="overflow-hidden rounded-2xl border-none bg-white shadow-sm transition hover:shadow-2xl dark:bg-gray-800">
                 <div className="relative h-56">
                   <img src={program.image || "/placeholder.jpg"} alt={program.title} className="h-full w-full object-cover" />
-                  {program.level && <div className="absolute left-4 top-4 rounded-full bg-blue-600 px-3 py-1 text-xs font-bold uppercase text-white">{program.level}</div>}
+                  {program.level && <div className="absolute left-4 top-4 rounded-full bg-[#ed1c24] px-3 py-1 text-xs font-bold uppercase text-white">{program.level}</div>}
                 </div>
                 <CardHeader>
                   <CardTitle className="line-clamp-2 text-xl font-black dark:text-white">{program.title}</CardTitle>
@@ -291,7 +291,7 @@ function ProgramsGrid({ title, subtitle, limit = 12 }: any) {
                 <CardContent>
                   <p className="mb-6 line-clamp-3 text-sm text-gray-600 dark:text-gray-400">{program.description}</p>
                   <Link href="/#dich-vu">
-                    <Button className="w-full rounded-none bg-[#00539b] text-white hover:bg-[#ed1c24]">Chi tiết dịch vụ</Button>
+                    <Button className="w-full rounded-none bg-[#ed1c24] text-white hover:bg-[#ed1c24]">Chi tiết dịch vụ</Button>
                   </Link>
                 </CardContent>
               </Card>
@@ -306,19 +306,26 @@ function ProgramsGrid({ title, subtitle, limit = 12 }: any) {
 function ImageGallery({ title, subtitle, images = [] }: any) {
   if (!images.length) return null
   return (
-    <section className="bg-white py-16 dark:bg-gray-800 sm:py-20">
+    <section className="bg-white py-16 dark:bg-gray-950 sm:py-20">
       <div className="container px-4">
         {(title || subtitle) && (
-          <div className="mx-auto mb-12 max-w-4xl text-center">
+          <div className="mb-10 max-w-4xl border-l-4 border-[#ed1c24] pl-5">
             {title && <h2 className="text-3xl font-black uppercase text-gray-900 dark:text-white sm:text-5xl">{title}</h2>}
-            {subtitle && <p className="mt-4 text-lg text-gray-600 dark:text-gray-300">{subtitle}</p>}
+            {subtitle && <p className="mt-4 text-base font-semibold leading-7 text-gray-600 dark:text-gray-300">{subtitle}</p>}
           </div>
         )}
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
           {images.map((image: any, index: number) => (
-            <div key={index} className="relative aspect-video overflow-hidden rounded-lg shadow-md">
-              <Image src={image.src || "/placeholder.jpg"} alt={image.alt || image.title || `Image ${index + 1}`} fill className="object-cover transition hover:scale-105" />
-            </div>
+            <article key={index} className="group overflow-hidden border border-slate-200 bg-white shadow-[0_14px_34px_rgba(15,23,42,0.08)] transition hover:-translate-y-1 hover:border-[#ed1c24] dark:border-white/10 dark:bg-slate-900">
+              <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+                <Image src={image.src || "/placeholder.jpg"} alt={image.alt || image.title || `Image ${index + 1}`} fill className="object-cover transition duration-700 group-hover:scale-110" />
+                {image.category && <span className="absolute left-3 top-3 bg-[#ed1c24] px-3 py-1.5 text-[10px] font-black uppercase text-white">{image.category}</span>}
+              </div>
+              <div className="p-4">
+                {image.title && <h3 className="text-base font-black uppercase leading-tight text-slate-950 dark:text-white">{image.title}</h3>}
+                {image.description && <p className="mt-2 line-clamp-3 text-sm font-medium leading-6 text-slate-600 dark:text-slate-300">{image.description}</p>}
+              </div>
+            </article>
           ))}
         </div>
       </div>
@@ -326,7 +333,7 @@ function ImageGallery({ title, subtitle, images = [] }: any) {
   )
 }
 
-function CtaBand({ title, description, buttonLabel, buttonUrl, backgroundFrom = "#2563eb", backgroundTo = "#0f766e" }: any) {
+function CtaBand({ title, description, buttonLabel, buttonUrl, backgroundFrom = "#ed1c24", backgroundTo = "#ed1c24" }: any) {
   return (
     <section className="py-16 text-white sm:py-20" style={{ background: `linear-gradient(90deg, ${backgroundFrom}, ${backgroundTo})` }}>
       <div className="container px-4 text-center">
@@ -334,7 +341,7 @@ function CtaBand({ title, description, buttonLabel, buttonUrl, backgroundFrom = 
         {description && <p className="mx-auto mt-5 max-w-2xl text-lg text-white/85">{description}</p>}
         {buttonLabel && buttonUrl && (
           <Link href={buttonUrl}>
-            <Button size="lg" className="mt-8 rounded-full bg-white px-10 py-7 text-lg font-black uppercase tracking-widest text-blue-600 hover:bg-blue-50">
+            <Button size="lg" className="mt-8 rounded-full bg-white px-10 py-7 text-lg font-black uppercase tracking-widest text-[#ed1c24] hover:bg-red-50">
               {buttonLabel}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
