@@ -123,260 +123,260 @@ const AboutPageClient = () => {
 
   return (
     <BuilderPageGate slug="gioi-thieu">
-    <div className="bg-white dark:bg-gray-900">
-      <PageBanner
-        badge="Về chúng tôi"
-        title="Giới thiệu"
-        subtitle="Trung tâm Mentoring & Coaching đầu tiên tại Việt Nam, nơi kết nối tri thức và phát triển tiềm năng con người."
-        stats={[
-          { value: '10+', label: 'Năm kinh nghiệm' },
-          { value: '10000+', label: 'Học viên' },
-          { value: '100+', label: 'Mentor' },
-          { value: '95%', label: 'Thành công' },
-        ]}
-      />
+      <div className="bg-white dark:bg-gray-900">
+        <PageBanner
+          badge="Về chúng tôi"
+          title="Giới thiệu"
+          subtitle="Trung tâm Mentoring & Coaching đầu tiên tại Việt Nam, nơi kết nối tri thức và phát triển tiềm năng con người."
+          stats={[
+            { value: '10+', label: 'Năm kinh nghiệm' },
+            { value: '10000+', label: 'Học viên' },
+            { value: '100+', label: 'Mentor' },
+            { value: '95%', label: 'Thành công' },
+          ]}
+        />
 
-      <section className="relative overflow-hidden bg-[#050505] py-16 text-white lg:py-24">
-        <div className="absolute inset-x-0 top-0 h-1 bg-[#ed1c24]" />
-        <div className="container">
-          <div className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-stretch">
-            <div className="border border-white/12 bg-white/[0.04] p-7 lg:p-9">
-              <p className="border-l-4 border-[#ed1c24] pl-3 text-xs font-black uppercase tracking-[0.24em] text-[#ed1c24]">GZV Core</p>
-              <h2 className="mt-5 text-4xl font-black uppercase leading-none text-white md:text-5xl">Sứ mệnh. Tầm nhìn. Giá trị cốt lõi.</h2>
-              <p className="mt-6 text-base font-semibold leading-8 text-white/68">
-                GZV định hình một hệ sinh thái triển khai thực chiến, nơi tri thức, đội ngũ và doanh nghiệp cùng tăng trưởng bằng kết quả đo lường được.
-              </p>
-              <div className="mt-8 grid grid-cols-3 border border-white/10">
-                {["Thực chiến", "Minh bạch", "Tăng trưởng"].map((item) => (
-                  <div key={item} className="border-r border-white/10 p-3 text-center last:border-r-0">
-                    <p className="text-[10px] font-black uppercase tracking-wide text-white/62">{item}</p>
-                  </div>
+        <section className="relative overflow-hidden bg-[#050505] py-16 text-white lg:py-24">
+          <div className="absolute inset-x-0 top-0 h-1 bg-[#ed1c24]" />
+          <div className="container">
+            <div className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-stretch">
+              <div className="border border-white/12 bg-white/[0.04] p-7 lg:p-9">
+                <p className="border-l-4 border-[#ed1c24] pl-3 text-xs font-black uppercase tracking-[0.24em] text-[#ed1c24]">GZV Core</p>
+                <h2 className="mt-5 text-4xl font-black uppercase leading-none text-white md:text-5xl">Sứ mệnh. Tầm nhìn. Giá trị cốt lõi.</h2>
+                <p className="mt-6 text-base font-semibold leading-8 text-white/68">
+                  GZV định hình một hệ sinh thái triển khai thực chiến, nơi tri thức, đội ngũ và doanh nghiệp cùng tăng trưởng bằng kết quả đo lường được.
+                </p>
+                <div className="mt-8 grid grid-cols-3 border border-white/10">
+                  {["Thực chiến", "Minh bạch", "Tăng trưởng"].map((item) => (
+                    <div key={item} className="border-r border-white/10 p-3 text-center last:border-r-0">
+                      <p className="text-[10px] font-black uppercase tracking-wide text-white/62">{item}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="grid gap-4">
+                {[
+                  { label: "01", title: "Sứ mệnh", text: "Kết nối tri thức, chuyên gia và doanh nghiệp để tạo ra năng lực tăng trưởng có thể đo lường." },
+                  { label: "02", title: "Tầm nhìn", text: "Trở thành hệ sinh thái mentoring, coaching và triển khai dự án thế hệ mới tại Việt Nam." },
+                  { label: "03", title: "Giá trị cốt lõi", text: "Thực chiến, minh bạch, học hỏi liên tục và cam kết tạo tác động thật cho đối tác." },
+                ].map((item) => (
+                  <article key={item.title} className="group grid gap-4 border border-white/12 bg-white p-5 text-[#050505] transition hover:border-[#ed1c24] md:grid-cols-[96px_1fr] md:items-center">
+                    <div className="flex h-20 w-20 items-center justify-center bg-[#ed1c24] text-2xl font-black text-white">{item.label}</div>
+                    <div>
+                      <h3 className="text-2xl font-black uppercase">{item.title}</h3>
+                      <p className="mt-2 text-sm font-semibold leading-7 text-slate-600">{item.text}</p>
+                    </div>
+                  </article>
                 ))}
               </div>
             </div>
-            <div className="grid gap-4">
+          </div>
+        </section>
+
+        {/* Philosophy Section */}
+        <section className="py-20 bg-white dark:bg-gray-800 relative overflow-hidden">
+          <div className="absolute inset-0 opacity-5">
+            <div className="absolute inset-0" style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fillRule='evenodd'%3E%3Cg fill='%23000000' fillOpacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            }} />
+          </div>
+
+          <div className="container relative z-10">
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900 dark:text-white font-serif">
+                {t("about.learning.title")}
+              </h2>
+              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto">
+                {t("about.learning.subtitle")}
+              </p>
+            </motion.div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
               {[
-                { label: "01", title: "Sứ mệnh", text: "Kết nối tri thức, chuyên gia và doanh nghiệp để tạo ra năng lực tăng trưởng có thể đo lường." },
-                { label: "02", title: "Tầm nhìn", text: "Trở thành hệ sinh thái mentoring, coaching và triển khai dự án thế hệ mới tại Việt Nam." },
-                { label: "03", title: "Giá trị cốt lõi", text: "Thực chiến, minh bạch, học hỏi liên tục và cam kết tạo tác động thật cho đối tác." },
+                { id: 'yolo', src: '/Introduction/yolo.png', delay: 0.1 },
+                { id: 'pdca', src: '/Introduction/pdca.png', delay: 0.2 },
+                { id: 'kaizen', src: '/Introduction/kaizen.png', delay: 0.3 }
               ].map((item) => (
-                <article key={item.title} className="group grid gap-4 border border-white/12 bg-white p-5 text-[#050505] transition hover:border-[#ed1c24] md:grid-cols-[96px_1fr] md:items-center">
-                  <div className="flex h-20 w-20 items-center justify-center bg-[#ed1c24] text-2xl font-black text-white">{item.label}</div>
-                  <div>
-                    <h3 className="text-2xl font-black uppercase">{item.title}</h3>
-                    <p className="mt-2 text-sm font-semibold leading-7 text-slate-600">{item.text}</p>
-                  </div>
-                </article>
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: item.delay }}
+                  viewport={{ once: true }}
+                  className="text-center cursor-pointer"
+                  onClick={() => setSelectedImage(item.src)}
+                >
+                  <Image
+                    src={item.src}
+                    alt={item.id.toUpperCase()}
+                    width={300}
+                    height={200}
+                    className="rounded-lg shadow-lg mx-auto mb-6"
+                  />
+                  <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
+                    {t(`about.${item.id}.title`)}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                    {t(`about.${item.id}.description`)}
+                  </p>
+                </motion.div>
               ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Philosophy Section */}
-      <section className="py-20 bg-white dark:bg-gray-800 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fillRule='evenodd'%3E%3Cg fill='%23000000' fillOpacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }} />
-        </div>
-
-        <div className="container relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900 dark:text-white font-serif">
-              {t("about.learning.title")}
-            </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto">
-              {t("about.learning.subtitle")}
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            {[
-              { id: 'yolo', src: '/Introduction/yolo.png', delay: 0.1 },
-              { id: 'pdca', src: '/Introduction/pdca.png', delay: 0.2 },
-              { id: 'kaizen', src: '/Introduction/kaizen.png', delay: 0.3 }
-            ].map((item) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: item.delay }}
-                viewport={{ once: true }}
-                className="text-center cursor-pointer"
-                onClick={() => setSelectedImage(item.src)}
-              >
-                <Image
-                  src={item.src}
-                  alt={item.id.toUpperCase()}
-                  width={300}
-                  height={200}
-                  className="rounded-lg shadow-lg mx-auto mb-6"
-                />
-                <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
-                  {t(`about.${item.id}.title`)}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                  {t(`about.${item.id}.description`)}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Lightbox logic cho Philosophy Section */}
-      <AnimatePresence>
-        {selectedImage && (
-          <motion.div
-            className="fixed inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSelectedImage(null)}
-          >
-            <motion.div 
-              initial={{ scale: 0.8 }} 
-              animate={{ scale: 1 }} 
-              exit={{ scale: 0.8 }}
-              className="relative max-w-5xl"
+        {/* Lightbox logic cho Philosophy Section */}
+        <AnimatePresence>
+          {selectedImage && (
+            <motion.div
+              className="fixed inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center p-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedImage(null)}
             >
-               <img src={selectedImage} alt="Enlarged" className="max-h-[90vh] rounded-lg shadow-2xl" />
-               <button className="absolute -top-4 -right-4 bg-white rounded-full p-2 text-black"><X size={20}/></button>
+              <motion.div
+                initial={{ scale: 0.8 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.8 }}
+                className="relative max-w-5xl"
+              >
+                <img src={selectedImage} alt="Enlarged" className="max-h-[90vh] rounded-lg shadow-2xl" />
+                <button className="absolute -top-4 -right-4 bg-white rounded-full p-2 text-black"><X size={20} /></button>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
 
-      {/* Image Gallery Section */}
-      <section className="py-20 bg-gradient-to-br from-gray-50 to-red-50 dark:from-gray-900 dark:to-gray-800">
-        <div className="container">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900 dark:text-white font-serif">
-              THƯ VIỆN HÌNH ẢNH
-            </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Những khoảnh khắc đáng nhớ trong hành trình phát triển và đào tạo tại GZV Center
-            </p>
-          </motion.div>
+        {/* Image Gallery Section */}
+        <section className="py-20 bg-gradient-to-br from-gray-50 to-red-50 dark:from-gray-900 dark:to-gray-800">
+          <div className="container">
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900 dark:text-white font-serif">
+                THƯ VIỆN HÌNH ẢNH
+              </h2>
+              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                Những khoảnh khắc đáng nhớ trong hành trình phát triển và đào tạo tại GZV Center
+              </p>
+            </motion.div>
 
-          {/* Main Carousel */}
-          <div className="relative mb-8">
-            <div className="relative h-96 md:h-[500px] rounded-2xl overflow-hidden shadow-2xl group/main">
-              <Image
-                src={galleryImages[currentImageIndex].src}
-                alt={galleryImages[currentImageIndex].title}
-                fill
-                className="object-cover transition-all duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-              
-              <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
-                <Badge className="mb-4 bg-[#ed1c24]">
-                  {galleryImages[currentImageIndex].category}
-                </Badge>
-                <h3 className="text-2xl md:text-3xl font-bold mb-2">
-                  {galleryImages[currentImageIndex].title}
-                </h3>
-                <p className="text-red-50 text-lg">
-                  {galleryImages[currentImageIndex].description}
-                </p>
+            {/* Main Carousel */}
+            <div className="relative mb-8">
+              <div className="relative h-96 md:h-[500px] rounded-2xl overflow-hidden shadow-2xl group/main">
+                <Image
+                  src={galleryImages[currentImageIndex].src}
+                  alt={galleryImages[currentImageIndex].title}
+                  fill
+                  className="object-cover transition-all duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+
+                <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+                  <Badge className="mb-4 bg-[#ed1c24]">
+                    {galleryImages[currentImageIndex].category}
+                  </Badge>
+                  <h3 className="text-2xl md:text-3xl font-bold mb-2">
+                    {galleryImages[currentImageIndex].title}
+                  </h3>
+                  <p className="text-red-50 text-lg">
+                    {galleryImages[currentImageIndex].description}
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => openLightbox(currentImageIndex)}
+                  className="absolute top-4 right-4 w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/40 transition-all"
+                >
+                  <Eye className="h-5 w-5 text-white" />
+                </button>
+
+                <button onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/40"><ChevronLeft className="text-white" /></button>
+                <button onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/40"><ChevronRight className="text-white" /></button>
               </div>
 
-              <button
-                onClick={() => openLightbox(currentImageIndex)}
-                className="absolute top-4 right-4 w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/40 transition-all"
-              >
-                <Eye className="h-5 w-5 text-white" />
-              </button>
-
-              <button onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/40"><ChevronLeft className="text-white"/></button>
-              <button onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/40"><ChevronRight className="text-white"/></button>
+              <div className="flex justify-center mt-6 space-x-2">
+                {galleryImages.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={`w-2.5 h-2.5 rounded-full transition-all ${index === currentImageIndex ? "bg-[#ed1c24] scale-125" : "bg-gray-300"}`}
+                  />
+                ))}
+              </div>
             </div>
 
-            <div className="flex justify-center mt-6 space-x-2">
-              {galleryImages.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentImageIndex(index)}
-                  className={`w-2.5 h-2.5 rounded-full transition-all ${index === currentImageIndex ? "bg-[#ed1c24] scale-125" : "bg-gray-300"}`}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Thumbnail Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {getVisibleThumbnails().map((image, index) => {
-              const actualIndex = (currentImageIndex + index) % galleryImages.length
-              return (
-                <motion.div
-                  key={`${image.id}-${actualIndex}`}
-                  className="relative group cursor-pointer"
-                  onClick={() => setCurrentImageIndex(actualIndex)}
-                >
-                  <div className="relative h-32 rounded-xl overflow-hidden shadow-md">
-                    <Image src={image.src} alt={image.title} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Play className="text-white fill-white" size={24}/>
+            {/* Thumbnail Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {getVisibleThumbnails().map((image, index) => {
+                const actualIndex = (currentImageIndex + index) % galleryImages.length
+                return (
+                  <motion.div
+                    key={`${image.id}-${actualIndex}`}
+                    className="relative group cursor-pointer"
+                    onClick={() => setCurrentImageIndex(actualIndex)}
+                  >
+                    <div className="relative h-32 rounded-xl overflow-hidden shadow-md">
+                      <Image src={image.src} alt={image.title} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <Play className="text-white fill-white" size={24} />
+                      </div>
                     </div>
-                  </div>
-                  <div className="mt-3">
-                    <Badge variant="outline" className="text-[10px] mb-1 uppercase tracking-wider">{image.category}</Badge>
-                    <h4 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-1">{image.title}</h4>
-                  </div>
-                </motion.div>
-              )
-            })}
+                    <div className="mt-3">
+                      <Badge variant="outline" className="text-[10px] mb-1 uppercase tracking-wider">{image.category}</Badge>
+                      <h4 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-1">{image.title}</h4>
+                    </div>
+                  </motion.div>
+                )
+              })}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Lightbox Modal */}
-      {isLightboxOpen && (
-        <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[60] bg-black/95 flex items-center justify-center p-4"
-          onClick={closeLightbox}
-        >
-          <div className="relative w-full max-w-5xl" onClick={(e) => e.stopPropagation()}>
-             <button onClick={closeLightbox} className="absolute -top-12 right-0 text-white flex items-center gap-2 hover:text-red-400 transition-colors">
+        {/* Lightbox Modal */}
+        {isLightboxOpen && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] bg-black/95 flex items-center justify-center p-4"
+            onClick={closeLightbox}
+          >
+            <div className="relative w-full max-w-5xl" onClick={(e) => e.stopPropagation()}>
+              <button onClick={closeLightbox} className="absolute -top-12 right-0 text-white flex items-center gap-2 hover:text-red-400 transition-colors">
                 <X /> Đóng
-             </button>
-             <div className="relative aspect-video">
+              </button>
+              <div className="relative aspect-video">
                 <Image
                   src={galleryImages[lightboxIndex].src}
                   alt={galleryImages[lightboxIndex].title}
                   fill
                   className="object-contain"
                 />
-             </div>
-             <div className="mt-6 text-center text-white">
+              </div>
+              <div className="mt-6 text-center text-white">
                 <Badge className="bg-[#ed1c24] mb-2">{galleryImages[lightboxIndex].category}</Badge>
                 <h3 className="text-2xl font-bold">{galleryImages[lightboxIndex].title}</h3>
                 <p className="text-gray-400 mt-2">{galleryImages[lightboxIndex].description}</p>
                 <div className="mt-4 flex justify-center gap-4">
-                   <Button variant="outline" size="icon" onClick={prevLightboxImage} className="rounded-full"><ChevronLeft/></Button>
-                   <span className="flex items-center text-sm font-mono">{lightboxIndex + 1} / {galleryImages.length}</span>
-                   <Button variant="outline" size="icon" onClick={nextLightboxImage} className="rounded-full"><ChevronRight/></Button>
+                  <Button variant="outline" size="icon" onClick={prevLightboxImage} className="rounded-full"><ChevronLeft /></Button>
+                  <span className="flex items-center text-sm font-mono">{lightboxIndex + 1} / {galleryImages.length}</span>
+                  <Button variant="outline" size="icon" onClick={nextLightboxImage} className="rounded-full"><ChevronRight /></Button>
                 </div>
-             </div>
-          </div>
-        </motion.div>
-      )}
-    </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </div>
     </BuilderPageGate>
   )
 }

@@ -105,11 +105,10 @@ const Header = () => {
       </div>
 
       <motion.header
-        className={`fixed inset-x-0 z-[70] border-b transition-all duration-300 ${
-          isScrolled
-            ? "top-0 border-slate-200 bg-white/96 shadow-[0_16px_38px_rgba(0,0,0,0.10)] backdrop-blur-xl dark:border-white/10 dark:bg-[#050505]/96 lg:top-0"
-            : "top-0 border-slate-200 bg-white/94 shadow-[0_10px_30px_rgba(0,0,0,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-[#050505]/94 lg:top-9"
-        }`}
+        className={`fixed inset-x-0 z-[70] border-b border-white/10 bg-[#050505] transition-all duration-300 ${isScrolled
+            ? "top-0 shadow-[0_16px_38px_rgba(0,0,0,0.50)] backdrop-blur-xl lg:top-0"
+            : "top-0 shadow-[0_10px_30px_rgba(0,0,0,0.30)] backdrop-blur-xl lg:top-9"
+          }`}
       >
         <div className="container flex h-[74px] items-center justify-between gap-4 lg:h-[82px]">
           <Link href="/" className="flex min-w-0 items-center gap-3" aria-label="GZV home">
@@ -127,26 +126,24 @@ const Header = () => {
                   <Link
                     href={item.href}
                     target={item.is_external ? "_blank" : undefined}
-                    className={`group relative flex items-center gap-1 px-3 py-7 text-[12px] font-black transition-colors xl:px-4 ${
-                      isActive ? "text-[#ed1c24]" : "text-slate-900 hover:text-[#ed1c24] dark:text-white dark:hover:text-[#ed1c24]"
-                    }`}
+                    className={`group relative flex items-center gap-1 px-3 py-7 text-[12px] font-black transition-colors xl:px-4 ${isActive ? "text-[#ed1c24]" : "text-white hover:text-[#ed1c24]"
+                      }`}
                   >
                     {getLabel(item)}
                     {hasChildren && <ChevronDown className="h-3.5 w-3.5 transition group-hover/menu:rotate-180" />}
                     <span
-                      className={`absolute bottom-0 left-3 right-3 h-[3px] bg-[#ed1c24] transition-transform duration-300 ${
-                        isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
-                      }`}
+                      className={`absolute bottom-0 left-3 right-3 h-[3px] bg-[#ed1c24] transition-transform duration-300 ${isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
+                        }`}
                     />
                   </Link>
                   {hasChildren && (
-                    <div className="invisible absolute left-0 top-full w-72 translate-y-3 border border-slate-200 bg-white p-2 opacity-0 shadow-[0_24px_60px_rgba(0,0,0,0.16)] transition duration-200 group-hover/menu:visible group-hover/menu:translate-y-0 group-hover/menu:opacity-100 dark:border-white/10 dark:bg-[#080808]">
+                    <div className="invisible absolute left-0 top-full w-72 translate-y-3 border border-white/10 bg-[#080808] p-2 opacity-0 shadow-[0_24px_60px_rgba(0,0,0,0.5)] transition duration-200 group-hover/menu:visible group-hover/menu:translate-y-0 group-hover/menu:opacity-100">
                       {children.map((child) => (
                         <Link
                           key={child.href}
                           href={child.href}
                           target={child.is_external ? "_blank" : undefined}
-                          className="flex items-center justify-between border-b border-slate-100 px-4 py-3 text-xs font-black uppercase text-slate-900 transition last:border-b-0 hover:bg-[#ed1c24] hover:text-white dark:border-white/10 dark:text-white"
+                          className="flex items-center justify-between border-b border-white/10 px-4 py-3 text-xs font-black uppercase text-white transition last:border-b-0 hover:bg-[#ed1c24] hover:text-white"
                         >
                           {getLabel(child)}
                           <ChevronRight className="h-4 w-4" />
@@ -169,7 +166,7 @@ const Header = () => {
             <Button
               variant="outline"
               size="icon"
-              className="hidden h-11 w-11 rounded-none border-slate-300 text-slate-900 hover:border-[#ed1c24] hover:text-[#ed1c24] dark:border-white/15 dark:bg-[#101010] dark:text-white lg:inline-flex"
+              className="hidden h-11 w-11 rounded-none border-white/15 bg-[#101010] text-white hover:border-[#ed1c24] hover:text-[#ed1c24] lg:inline-flex"
               aria-label={t("common.search")}
             >
               <Search className="h-4 w-4" />
@@ -177,7 +174,7 @@ const Header = () => {
             <button
               type="button"
               onClick={toggleTheme}
-              className="hidden h-11 w-11 items-center justify-center border border-slate-300 bg-white text-slate-950 transition hover:border-[#ed1c24] hover:text-[#ed1c24] dark:border-white/15 dark:bg-[#101010] dark:text-white lg:inline-flex"
+              className="hidden h-11 w-11 items-center justify-center border border-white/15 bg-[#101010] text-white transition hover:border-[#ed1c24] hover:text-[#ed1c24] lg:inline-flex"
               aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
             >
               {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -185,7 +182,7 @@ const Header = () => {
             <button
               type="button"
               onClick={toggleLanguage}
-              className="hidden h-11 border border-slate-300 bg-white px-3 text-xs font-black uppercase text-slate-950 transition hover:border-[#ed1c24] hover:text-[#ed1c24] dark:border-white/15 dark:bg-[#101010] dark:text-white lg:inline-flex lg:items-center"
+              className="hidden h-11 border border-white/15 bg-[#101010] px-3 text-xs font-black uppercase text-white transition hover:border-[#ed1c24] hover:text-[#ed1c24] lg:inline-flex lg:items-center"
               aria-label="Switch language"
             >
               {language === "vi" ? "EN" : "VI"}
@@ -193,7 +190,7 @@ const Header = () => {
             <Button
               variant="outline"
               size="icon"
-              className="h-11 w-11 rounded-none border-slate-300 dark:border-white/15 dark:bg-[#101010] dark:text-white lg:hidden"
+              className="h-11 w-11 rounded-none border-white/15 bg-[#101010] text-white hover:border-[#ed1c24] hover:text-[#ed1c24] lg:hidden"
               onClick={() => setIsMobileMenuOpen(true)}
               aria-label={t("nav.openMenu")}
             >

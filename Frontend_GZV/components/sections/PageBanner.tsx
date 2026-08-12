@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { getPageSlugFromPath, getSitePageContent, type SitePageContent } from '@/lib/site-content'
 
 interface PageBannerProps {
-  title: string
+  title?: string
   subtitle?: string | ReactNode
   description?: string
   badge?: string
