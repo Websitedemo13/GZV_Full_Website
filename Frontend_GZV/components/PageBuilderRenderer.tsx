@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useEffect, useMemo, useState } from "react"
 import Image from "next/image"
@@ -88,7 +88,7 @@ function RenderBlock({ block, language }: { block: PageBlock; language: "vi" | "
     case "contact_form":
       return <ContactFormBlock {...props} />
     case "page_banner":
-      return <PageBanner {...props} />
+      return <PageBanner title={props.title || ""} {...props} />
     case "core_showcase":
       return <CoreShowcase {...props} />
     case "image_gallery":
@@ -274,8 +274,17 @@ function WhyColumns({ eyebrow, title, subtitle, columns = [], language = "vi" }:
   )
 }
 
+interface DepartmentItem {
+  id: string
+  name?: string
+  description?: string
+  color?: string
+  sort_order?: number
+  [key: string]: any
+}
+
 function AboutBoxes({ eyebrow, title, subtitle, boxes = [], limitPerDepartment = 6 }: any) {
-  const [departments, setDepartments] = useState<any[]>([])
+  const [departments, setDepartments] = useState<DepartmentItem[]>([])
   const [members, setMembers] = useState<any[]>([])
   const [activeDepartment, setActiveDepartment] = useState("")
   const [loading, setLoading] = useState(true)
@@ -303,7 +312,7 @@ function AboutBoxes({ eyebrow, title, subtitle, boxes = [], limitPerDepartment =
     }
   }, [])
 
-  const visibleDepartments = useMemo(() => {
+  const visibleDepartments = useMemo<DepartmentItem[]>(() => {
     if (departments.length) return departments
     return boxes.map((box: any, index: number) => ({
       id: box.key || box.title || String(index),
@@ -336,11 +345,10 @@ function AboutBoxes({ eyebrow, title, subtitle, boxes = [], limitPerDepartment =
                 key={department.id}
                 type="button"
                 onClick={() => setActiveDepartment(department.id)}
-                className={`group min-h-[210px] border p-7 text-left transition ${
-                  selected
-                    ? "border-[#ed1c24] bg-[#ed1c24] text-white shadow-[14px_14px_0_rgba(237,28,36,0.16)]"
-                    : "border-slate-200 bg-white text-slate-950 hover:border-[#ed1c24] dark:border-white/10 dark:bg-slate-950 dark:text-white"
-                }`}
+                className={`group min-h-[210px] border p-7 text-left transition ${selected
+                  ? "border-[#ed1c24] bg-[#ed1c24] text-white shadow-[14px_14px_0_rgba(237,28,36,0.16)]"
+                  : "border-slate-200 bg-white text-slate-950 hover:border-[#ed1c24] dark:border-white/10 dark:bg-slate-950 dark:text-white"
+                  }`}
               >
                 <Users className={`mb-8 h-8 w-8 ${selected ? "text-white" : "text-[#ed1c24]"}`} />
                 <h3 className="text-2xl font-black uppercase">{department.name}</h3>
@@ -706,16 +714,16 @@ function ImageGallery({ title, subtitle, images = [] }: any) {
             const positionX = Number(image.position_x ?? 50)
             const positionY = Number(image.position_y ?? 50)
             return (
-            <article key={index} className="group overflow-hidden border border-slate-200 bg-white shadow-[0_14px_34px_rgba(15,23,42,0.08)] transition hover:-translate-y-1 hover:border-[#ed1c24] dark:border-white/10 dark:bg-slate-900">
-              <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
-                <Image src={image.src || "/placeholder.jpg"} alt={image.alt || image.title || `Image ${index + 1}`} fill className="object-cover transition duration-700 group-hover:scale-110" style={{ objectPosition: `${positionX}% ${positionY}%` }} />
-                {image.category && <span className="absolute left-3 top-3 bg-[#ed1c24] px-3 py-1.5 text-[10px] font-black uppercase text-white">{image.category}</span>}
-              </div>
-              <div className="p-4">
-                {image.title && <h3 className="text-base font-black uppercase leading-tight text-slate-950 dark:text-white">{image.title}</h3>}
-                {image.description && <p className="mt-2 line-clamp-3 text-sm font-medium leading-6 text-slate-600 dark:text-slate-300">{image.description}</p>}
-              </div>
-            </article>
+              <article key={index} className="group overflow-hidden border border-slate-200 bg-white shadow-[0_14px_34px_rgba(15,23,42,0.08)] transition hover:-translate-y-1 hover:border-[#ed1c24] dark:border-white/10 dark:bg-slate-900">
+                <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+                  <Image src={image.src || "/placeholder.jpg"} alt={image.alt || image.title || `Image ${index + 1}`} fill className="object-cover transition duration-700 group-hover:scale-110" style={{ objectPosition: `${positionX}% ${positionY}%` }} />
+                  {image.category && <span className="absolute left-3 top-3 bg-[#ed1c24] px-3 py-1.5 text-[10px] font-black uppercase text-white">{image.category}</span>}
+                </div>
+                <div className="p-4">
+                  {image.title && <h3 className="text-base font-black uppercase leading-tight text-slate-950 dark:text-white">{image.title}</h3>}
+                  {image.description && <p className="mt-2 line-clamp-3 text-sm font-medium leading-6 text-slate-600 dark:text-slate-300">{image.description}</p>}
+                </div>
+              </article>
             )
           })}
         </div>
