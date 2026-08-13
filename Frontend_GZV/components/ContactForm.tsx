@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import PageBanner from "@/components/sections/PageBanner"
+import PageBanner from "@/components/sections/common/PageBanner"
 import { supabase } from "@/lib/api-supabase"
 
 type FieldType = "text" | "email" | "tel" | "number" | "url" | "textarea" | "select" | "radio" | "checkbox" | "date"

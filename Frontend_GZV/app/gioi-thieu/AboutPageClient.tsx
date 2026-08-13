@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { AnimatePresence, motion } from "framer-motion"
-import PageBanner from "@/components/sections/PageBanner"
+import PageBanner from "@/components/sections/common/PageBanner"
 import BuilderPageGate from "@/components/BuilderPageGate"
 
 // Định nghĩa Interface để fix lỗi TypeScript "Property does not exist"
@@ -136,20 +136,20 @@ const AboutPageClient = () => {
           ]}
         />
 
-        <section className="relative overflow-hidden bg-[#050505] py-16 text-white lg:py-24">
+        <section className="relative overflow-hidden bg-slate-50 py-16 text-slate-950 dark:bg-slate-900 dark:text-white lg:py-24">
           <div className="absolute inset-x-0 top-0 h-1 bg-[#ed1c24]" />
           <div className="container">
             <div className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-stretch">
-              <div className="border border-white/12 bg-white/[0.04] p-7 lg:p-9">
+              <div className="border border-slate-200 bg-white p-7 dark:border-white/12 dark:bg-white/[0.04] lg:p-9">
                 <p className="border-l-4 border-[#ed1c24] pl-3 text-xs font-black uppercase tracking-[0.24em] text-[#ed1c24]">GZV Core</p>
-                <h2 className="mt-5 text-4xl font-black uppercase leading-none text-white md:text-5xl">Sứ mệnh. Tầm nhìn. Giá trị cốt lõi.</h2>
-                <p className="mt-6 text-base font-semibold leading-8 text-white/68">
+                <h2 className="mt-5 text-4xl font-black uppercase leading-none text-slate-950 dark:text-white md:text-5xl">Sứ mệnh. Tầm nhìn. Giá trị cốt lõi.</h2>
+                <p className="mt-6 text-base font-semibold leading-8 text-slate-600 dark:text-white/68">
                   GZV định hình một hệ sinh thái triển khai thực chiến, nơi tri thức, đội ngũ và doanh nghiệp cùng tăng trưởng bằng kết quả đo lường được.
                 </p>
-                <div className="mt-8 grid grid-cols-3 border border-white/10">
+                <div className="mt-8 grid grid-cols-3 border border-slate-200 dark:border-white/10">
                   {["Thực chiến", "Minh bạch", "Tăng trưởng"].map((item) => (
-                    <div key={item} className="border-r border-white/10 p-3 text-center last:border-r-0">
-                      <p className="text-[10px] font-black uppercase tracking-wide text-white/62">{item}</p>
+                    <div key={item} className="border-r border-slate-200 p-3 text-center last:border-r-0 dark:border-white/10">
+                      <p className="text-[10px] font-black uppercase tracking-wide text-slate-500 dark:text-white/62">{item}</p>
                     </div>
                   ))}
                 </div>
@@ -160,11 +160,11 @@ const AboutPageClient = () => {
                   { label: "02", title: "Tầm nhìn", text: "Trở thành hệ sinh thái mentoring, coaching và triển khai dự án thế hệ mới tại Việt Nam." },
                   { label: "03", title: "Giá trị cốt lõi", text: "Thực chiến, minh bạch, học hỏi liên tục và cam kết tạo tác động thật cho đối tác." },
                 ].map((item) => (
-                  <article key={item.title} className="group grid gap-4 border border-white/12 bg-white p-5 text-[#050505] transition hover:border-[#ed1c24] md:grid-cols-[96px_1fr] md:items-center">
+                  <article key={item.title} className="group grid gap-4 border border-slate-200 bg-white p-5 text-slate-950 transition hover:border-[#ed1c24] dark:border-white/12 dark:bg-slate-950 dark:text-white md:grid-cols-[96px_1fr] md:items-center">
                     <div className="flex h-20 w-20 items-center justify-center bg-[#ed1c24] text-2xl font-black text-white">{item.label}</div>
                     <div>
                       <h3 className="text-2xl font-black uppercase">{item.title}</h3>
-                      <p className="mt-2 text-sm font-semibold leading-7 text-slate-600">{item.text}</p>
+                      <p className="mt-2 text-sm font-semibold leading-7 text-slate-600 dark:text-slate-300">{item.text}</p>
                     </div>
                   </article>
                 ))}
@@ -174,7 +174,7 @@ const AboutPageClient = () => {
         </section>
 
         {/* Philosophy Section */}
-        <section className="py-20 bg-white dark:bg-gray-800 relative overflow-hidden">
+        <section className="py-20 bg-white dark:bg-slate-950 relative overflow-hidden">
           <div className="absolute inset-0 opacity-5">
             <div className="absolute inset-0" style={{
               backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fillRule='evenodd'%3E%3Cg fill='%23000000' fillOpacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
@@ -231,6 +231,8 @@ const AboutPageClient = () => {
           </div>
         </section>
 
+        <div className="w-full h-px bg-slate-200 dark:bg-slate-800" />
+
         {/* Lightbox logic cho Philosophy Section */}
         <AnimatePresence>
           {selectedImage && (
@@ -255,7 +257,7 @@ const AboutPageClient = () => {
         </AnimatePresence>
 
         {/* Image Gallery Section */}
-        <section className="py-20 bg-gradient-to-br from-gray-50 to-red-50 dark:from-gray-900 dark:to-gray-800">
+        <section className="py-20 bg-slate-50 dark:bg-slate-900">
           <div className="container">
             <motion.div
               initial={{ opacity: 0, y: 50 }}

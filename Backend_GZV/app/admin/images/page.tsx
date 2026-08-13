@@ -446,11 +446,11 @@ export default function AdminImagesPage() {
               </div>
             ) : viewMode === "grid" ? (
               <div className="grid grid-cols-2 gap-4 md:grid-cols-3 2xl:grid-cols-4">
-                {filtered.map((item) => <MediaCard key={item.path} item={item} selected={selected.has(item.path)} selectMode={selectMode} copiedKey={copiedKey} onPick={setSelectedItem} onToggle={toggleSelected} onCopy={copy} onRename={(target) => { setRenameTarget(target); setRenameValue(target.name) }} onDelete={handleDelete} />)}
+                {filtered.map((item) => <MediaCard key={item.path} item={item} selected={selected.has(item.path)} selectMode={selectMode} copiedKey={copiedKey} onPick={setSelectedItem} onToggle={toggleSelected} onCopy={copy} onRename={(target: any) => { setRenameTarget(target); setRenameValue(target.name) }} onDelete={handleDelete} />)}
               </div>
             ) : (
               <div className="divide-y divide-slate-200 border border-slate-200">
-                {filtered.map((item) => <MediaRow key={item.path} item={item} selected={selected.has(item.path)} selectMode={selectMode} copiedKey={copiedKey} onPick={setSelectedItem} onToggle={toggleSelected} onCopy={copy} onRename={(target) => { setRenameTarget(target); setRenameValue(target.name) }} onDelete={handleDelete} />)}
+                {filtered.map((item) => <MediaRow key={item.path} item={item} selected={selected.has(item.path)} selectMode={selectMode} copiedKey={copiedKey} onPick={setSelectedItem} onToggle={toggleSelected} onCopy={copy} onRename={(target: any) => { setRenameTarget(target); setRenameValue(target.name) }} onDelete={handleDelete} />)}
               </div>
             )}
           </div>

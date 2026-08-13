@@ -539,9 +539,9 @@ function RangeField({ label, value, onChange, min = 0, max = 100 }: { label: str
 }
 
 function ProfilePreview({ formData, previewMode }: { formData: any; previewMode: "desktop" | "mobile" }) {
-  const sections = useMemo(() => sortByOrder(formData.profile_tabs || []).filter((item: ProfileSection) => item.visible !== false), [formData.profile_tabs])
-  const badges = useMemo(() => sortByOrder(formData.profile_badges || []).filter((item: ProfileBadge) => item.visible !== false), [formData.profile_badges])
-  const socials = useMemo(() => sortByOrder(formData.social_links || []).filter((item: SocialLink) => item.visible !== false), [formData.social_links])
+  const sections = useMemo(() => sortByOrder(formData.profile_tabs || []).filter((item: any) => item.visible !== false), [formData.profile_tabs])
+  const badges = useMemo(() => sortByOrder(formData.profile_badges || []).filter((item: any) => item.visible !== false), [formData.profile_badges])
+  const socials = useMemo(() => sortByOrder(formData.social_links || []).filter((item: any) => item.visible !== false), [formData.social_links])
   const isMobile = previewMode === "mobile"
   const avatarStyle = { objectPosition: `${formData.avatar_position_x || 50}% ${formData.avatar_position_y || 50}%`, transform: `scale(${(formData.avatar_scale || 100) / 100})` }
   const coverStyle = { objectPosition: `${formData.cover_position_x || 50}% ${formData.cover_position_y || 50}%`, transform: `scale(${(formData.cover_scale || 100) / 100})` }
@@ -566,10 +566,10 @@ function ProfilePreview({ formData, previewMode }: { formData: any; previewMode:
             <h3 className="mt-2 text-xl font-black uppercase">{formData.position || "Chức danh"}</h3>
             <p className="mt-3 text-sm font-semibold text-white/65">{formData.headline || "Headline sẽ hiển thị tại đây."}</p>
             <div className="mt-5 flex flex-wrap gap-2">
-              {badges.map((badge: ProfileBadge, index: number) => <span key={index} className="border px-2 py-1 text-[10px] font-black uppercase" style={{ borderColor: badge.color || "#ed1c24", color: badge.color || "#ed1c24" }}>{badge.label}</span>)}
+              {badges.map((badge: any, index: number) => <span key={index} className="border px-2 py-1 text-[10px] font-black uppercase" style={{ borderColor: badge.color || "#ed1c24", color: badge.color || "#ed1c24" }}>{badge.label}</span>)}
             </div>
             <div className="mt-5 flex flex-wrap gap-2">
-              {socials.map((item: SocialLink, index: number) => <span key={index} className="border border-white/15 px-2 py-1 text-[10px] font-black uppercase text-white/70">{item.label || item.platform}</span>)}
+              {socials.map((item: any, index: number) => <span key={index} className="border border-white/15 px-2 py-1 text-[10px] font-black uppercase text-white/70">{item.label || item.platform}</span>)}
             </div>
           </aside>
           <div className="space-y-4 p-5">
@@ -577,7 +577,7 @@ function ProfilePreview({ formData, previewMode }: { formData: any; previewMode:
               <p className="text-[10px] font-black uppercase tracking-widest text-[#ed1c24]">Profile sections</p>
               <h3 className="mt-1 text-xl font-black uppercase">Hồ sơ chi tiết</h3>
             </div>
-            {sections.map((section: ProfileSection, index: number) => (
+            {sections.map((section: any, index: number) => (
               <div key={section.key || index} className="border border-slate-200 p-4">
                 <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-[#ed1c24]">Section {String(index + 1).padStart(2, "0")}</p>
                 <h4 className="text-lg font-black uppercase">{section.label || "Section"}</h4>

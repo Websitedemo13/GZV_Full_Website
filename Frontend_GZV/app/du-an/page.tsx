@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useEffect, useState } from "react"
 import { api, Project } from "@/lib/api-supabase"
-import PageBanner from "@/components/sections/PageBanner"
+import PageBanner from "@/components/sections/common/PageBanner"
 import BuilderPageGate from "@/components/BuilderPageGate"
 
 export default function ProjectsPage() {

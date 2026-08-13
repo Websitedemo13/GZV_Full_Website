@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { useEffect, useState } from "react"
 import { api, BlogPost } from "@/lib/api-supabase"
-import PageBanner from "@/components/sections/PageBanner"
+import PageBanner from "@/components/sections/common/PageBanner"
 import BuilderPageGate from "@/components/BuilderPageGate"
 
 export default function BlogPage() {

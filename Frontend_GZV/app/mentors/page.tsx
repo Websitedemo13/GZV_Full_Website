@@ -10,7 +10,7 @@ import { Card, CardContent, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { api, Mentor } from "@/lib/api-supabase"
 import { mentorDetails } from "@/data/mentor-detail"
-import PageBanner from "@/components/sections/PageBanner"
+import PageBanner from "@/components/sections/common/PageBanner"
 import BuilderPageGate from "@/components/BuilderPageGate"
 
 // Helper to convert mentorDetails to Mentor

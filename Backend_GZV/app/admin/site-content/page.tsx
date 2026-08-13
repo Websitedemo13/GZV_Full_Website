@@ -570,8 +570,10 @@ function SiteContentManager() {
     if (pickerOpen === "ogImage") setBranding((value) => ({ ...value, og_image_url: result.url }))
     if (pickerOpen === "heroVideo") updateSectionSettings({ video_url: result.url })
     if (pickerOpen === "heroPoster") updateSectionSettings({ poster_url: result.url })
-    if (typeof pickerOpen === "object" && pickerOpen?.floatingIndex >= 0) updateFloating(pickerOpen.floatingIndex, { icon_url: result.url })
-    if (typeof pickerOpen === "object" && "blockImageIndex" in pickerOpen) {
+    if (typeof pickerOpen === "object" && pickerOpen !== null && "floatingIndex" in pickerOpen) {
+      updateFloating(pickerOpen.floatingIndex, { icon_url: result.url })
+    }
+    if (typeof pickerOpen === "object" && pickerOpen !== null && "blockImageIndex" in pickerOpen) {
       const block = pageBlocks[pickerOpen.blockImageIndex]
       const images = Array.isArray(block?.props?.images) ? [...block.props.images] : []
       images[pickerOpen.imageIndex] = { ...(images[pickerOpen.imageIndex] || {}), src: result.url, alt: result.alt }

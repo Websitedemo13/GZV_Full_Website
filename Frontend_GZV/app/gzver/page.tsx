@@ -6,7 +6,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, Loader2, ShieldCheck, Users2 } from 'lucide-react'
 import { api, gzver } from '@/lib/api-supabase'
-import PageBanner from '@/components/sections/PageBanner'
+import PageBanner from '@/components/sections/common/PageBanner'
 import BuilderPageGate from '@/components/BuilderPageGate'
 
 type DepartmentGroup = {
