@@ -121,34 +121,60 @@ const Header = () => {
             {navTree.map(({ item, children }) => {
               const isActive = item.href === activePath || children.some((child) => child.href === activePath)
               const hasChildren = children.length > 0
+              const labelText = getLabel(item)
+              const isShop = labelText.toLowerCase().includes("cửa hàng") || labelText.toLowerCase().includes("shop") || labelText.toLowerCase().includes("store") || item.href.includes("cua-hang") || item.href === "#"
+
+              const linkContent = (
+                <>
+                  {labelText}
+                  {hasChildren && <ChevronDown className="h-3.5 w-3.5 transition group-hover/menu:rotate-180" />}
+                  <span
+                    className={`absolute bottom-0 left-3 right-3 h-[3px] bg-[#ed1c24] transition-transform duration-300 ${isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"}`}
+                  />
+                </>
+              )
+
+              const linkClass = `group relative flex items-center gap-1 px-3 py-7 text-[12px] font-black transition-colors xl:px-4 ${isActive ? "text-[#ed1c24]" : "text-white hover:text-[#ed1c24]"}`
+
               return (
-                <div key={item.href} className="group/menu relative">
-                  <Link
-                    href={item.href}
-                    target={item.is_external ? "_blank" : undefined}
-                    className={`group relative flex items-center gap-1 px-3 py-7 text-[12px] font-black transition-colors xl:px-4 ${isActive ? "text-[#ed1c24]" : "text-white hover:text-[#ed1c24]"
-                      }`}
-                  >
-                    {getLabel(item)}
-                    {hasChildren && <ChevronDown className="h-3.5 w-3.5 transition group-hover/menu:rotate-180" />}
-                    <span
-                      className={`absolute bottom-0 left-3 right-3 h-[3px] bg-[#ed1c24] transition-transform duration-300 ${isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
-                        }`}
-                    />
-                  </Link>
+                <div key={item.href || labelText} className="group/menu relative">
+                  {isShop ? (
+                    <span className={`${linkClass} cursor-pointer`}>
+                      {linkContent}
+                    </span>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      target={item.is_external ? "_blank" : undefined}
+                      className={linkClass}
+                    >
+                      {linkContent}
+                    </Link>
+                  )}
                   {hasChildren && (
                     <div className="invisible absolute left-0 top-full w-72 translate-y-3 border border-white/10 bg-[#080808] p-2 opacity-0 shadow-[0_24px_60px_rgba(0,0,0,0.5)] transition duration-200 group-hover/menu:visible group-hover/menu:translate-y-0 group-hover/menu:opacity-100">
-                      {children.map((child) => (
-                        <Link
-                          key={child.href}
-                          href={child.href}
-                          target={child.is_external ? "_blank" : undefined}
-                          className="flex items-center justify-between border-b border-white/10 px-4 py-3 text-xs font-black uppercase text-white transition last:border-b-0 hover:bg-[#ed1c24] hover:text-white"
-                        >
-                          {getLabel(child)}
-                          <ChevronRight className="h-4 w-4" />
-                        </Link>
-                      ))}
+                      {children.map((child) => {
+                        const childLabel = getLabel(child)
+                        const isChildShop = childLabel.toLowerCase().includes("cửa hàng") || childLabel.toLowerCase().includes("shop") || childLabel.toLowerCase().includes("store") || child.href.includes("cua-hang") || child.href === "#"
+                        const childClass = "flex items-center justify-between border-b border-white/10 px-4 py-3 text-xs font-black uppercase text-white transition last:border-b-0 hover:bg-[#ed1c24] hover:text-white"
+
+                        return isChildShop ? (
+                          <span key={child.href || childLabel} className={`${childClass} cursor-pointer`}>
+                            {childLabel}
+                            <ChevronRight className="h-4 w-4" />
+                          </span>
+                        ) : (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            target={child.is_external ? "_blank" : undefined}
+                            className={childClass}
+                          >
+                            {childLabel}
+                            <ChevronRight className="h-4 w-4" />
+                          </Link>
+                        )
+                      })}
                     </div>
                   )}
                 </div>
@@ -232,35 +258,58 @@ const Header = () => {
               </div>
 
               <nav className="flex-1 overflow-y-auto px-5 py-6">
-                {navTree.map(({ item, children }) => (
-                  <div key={item.href} className="border-b border-white/10 py-3">
-                    <Link
-                      href={item.href}
-                      target={item.is_external ? "_blank" : undefined}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex items-center justify-between py-2 text-sm font-black uppercase tracking-wide text-white transition hover:text-[#ed1c24]"
-                    >
-                      {getLabel(item)}
-                      <ChevronRight className="h-4 w-4 text-[#ed1c24]" />
-                    </Link>
-                    {children.length > 0 && (
-                      <div className="mt-2 grid gap-2 border-l border-white/10 pl-4">
-                        {children.map((child) => (
-                          <Link
-                            key={child.href}
-                            href={child.href}
-                            target={child.is_external ? "_blank" : undefined}
-                            onClick={() => setIsMobileMenuOpen(false)}
-                            className="flex items-center justify-between bg-white/[0.04] px-3 py-3 text-xs font-black uppercase text-white/78 transition hover:bg-[#ed1c24] hover:text-white"
-                          >
-                            {getLabel(child)}
-                            <ChevronRight className="h-3.5 w-3.5" />
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                {navTree.map(({ item, children }) => {
+                  const labelText = getLabel(item)
+                  const isShop = labelText.toLowerCase().includes("cửa hàng") || labelText.toLowerCase().includes("shop") || labelText.toLowerCase().includes("store") || item.href.includes("cua-hang") || item.href === "#"
+
+                  return (
+                    <div key={item.href || labelText} className="border-b border-white/10 py-3">
+                      {isShop ? (
+                        <div className="flex items-center justify-between py-2 text-sm font-black uppercase tracking-wide text-white transition cursor-pointer">
+                          {labelText}
+                          <ChevronRight className="h-4 w-4 text-[#ed1c24]" />
+                        </div>
+                      ) : (
+                        <Link
+                          href={item.href}
+                          target={item.is_external ? "_blank" : undefined}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="flex items-center justify-between py-2 text-sm font-black uppercase tracking-wide text-white transition hover:text-[#ed1c24]"
+                        >
+                          {labelText}
+                          <ChevronRight className="h-4 w-4 text-[#ed1c24]" />
+                        </Link>
+                      )}
+                      {children.length > 0 && (
+                        <div className="mt-2 grid gap-2 border-l border-white/10 pl-4">
+                          {children.map((child) => {
+                            const childLabel = getLabel(child)
+                            const isChildShop = childLabel.toLowerCase().includes("cửa hàng") || childLabel.toLowerCase().includes("shop") || childLabel.toLowerCase().includes("store") || child.href.includes("cua-hang") || child.href === "#"
+                            const childClass = "flex items-center justify-between bg-white/[0.04] px-3 py-3 text-xs font-black uppercase text-white/78 transition hover:bg-[#ed1c24] hover:text-white"
+
+                            return isChildShop ? (
+                              <div key={child.href || childLabel} className={`${childClass} cursor-pointer`}>
+                                {childLabel}
+                                <ChevronRight className="h-3.5 w-3.5" />
+                              </div>
+                            ) : (
+                              <Link
+                                key={child.href}
+                                href={child.href}
+                                target={child.is_external ? "_blank" : undefined}
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className={childClass}
+                              >
+                                {childLabel}
+                                <ChevronRight className="h-3.5 w-3.5" />
+                              </Link>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
               </nav>
 
               <div className="border-t border-white/10 p-5">

@@ -122,19 +122,21 @@ const AboutPageClient = () => {
   }
 
   return (
-    <BuilderPageGate slug="gioi-thieu">
-      <div className="bg-white dark:bg-gray-900">
-        <PageBanner
-          badge="Về chúng tôi"
-          title="Giới thiệu"
-          subtitle="Trung tâm Mentoring & Coaching đầu tiên tại Việt Nam, nơi kết nối tri thức và phát triển tiềm năng con người."
-          stats={[
-            { value: '10+', label: 'Năm kinh nghiệm' },
-            { value: '10000+', label: 'Học viên' },
-            { value: '100+', label: 'Mentor' },
-            { value: '95%', label: 'Thành công' },
-          ]}
-        />
+    <>
+      <PageBanner
+        badge="Về chúng tôi"
+        title="Giới thiệu"
+        subtitle="Trung tâm Mentoring & Coaching đầu tiên tại Việt Nam, nơi kết nối tri thức và phát triển tiềm năng con người."
+        stats={[
+          { value: '10+', label: 'Năm kinh nghiệm' },
+          { value: '10000+', label: 'Học viên' },
+          { value: '100+', label: 'Mentor' },
+          { value: '95%', label: 'Thành công' },
+        ]}
+      />
+
+      <BuilderPageGate slug="gioi-thieu">
+        <div className="bg-white dark:bg-gray-900">
 
         <section className="relative overflow-hidden bg-slate-50 py-16 text-slate-950 dark:bg-slate-900 dark:text-white lg:py-24">
           <div className="absolute inset-x-0 top-0 h-1 bg-[#ed1c24]" />
@@ -380,6 +382,7 @@ const AboutPageClient = () => {
         )}
       </div>
     </BuilderPageGate>
+    </>
   )
 }
 

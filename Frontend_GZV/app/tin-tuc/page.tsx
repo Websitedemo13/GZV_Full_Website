@@ -71,12 +71,11 @@ export default function BlogPage() {
   if (error || !featuredPost) return <div className="p-40 text-center font-bold text-slate-300 italic">Hiện tại chưa có bài viết nào được xuất bản.</div>
 
   return (
-    <BuilderPageGate slug="tin-tuc">
-    <div className="bg-white dark:bg-gray-900">
+    <>
       <PageBanner
         badge="Knowledge Hub"
         title="Chia sẻ & Tri thức"
-        subtitle="Nơi hội tụ kiến thức thực tiễn từ chuyên gia gzv Center, chia sẻ kinh nghiệm và phát triển chuyên môn."
+        subtitle="Nơi hội tụ kiến thức thực tiễn từ chuyên gia GZV Center, chia sẻ kinh nghiệm và phát triển chuyên môn."
         stats={[
           { value: `${allBlogPosts.length}+`, label: 'Bài viết chuyên môn' },
           { value: '10K+', label: 'Lượt đọc/tháng' },
@@ -84,6 +83,9 @@ export default function BlogPage() {
           { value: `${categories.length}+`, label: 'Lĩnh vực' },
         ]}
       />
+
+      <BuilderPageGate slug="tin-tuc">
+        <div className="bg-white dark:bg-gray-900">
 
       {/* FEATURED - Cinematic Article (Show only when no filter applied) */}
       {!selectedCategory && featuredPost && (
@@ -246,5 +248,6 @@ export default function BlogPage() {
       </section>
     </div>
     </BuilderPageGate>
+    </>
   )
 }

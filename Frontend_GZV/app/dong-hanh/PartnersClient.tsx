@@ -61,12 +61,11 @@ function LogoCard({ partner, cardClass, imgClass }: { partner: Partner; cardClas
 
 export default function PartnersClient({ corporate, education }: Props) {
   return (
-    <BuilderPageGate slug="dong-hanh">
-    <div className="bg-white dark:bg-gray-900">
+    <>
       <PageBanner
         badge="Mạng lưới toàn cầu"
         title="Đối tác & Đồng hành"
-        subtitle="gzv Center có mạng lưới đối tác từ các doanh nghiệp và các trường Đại học có cùng chung tầm nhìn về phát triển giáo dục và nguồn nhân lực chất lượng cao."
+        subtitle="GZV Center có mạng lưới đối tác từ các doanh nghiệp và các trường Đại học có cùng chung tầm nhìn về phát triển giáo dục và nguồn nhân lực chất lượng cao."
         stats={[
           { value: '100+', label: 'Đối tác doanh nghiệp' },
           { value: '100+', label: 'Dự án hợp tác' },
@@ -74,6 +73,9 @@ export default function PartnersClient({ corporate, education }: Props) {
           { value: '50+', label: 'Tỉnh thành' },
         ]}
       />
+
+      <BuilderPageGate slug="dong-hanh">
+        <div className="bg-white dark:bg-gray-900">
 
       {/* Stats Section */}
       <section className="py-20 bg-white">
@@ -209,5 +211,6 @@ export default function PartnersClient({ corporate, education }: Props) {
       </section>
     </div>
     </BuilderPageGate>
+    </>
   )
 }

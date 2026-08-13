@@ -295,7 +295,7 @@ export default function Footer({ overrideConfig, activeColumn, onSelectColumn }:
             )}
 
             {fbEmbedSrc && (
-              <div className="w-full max-w-[250px] overflow-hidden rounded-none border border-white/10 bg-black mt-4 shadow-none">
+              <div className="w-full max-w-[250px] overflow-hidden rounded-none bg-black mt-4 shadow-none">
                 <iframe
                   src={fbEmbedSrc}
                   width="250"

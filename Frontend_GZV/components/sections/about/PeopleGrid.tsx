@@ -6,7 +6,6 @@ import { api } from "@/lib/api-supabase"
 import SectionIntro from "@/components/sections/common/SectionIntro"
 
 export interface PeopleGridProps {
-  eyebrow?: string
   title?: string
   subtitle?: string
   type?: string
@@ -14,7 +13,6 @@ export interface PeopleGridProps {
 }
 
 export default function PeopleGrid({
-  eyebrow,
   title,
   subtitle,
   type = "directors",
@@ -49,15 +47,14 @@ export default function PeopleGrid({
   return (
     <section className="bg-white py-16 dark:bg-slate-950 lg:py-24">
       <div className="container px-4">
-        <SectionIntro eyebrow={eyebrow} title={title} subtitle={subtitle} align="center" />
+        <SectionIntro title={title} subtitle={subtitle} align="center" />
         {loading ? (
           <div className="mx-auto h-12 w-12 animate-spin border-b-2 border-[#ed1c24]" />
         ) : (
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {items.map((item) => (
-              <Link
+              <div
                 key={item.id}
-                href={`/gzver/${item.slug}`}
                 className="group border border-slate-200 bg-slate-50 p-5 transition hover:border-[#ed1c24] dark:border-white/10 dark:bg-slate-900"
               >
                 <div className="relative aspect-[4/3] overflow-hidden bg-slate-200">
@@ -82,7 +79,7 @@ export default function PeopleGrid({
                     {item.achievement_summary}
                   </p>
                 )}
-              </Link>
+              </div>
             ))}
           </div>
         )}
