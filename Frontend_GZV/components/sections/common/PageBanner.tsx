@@ -79,17 +79,6 @@ export default function PageBanner({
             {displayTitle}
           </motion.h1>
 
-          {displaySubtitle && (
-            <motion.p
-              className="mb-8 text-xl font-semibold leading-relaxed text-white/78"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
-            >
-              {displaySubtitle}
-            </motion.p>
-          )}
-
           {displayDescription && (
             <motion.p
               className="mb-8 text-lg leading-relaxed text-white/70"

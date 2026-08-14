@@ -33,7 +33,7 @@ const PartnersCarousel = () => {
   if (loading || section?.is_visible === false || partners.length === 0) return null
 
   return (
-    <section className="overflow-hidden bg-[#050505] py-16 text-white lg:py-20">
+    <section className="overflow-hidden bg-white py-16 text-slate-950 dark:bg-slate-950 dark:text-white lg:py-20">
       <div className="container">
         <motion.div
           initial={{ opacity: 0, y: 28 }}
@@ -45,14 +45,14 @@ const PartnersCarousel = () => {
           <p className="mb-3 text-[10px] font-black uppercase tracking-[0.24em] text-[#ed1c24]">GZV Network</p>
           {section?.title && <h2 className="text-4xl font-black uppercase md:text-5xl">{section.title}</h2>}
           {(section?.subtitle || section?.description) && (
-            <p className="mx-auto mt-4 max-w-3xl text-base font-semibold leading-7 text-white/65">{section.subtitle || section.description}</p>
+            <p className="mx-auto mt-4 max-w-3xl text-base font-semibold leading-7 text-slate-600 dark:text-white/65">{section.subtitle || section.description}</p>
           )}
         </motion.div>
       </div>
 
       <div className="relative">
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-[#050505] to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-[#050505] to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-white to-transparent dark:from-slate-950" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-white to-transparent dark:from-slate-950" />
         <div className="flex w-max animate-[gzvPartnerMarquee_34s_linear_infinite] gap-4 px-4 hover:[animation-play-state:paused]">
           {marqueeItems.map((partner, index) => (
             <PartnerLogo key={`${partner.id || partner.name}-${index}`} partner={partner} />
@@ -72,7 +72,7 @@ const PartnersCarousel = () => {
 
 function PartnerLogo({ partner }: { partner: any }) {
   const logo = (
-    <div className="group flex h-28 w-56 shrink-0 flex-col justify-between border border-white/12 bg-white transition hover:border-[#ed1c24]">
+    <div className="group flex h-28 w-56 shrink-0 flex-col justify-between border border-slate-200 bg-white transition hover:border-[#ed1c24] dark:border-white/12">
       <div className="flex h-20 items-center justify-center p-5">
         <Image
           src={partner.logo_url || "/placeholder.svg"}
@@ -83,8 +83,8 @@ function PartnerLogo({ partner }: { partner: any }) {
           className="max-h-14 w-auto max-w-full object-contain transition group-hover:scale-[1.03]"
         />
       </div>
-      <div className="border-t border-slate-200 px-4 py-2">
-        <p className="truncate text-xs font-black text-[#050505]">{partner.name}</p>
+      <div className="border-t border-slate-200 px-4 py-2 dark:border-white/10">
+        <p className="truncate text-xs font-black text-slate-950 dark:text-white">{partner.name}</p>
       </div>
     </div>
   )
