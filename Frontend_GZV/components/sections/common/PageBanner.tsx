@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { getPageSlugFromPath, getSitePageContent, type SitePageContent } from '@/lib/site-content'
 
 interface PageBannerProps {
-  title: string
+  title?: string
   subtitle?: string | ReactNode
   description?: string
   badge?: string
@@ -78,17 +78,6 @@ export default function PageBanner({
           >
             {displayTitle}
           </motion.h1>
-
-          {displaySubtitle && (
-            <motion.p
-              className="mb-8 text-xl font-semibold leading-relaxed text-white/78"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
-            >
-              {displaySubtitle}
-            </motion.p>
-          )}
 
           {displayDescription && (
             <motion.p
