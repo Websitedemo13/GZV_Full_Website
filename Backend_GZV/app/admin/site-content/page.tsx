@@ -23,18 +23,23 @@ import {
   ArrowDown,
   ArrowUp,
   Bot,
+  Code2,
   Copy,
   Eye,
   EyeOff,
+  Filter,
   GripVertical,
   Image as ImageIcon,
   Layers,
   LayoutTemplate,
+  Link2,
   Loader2,
   Menu,
   MessageCircle,
   MonitorCog,
+  Move,
   MoveVertical,
+  Palette,
   Plus,
   RotateCcw,
   Save,
@@ -42,6 +47,7 @@ import {
   Sparkles,
   Trash2,
   Video,
+  ZoomIn,
 } from "lucide-react"
 
 // Import sub-components
@@ -59,10 +65,13 @@ import {
   useSensors,
 } from "@dnd-kit/core"
 import {
+  arrayMove,
+  useSortable,
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
 
 type NavItem = { id?: string; href: string; label_vi: string; label_en?: string | null; parent_href?: string | null; sort_order: number; is_visible: boolean; is_page_enabled: boolean; is_external?: boolean | null; children?: NavItem[] }
 type PageContent = { id?: string; slug: string; title: string; menu_title?: string | null; banner_badge?: string | null; banner_title?: string | null; banner_subtitle?: string | null; banner_description?: string | null; banner_image_url?: string | null; content_html?: string | null; is_visible: boolean; seo_title?: string | null; seo_description?: string | null }
@@ -116,14 +125,6 @@ const defaultHomeSections: HomeSection[] = [
     is_visible: true,
     settings: {
       video_url: "/Intro.mp4",
-      poster_url: "/og-image.jpg",
-      backgroundFrom: "#050505",
-      backgroundTo: "#ed1c24",
-      stats: [
-        { value: "10+", label: "Dự án" },
-        { value: "5000+", label: "Học viên" },
-        { value: "50+", label: "Đối tác" },
-      ],
     },
   },
   {
@@ -448,7 +449,14 @@ const defaultBannerConfig = {
   use_image: true,
   cover_url: "/placeholder.jpg",
   imagePositionY: "50%",
+  image_opacity: 100,
+  image_grayscale: false,
+  overlay_enabled: true,
+  overlay_color: "#050505",
+  overlay_opacity: 60,
   bg_color: "#050505",
+  bg_from: "#050505",
+  bg_to: "#ed1c24",
   titleAlignment: "center" as "left" | "center" | "right",
   show_badge: true,
   show_title: true,
@@ -457,6 +465,279 @@ const defaultBannerConfig = {
   title_color: "#ffffff",
   subtitle_color: "rgba(255,255,255,0.85)",
 }
+
+const defaultPageBlocks: PageBlock[] = [
+  // 1. Dịch vụ (/dich-vu)
+  {
+    page_slug: "dich-vu",
+    block_key: "hero",
+    component_type: "hero_stats",
+    title: "HERO DỊCH VỤ",
+    props: {
+      title: "DỊCH VỤ GZV",
+      subtitle: "Marketing | Sales | Digital Transformation",
+      stats: [
+        { value: "3", label: "Mũi triển khai" },
+        { value: "50+", label: "Đối tác" },
+        { value: "10+", label: "Lĩnh vực" },
+        { value: "100%", label: "Thực chiến" },
+      ],
+      backgroundFrom: "#050505",
+      backgroundTo: "#ed1c24",
+    },
+    sort_order: 10,
+    is_visible: true,
+  },
+  {
+    page_slug: "dich-vu",
+    block_key: "services",
+    component_type: "services_three",
+    title: "SERVICES",
+    props: {
+      title: "SERVICES",
+      subtitle: "Marketing | Sales | Digital Transformation",
+      items: [
+        { title: "Marketing", icon: "megaphone", description: "Xây dựng chiến lược thương hiệu, nội dung, chiến dịch tăng trưởng và truyền thông đa kênh." },
+        { title: "Sales", icon: "trend", description: "Thiết kế pipeline, kịch bản bán hàng, đào tạo đội ngũ và tối ưu chuyển đổi doanh thu." },
+        { title: "Digital Transformation", icon: "cpu", description: "Chuẩn hóa quy trình, dữ liệu, tự động hóa và công cụ vận hành cho doanh nghiệp." },
+      ],
+    },
+    sort_order: 20,
+    is_visible: true,
+  },
+  {
+    page_slug: "dich-vu",
+    block_key: "mentoring_model",
+    component_type: "mentoring_model",
+    title: "QUY TRÌNH TRIỂN KHAI",
+    props: {
+      title: "QUY TRÌNH TRIỂN KHAI",
+      subtitle: "Lộ trình đồng hành thực chiến cùng doanh nghiệp",
+    },
+    sort_order: 30,
+    is_visible: true,
+  },
+  {
+    page_slug: "dich-vu",
+    block_key: "why_columns",
+    component_type: "why_columns",
+    title: "TẠI SAO CHỌN GZV",
+    props: {
+      title: "TẠI SAO CHỌN GZV",
+      subtitle: "Khác biệt tạo nên hiệu quả",
+    },
+    sort_order: 40,
+    is_visible: true,
+  },
+  {
+    page_slug: "dich-vu",
+    block_key: "cta",
+    component_type: "cta_band",
+    title: "SẴN SÀNG TRAO ĐỔI BÀI TOÁN TĂNG TRƯỞNG",
+    props: {
+      title: "SẴN SÀNG TRAO ĐỔI BÀI TOÁN TĂNG TRƯỞNG",
+      subtitle: "Gửi thông tin để đội ngũ GZV tư vấn hướng triển khai phù hợp nhất.",
+      button_label: "Đăng ký tư vấn ngay",
+      button_url: "/lien-he",
+      background_from: "#050505",
+      background_to: "#ed1c24",
+    },
+    sort_order: 50,
+    is_visible: true,
+  },
+
+  // 2. Dự án (/du-an)
+  {
+    page_slug: "du-an",
+    block_key: "banner",
+    component_type: "page_banner",
+    title: "BANNER DỰ ÁN",
+    props: {
+      badge: "Những dự án tiêu biểu",
+      title: "Dự án đã triển khai",
+      subtitle: "Các dự án Mentoring & Coaching thực tế mà GZV Center đã triển khai, đem lại giá trị thực cho các đối tác và học viên.",
+      stats: [
+        { value: "10+", label: "Dự án tiêu biểu" },
+        { value: "50+", label: "Doanh nghiệp" },
+        { value: "5000+", label: "Học viên" },
+        { value: "10+", label: "Lĩnh vực" },
+      ],
+    },
+    sort_order: 10,
+    is_visible: true,
+  },
+  {
+    page_slug: "du-an",
+    block_key: "projects",
+    component_type: "projects_grid",
+    title: "DANH SÁCH DỰ ÁN",
+    props: {
+      title: "DỰ ÁN ĐÃ TRIỂN KHAI",
+      subtitle: "Những chiến dịch và dự án tiêu biểu do GZV cùng đối tác triển khai",
+      show_search: true,
+      show_categories: true,
+      limit: 12,
+    },
+    sort_order: 20,
+    is_visible: true,
+  },
+  {
+    page_slug: "du-an",
+    block_key: "cta",
+    component_type: "cta_band",
+    title: "KÊU GỌI HÀNH ĐỘNG (CTA)",
+    props: {
+      title: "Bạn có dự án cần triển khai?",
+      subtitle: "Hãy để GZV Center trở thành đối tác đồng hành, thiết kế chương trình đào tạo riêng biệt và hiệu quả cho tổ chức của bạn.",
+      button_label: "Liên hệ ngay",
+      button_url: "/lien-he",
+      background_from: "#050505",
+      background_to: "#ed1c24",
+    },
+    sort_order: 30,
+    is_visible: true,
+  },
+
+  // 3. GZVers (/gzver)
+  {
+    page_slug: "gzver",
+    block_key: "banner",
+    component_type: "page_banner",
+    title: "BANNER GZVERS",
+    props: {
+      badge: "GZVERS",
+      title: "ĐỘI NGŨ GZVERS",
+      subtitle: "Hệ sinh thái con người tạo nên giá trị và sự khác biệt tại GZV Center.",
+      stats: [
+        { value: "50+", label: "GZVers" },
+        { value: "10+", label: "Cố vấn & Mentor" },
+        { value: "5+", label: "Ban chuyên môn" },
+      ],
+    },
+    sort_order: 10,
+    is_visible: true,
+  },
+  {
+    page_slug: "gzver",
+    block_key: "gzvers_list",
+    component_type: "gzvers_grid",
+    title: "DANH SÁCH GZVERS",
+    props: {
+      title: "DANH SÁCH GZVERS",
+      subtitle: "Đội ngũ nhân sự, cố vấn và chuyên gia đồng hành",
+      show_filter: true,
+      limit: 20,
+    },
+    sort_order: 20,
+    is_visible: true,
+  },
+  {
+    page_slug: "gzver",
+    block_key: "cta",
+    component_type: "cta_band",
+    title: "GIA NHẬP GZV",
+    props: {
+      title: "Gia nhập đại gia đình GZV",
+      subtitle: "Trở thành một phần của cộng đồng trẻ năng động, sáng tạo và bứt phá giới hạn.",
+      button_label: "Ứng tuyển ngay",
+      button_url: "/lien-he",
+      background_from: "#050505",
+      background_to: "#ed1c24",
+    },
+    sort_order: 30,
+    is_visible: true,
+  },
+
+  // 4. Tin tức (/tin-tuc)
+  {
+    page_slug: "tin-tuc",
+    block_key: "banner",
+    component_type: "page_banner",
+    title: "BANNER TIN TỨC",
+    props: {
+      badge: "TIN TỨC",
+      title: "TIN TỨC & BÀI VIẾT",
+      subtitle: "Cập nhật những thông tin, sự kiện và kiến thức chuyên sâu mới nhất từ GZV Center.",
+    },
+    sort_order: 10,
+    is_visible: true,
+  },
+  {
+    page_slug: "tin-tuc",
+    block_key: "news_list",
+    component_type: "news_grid",
+    title: "DANH SÁCH TIN TỨC",
+    props: {
+      title: "TIN TỨC MỚI NHẤT",
+      subtitle: "Tổng hợp các bài viết nổi bật, xu hướng ngành và hoạt động của GZV",
+      limit: 9,
+      show_categories: true,
+    },
+    sort_order: 20,
+    is_visible: true,
+  },
+  {
+    page_slug: "tin-tuc",
+    block_key: "cta",
+    component_type: "cta_band",
+    title: "BẢN TIN GZV",
+    props: {
+      title: "Đăng ký nhận bản tin GZV",
+      subtitle: "Nhận các bài viết chuyên sâu và xu hướng thị trường hàng tuần từ đội ngũ chuyên gia.",
+      button_label: "Đăng ký ngay",
+      button_url: "/lien-he",
+      background_from: "#050505",
+      background_to: "#ed1c24",
+    },
+    sort_order: 30,
+    is_visible: true,
+  },
+
+  // 5. Liên hệ (/lien-he)
+  {
+    page_slug: "lien-he",
+    block_key: "banner",
+    component_type: "page_banner",
+    title: "BANNER LIÊN HỆ",
+    props: {
+      badge: "LIÊN HỆ",
+      title: "LIÊN HỆ VỚI CHÚNG TÔI",
+      subtitle: "Hãy để lại thông tin hoặc kết nối trực tiếp với đội ngũ GZV Center.",
+    },
+    sort_order: 10,
+    is_visible: true,
+  },
+  {
+    page_slug: "lien-he",
+    block_key: "contact_block",
+    component_type: "contact_form",
+    title: "FORM LIÊN HỆ & THÔNG TIN",
+    props: {
+      title: "GỬI THÔNG TIN CHO GZV",
+      subtitle: "Chúng tôi sẽ phản hồi trong vòng 24 giờ làm việc.",
+      email: "one.gzv@gmail.com",
+      phone: "(+84) 329 381 489",
+    },
+    sort_order: 20,
+    is_visible: true,
+  },
+  {
+    page_slug: "lien-he",
+    block_key: "cta",
+    component_type: "cta_band",
+    title: "HOTLINE HỖ TRỢ",
+    props: {
+      title: "Sẵn sàng bứt phá cùng GZV?",
+      subtitle: "Đội ngũ chuyên gia luôn sẵn sàng đồng hành cùng bạn trên hành trình phát triển.",
+      button_label: "Gọi Hotline ngay",
+      button_url: "tel:0329381489",
+      background_from: "#050505",
+      background_to: "#ed1c24",
+    },
+    sort_order: 30,
+    is_visible: true,
+  },
+]
 
 function normalizeSlug(str: string) {
   return str
@@ -500,119 +781,13 @@ function PickerInput({ value, onChange, onPick }: { value: string; onChange: (va
   )
 }
 
-function renderPropControl(value: any, onChange: (value: any) => void) {
-  if (typeof value === "boolean") {
-    return <Switch checked={value} onCheckedChange={onChange} />
-  }
-  if (typeof value === "number") {
-    return <Input type="number" value={value} onChange={(event) => onChange(Number(event.target.value))} className="rounded-none" />
-  }
-  if (typeof value === "string") {
-    const looksLikeColor = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value)
-    if (looksLikeColor) {
-      return (
-        <div className="flex gap-2">
-          <Input type="color" value={value} onChange={(event) => onChange(event.target.value)} className="w-16 shrink-0 rounded-none" />
-          <Input value={value} onChange={(event) => onChange(event.target.value)} className="rounded-none font-mono" />
-        </div>
-      )
-    }
-    if (value.length > 90) {
-      return <Textarea value={value} onChange={(event) => onChange(event.target.value)} className="rounded-none text-xs" />
-    }
-    return <Input value={value} onChange={(event) => onChange(event.target.value)} className="rounded-none" />
-  }
-  if (Array.isArray(value)) {
-    return <ArrayPropEditor rows={value} onChange={onChange} />
-  }
-
-  return (
-    <Textarea
-      className="min-h-[120px] font-mono text-xs rounded-none"
-      value={JSON.stringify(value ?? null, null, 2)}
-      onChange={(event) => {
-        try {
-          onChange(JSON.parse(event.target.value || "null"))
-        } catch {
-          onChange(value)
-        }
-      }}
-    />
-  )
-}
-
-function ArrayPropEditor({ rows, onChange }: { rows: any[]; onChange: (value: any[]) => void }) {
-  const isObjectArray = rows.every((row) => row && typeof row === "object" && !Array.isArray(row))
-  const move = (index: number, direction: -1 | 1) => {
-    const swapIndex = index + direction
-    if (swapIndex < 0 || swapIndex >= rows.length) return
-    const nextRows = [...rows]
-      ;[nextRows[index], nextRows[swapIndex]] = [nextRows[swapIndex], nextRows[index]]
-    onChange(nextRows)
-  }
-
-  if (!isObjectArray) {
-    return (
-      <Textarea
-        className="min-h-[120px] font-mono text-xs rounded-none"
-        value={JSON.stringify(rows, null, 2)}
-        onChange={(event) => {
-          try {
-            const parsed = JSON.parse(event.target.value || "[]")
-            onChange(Array.isArray(parsed) ? parsed : rows)
-          } catch {
-            onChange(rows)
-          }
-        }}
-      />
-    )
-  }
-
-  const keys = Array.from(new Set(rows.flatMap((row) => Object.keys(row || {}))))
-  const updateRow = (index: number, key: string, nextValue: string) => {
-    onChange(rows.map((row, rowIndex) => rowIndex === index ? { ...row, [key]: nextValue } : row))
-  }
-  const addRow = () => {
-    const template = Object.fromEntries((keys.length ? keys : ["title", "description"]).map((key) => [key, ""]))
-    onChange([...rows, template])
-  }
-
-  return (
-    <div className="space-y-3 border bg-white p-3 dark:bg-slate-900">
-      <div className="flex items-center justify-between">
-        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Danh sách item</span>
-        <Button type="button" variant="outline" size="sm" className="rounded-none" onClick={addRow}>
-          <Plus className="mr-2 h-4 w-4" /> Thêm item
-        </Button>
-      </div>
-      {rows.map((row, index) => (
-        <div key={index} className="border bg-slate-50 p-3 dark:bg-slate-950">
-          <div className="mb-3 flex items-center justify-between">
-            <span className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500"><GripVertical className="h-3.5 w-3.5" /> Item #{index + 1}</span>
-            <div className="flex gap-1">
-              <Button type="button" variant="outline" size="icon" className="h-8 w-8 rounded-none" disabled={index === 0} onClick={() => move(index, -1)}><ArrowUp className="h-4 w-4" /></Button>
-              <Button type="button" variant="outline" size="icon" className="h-8 w-8 rounded-none" disabled={index === rows.length - 1} onClick={() => move(index, 1)}><ArrowDown className="h-4 w-4" /></Button>
-              <Button type="button" variant="destructive" size="icon" className="h-8 w-8 rounded-none" onClick={() => onChange(rows.filter((_, rowIndex) => rowIndex !== index))}><Trash2 className="h-4 w-4" /></Button>
-            </div>
-          </div>
-          <div className="grid gap-2 md:grid-cols-2">
-            {keys.map((key) => (
-              <Field key={key} label={key}>
-                {String(row?.[key] || "").length > 80 ? (
-                  <Textarea value={String(row?.[key] || "")} onChange={(event) => updateRow(index, key, event.target.value)} className="rounded-none" />
-                ) : (
-                  <Input value={String(row?.[key] ?? "")} onChange={(event) => updateRow(index, key, event.target.value)} className="rounded-none" />
-                )}
-              </Field>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function PropsEditor({ value, onChange }: { value: Record<string, any>; onChange: (value: Record<string, any>) => void }) {
+function RawJsonEditor({
+  value,
+  onChange,
+}: {
+  value: Record<string, any>
+  onChange: (value: Record<string, any>) => void
+}) {
   const [rawJson, setRawJson] = useState(() => JSON.stringify(value || {}, null, 2))
   const [jsonError, setJsonError] = useState("")
 
@@ -621,45 +796,558 @@ function PropsEditor({ value, onChange }: { value: Record<string, any>; onChange
     setJsonError("")
   }, [value])
 
+  return (
+    <div className="space-y-1.5">
+      <Textarea
+        className="min-h-[220px] font-mono text-xs rounded-none border-slate-300 bg-slate-900 text-slate-100 dark:bg-black dark:border-white/10"
+        value={rawJson}
+        onChange={(event) => {
+          const text = event.target.value
+          setRawJson(text)
+          try {
+            const parsed = JSON.parse(text || "{}")
+            setJsonError("")
+            onChange(parsed)
+          } catch (error: any) {
+            setJsonError(error.message || "JSON không hợp lệ")
+          }
+        }}
+      />
+      {jsonError && <p className="text-xs font-bold text-red-500">{jsonError}</p>}
+    </div>
+  )
+}
+
+function ImagePositionAndZoomEditor({
+  imageUrl,
+  positionX = 50,
+  positionY = 50,
+  imageSize = 100,
+  onChange,
+  onPickImage,
+  title = "Ảnh minh họa & Căn chỉnh trọng tâm",
+}: {
+  imageUrl: string
+  positionX?: number
+  positionY?: number
+  imageSize?: number
+  onChange: (patch: { image_url?: string; position_x?: number; position_y?: number; image_size?: number }) => void
+  onPickImage?: () => void
+  title?: string
+}) {
+  return (
+    <div className="space-y-4 border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-slate-900">
+      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-white/10 pb-2">
+        <ImageIcon className="h-4 w-4 text-[#ed1c24]" />
+        <div>
+          <p className="text-xs font-black uppercase text-slate-950 dark:text-white">{title}</p>
+          <p className="text-[11px] text-slate-500">Cấu hình hình ảnh minh họa, căn chỉnh trọng tâm và tỷ lệ phóng to.</p>
+        </div>
+      </div>
+
+      <Field label="Đường dẫn ảnh (Image URL)">
+        <div className="flex gap-2">
+          <Input
+            value={imageUrl || ""}
+            onChange={(e) => onChange({ image_url: e.target.value })}
+            placeholder="/gioi-thieu/19.webp"
+            className="rounded-none font-mono text-xs"
+          />
+          {onPickImage && (
+            <Button type="button" variant="outline" className="rounded-none shrink-0 text-xs font-bold" onClick={onPickImage}>
+              <ImageIcon className="mr-1.5 h-3.5 w-3.5" /> Chọn ảnh
+            </Button>
+          )}
+        </div>
+      </Field>
+
+      {imageUrl && (
+        <div className="space-y-3">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
+              <span className="flex items-center gap-1.5">
+                <Move className="h-3.5 w-3.5 text-[#ed1c24]" /> Kéo thả / Nhấp chuột vào ảnh để căn chỉnh trọng tâm:
+              </span>
+              <span className="font-mono text-[11px] text-[#ed1c24] font-black">
+                X: {positionX}% | Y: {positionY}%
+              </span>
+            </div>
+
+            <div
+              className="relative h-60 w-full cursor-crosshair overflow-hidden border-2 border-dashed border-slate-300 bg-slate-100 select-none dark:border-white/20 dark:bg-slate-900 group"
+              onMouseDown={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect()
+                const updateCoords = (clientX: number, clientY: number) => {
+                  const x = Math.max(0, Math.min(100, Math.round(((clientX - rect.left) / rect.width) * 100)))
+                  const y = Math.max(0, Math.min(100, Math.round(((clientY - rect.top) / rect.height) * 100)))
+                  onChange({ position_x: x, position_y: y })
+                }
+                updateCoords(e.clientX, e.clientY)
+
+                const handleMouseMove = (moveEvent: MouseEvent) => {
+                  updateCoords(moveEvent.clientX, moveEvent.clientY)
+                }
+                const handleMouseUp = () => {
+                  window.removeEventListener("mousemove", handleMouseMove)
+                  window.removeEventListener("mouseup", handleMouseUp)
+                }
+                window.addEventListener("mousemove", handleMouseMove)
+                window.addEventListener("mouseup", handleMouseUp)
+              }}
+            >
+              <img
+                src={imageUrl}
+                alt="Preview"
+                className="pointer-events-none h-full w-full object-cover select-none"
+                style={{
+                  objectPosition: `${positionX}% ${positionY}%`,
+                  transform: `scale(${imageSize / 100})`,
+                }}
+              />
+
+              {/* Crosshair Target Indicator */}
+              <div
+                className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
+                style={{
+                  left: `${positionX}%`,
+                  top: `${positionY}%`,
+                }}
+              >
+                <div className="h-7 w-7 rounded-full border-2 border-[#ed1c24] bg-white/40 shadow-[0_0_10px_rgba(237,28,36,0.8)]" />
+                <div className="absolute h-2 w-2 rounded-full bg-[#ed1c24]" />
+              </div>
+
+              <div className="absolute bottom-2 left-2 rounded bg-black/75 px-2 py-1 text-[10px] font-bold text-white backdrop-blur">
+                🖱️ Kéo hoặc nhấp chuột để di chuyển góc nhìn
+              </div>
+            </div>
+          </div>
+
+          {/* Zoom Slider Control */}
+          <div className="space-y-1.5 rounded border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-slate-950">
+            <div className="flex items-center justify-between text-xs font-bold">
+              <span className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
+                <ZoomIn className="h-3.5 w-3.5 text-[#ed1c24]" /> Phóng to / Thu nhỏ ảnh (Zoom)
+              </span>
+              <span className="font-mono text-xs text-[#ed1c24] font-black">{imageSize}%</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] font-semibold text-slate-400">50%</span>
+              <input
+                type="range"
+                min={50}
+                max={200}
+                step={5}
+                value={imageSize}
+                onChange={(e) => onChange({ image_size: Number(e.target.value) })}
+                className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-slate-200 accent-[#ed1c24] dark:bg-slate-700"
+              />
+              <span className="text-[10px] font-semibold text-slate-400">200%</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function PropsEditor({
+  value,
+  onChange,
+  onPickSingleImage,
+  componentType,
+}: {
+  value: Record<string, any>
+  onChange: (value: Record<string, any>) => void
+  onPickSingleImage?: () => void
+  componentType?: string
+}) {
   const updateKey = (key: string, nextValue: any) => {
     onChange({ ...(value || {}), [key]: nextValue })
   }
 
-  const entries = Object.entries(value || {})
+  const typeLower = (componentType || "").toLowerCase().trim()
+  const isCta = typeLower.includes("cta") || typeLower.includes("band") || value?.buttonLabel !== undefined || value?.button_label !== undefined || value?.buttonUrl !== undefined || value?.button_url !== undefined || value?.button_text !== undefined
+  const isBgConfigurable = isCta || typeLower.includes("banner") || value?.backgroundFrom !== undefined || value?.background_from !== undefined || value?.backgroundTo !== undefined || value?.background_to !== undefined || value?.backgroundColor !== undefined || value?.background_color !== undefined
+  const isProjects = typeLower.includes("project") || typeLower.includes("du-an") || typeLower.includes("du_an") || value?.show_search !== undefined || value?.show_categories !== undefined
+  const hasBody = (value?.body !== undefined || value?.description !== undefined || isCta) && !isProjects
+  const hasStats = Array.isArray(value?.stats)
+  const hasItems = Array.isArray(value?.items) && !hasStats
+  const hasImage = value?.image_url !== undefined || value?.image !== undefined || value?.position_x !== undefined
+
+  // If section has no editable fields, show note
+  if (!hasBody && !hasStats && !hasItems && !hasImage && !isCta && !isBgConfigurable && !isProjects) {
+    return (
+      <div className="rounded-none border border-dashed border-slate-200 bg-slate-50/50 p-4 text-center dark:border-white/10 dark:bg-slate-950">
+        <p className="text-xs font-bold text-slate-600 dark:text-slate-400">
+          Section này hiển thị dữ liệu mặc định từ hệ thống.
+        </p>
+        <p className="text-[11px] text-slate-400 mt-1">
+          Bạn có thể bấm &quot;Mở Cấu hình JSON & HTML nâng cao&quot; bên dưới để tùy biến chuyên sâu nếu cần.
+        </p>
+      </div>
+    )
+  }
 
   return (
-    <div className="space-y-4 rounded-none border bg-slate-50 p-4 dark:bg-slate-950">
-      <div>
-        <Label className="text-xs font-bold">Props editor</Label>
-        <p className="mt-1 text-xs text-slate-500">Edit nhanh từng field. Object/array vẫn có JSON riêng để can thiệp sâu.</p>
-      </div>
-      {entries.length > 0 && (
-        <div className="grid gap-3 md:grid-cols-2">
-          {entries.map(([key, item]) => (
-            <Field key={key} label={key}>
-              {renderPropControl(item, (nextValue) => updateKey(key, nextValue))}
-            </Field>
-          ))}
+    <div className="space-y-5 rounded-none border border-slate-200 bg-slate-50/70 p-5 dark:border-white/10 dark:bg-slate-950">
+      {/* Projects Grid Search & Filter Controls */}
+      {isProjects && (
+        <div className="space-y-4 border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-slate-900">
+          <div className="flex items-center gap-2 border-b border-slate-200 dark:border-white/10 pb-2">
+            <Filter className="h-4 w-4 text-[#ed1c24]" />
+            <div>
+              <p className="text-xs font-black uppercase text-slate-950 dark:text-white">Cấu hình Bộ lọc & Tìm kiếm Dự án</p>
+              <p className="text-[11px] text-slate-500">Tùy chọn ẩn/hiện thanh tìm kiếm, bộ lọc danh mục và số lượng dự án.</p>
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="flex items-center justify-between border border-slate-100 p-3 bg-slate-50/50 dark:border-white/5 dark:bg-slate-950">
+              <div>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Hiện thanh tìm kiếm</p>
+                <p className="text-[10px] text-slate-400">Ô gõ tìm kiếm tên dự án</p>
+              </div>
+              <Switch
+                checked={value?.show_search !== false && value?.showSearch !== false}
+                onCheckedChange={(checked) => {
+                  updateKey("show_search", checked)
+                  if (value.showSearch !== undefined) updateKey("showSearch", checked)
+                }}
+              />
+            </div>
+
+            <div className="flex items-center justify-between border border-slate-100 p-3 bg-slate-50/50 dark:border-white/5 dark:bg-slate-950">
+              <div>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Hiện bộ lọc danh mục</p>
+                <p className="text-[10px] text-slate-400">Các nút: Marketing, Sales, v.v.</p>
+              </div>
+              <Switch
+                checked={value?.show_categories !== false && value?.showCategories !== false && value?.show_filter !== false}
+                onCheckedChange={(checked) => {
+                  updateKey("show_categories", checked)
+                  if (value.showCategories !== undefined) updateKey("showCategories", checked)
+                }}
+              />
+            </div>
+          </div>
+
+          <Field label="Số lượng dự án hiển thị tối đa (Limit)">
+            <Input
+              type="number"
+              value={value.limit || 6}
+              onChange={(e) => updateKey("limit", Number(e.target.value))}
+              placeholder="6"
+              className="rounded-none text-xs w-full sm:w-48"
+            />
+          </Field>
         </div>
       )}
-      <Field label="Raw JSON">
-        <Textarea
-          className="min-h-[180px] font-mono text-xs rounded-none"
-          value={rawJson}
-          onChange={(event) => {
-            const text = event.target.value
-            setRawJson(text)
-            try {
-              const parsed = JSON.parse(text || "{}")
-              setJsonError("")
-              onChange(parsed)
-            } catch (error: any) {
-              setJsonError(error.message || "JSON không hợp lệ")
-            }
-          }}
+
+      {/* 1. Body / Description Field */}
+      {hasBody && (
+        <div className="space-y-2">
+          <Label className="text-xs font-black uppercase tracking-wide text-slate-800 dark:text-slate-200">
+            Nội dung chi tiết / Mô tả
+          </Label>
+          <Textarea
+            rows={4}
+            value={value.body || value.description || ""}
+            onChange={(e) => {
+              if (value.description !== undefined) {
+                updateKey("description", e.target.value)
+              } else {
+                updateKey("body", e.target.value)
+              }
+            }}
+            className="rounded-none text-xs leading-relaxed border-slate-300 bg-white dark:bg-slate-900 dark:border-white/10"
+            placeholder="Nhập nội dung mô tả..."
+          />
+        </div>
+      )}
+
+      {/* 2. CTA Button & Link Config */}
+      {isCta && (
+        <div className="space-y-3 border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-slate-900">
+          <div className="flex items-center gap-2 border-b border-slate-200 dark:border-white/10 pb-2">
+            <Link2 className="h-4 w-4 text-[#ed1c24]" />
+            <div>
+              <p className="text-xs font-black uppercase text-slate-950 dark:text-white">Cấu hình Nút bấm & Liên kết (CTA Button)</p>
+              <p className="text-[11px] text-slate-500">Tên hiển thị trên nút và đường dẫn khi người dùng nhấp vào.</p>
+            </div>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label="Tên nút bấm (CTA Label)">
+              <Input
+                value={value.buttonLabel || value.button_label || value.button_text || ""}
+                onChange={(e) => {
+                  if (value.button_label !== undefined) {
+                    updateKey("button_label", e.target.value)
+                  } else {
+                    updateKey("buttonLabel", e.target.value)
+                  }
+                }}
+                placeholder="Ví dụ: Đăng ký tư vấn miễn phí"
+                className="rounded-none text-xs font-bold"
+              />
+            </Field>
+            <Field label="Đường dẫn nút bấm (CTA URL)">
+              <Input
+                value={value.buttonUrl || value.button_url || value.button_link || ""}
+                onChange={(e) => {
+                  if (value.button_url !== undefined) {
+                    updateKey("button_url", e.target.value)
+                  } else {
+                    updateKey("buttonUrl", e.target.value)
+                  }
+                }}
+                placeholder="Ví dụ: /lien-he hoặc https://..."
+                className="rounded-none text-xs font-mono"
+              />
+            </Field>
+          </div>
+        </div>
+      )}
+
+      {/* 3. Background Color / Gradient Config */}
+      {isBgConfigurable && (
+        <div className="space-y-3 border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-slate-900">
+          <div className="flex items-center gap-2 border-b border-slate-200 dark:border-white/10 pb-2">
+            <Palette className="h-4 w-4 text-[#ed1c24]" />
+            <div>
+              <p className="text-xs font-black uppercase text-slate-950 dark:text-white">Màu nền Section (Background Color / Gradient)</p>
+              <p className="text-[11px] text-slate-500">Tùy chỉnh màu sắc nền đơn sắc hoặc gradient trải dài.</p>
+            </div>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label="Màu nền / Gradient Bắt đầu (From)">
+              <div className="flex gap-2">
+                <Input
+                  type="color"
+                  value={value.backgroundFrom || value.background_from || value.backgroundColor || value.background_color || "#ed1c24"}
+                  onChange={(e) => {
+                    if (value.background_from !== undefined) {
+                      updateKey("background_from", e.target.value)
+                    } else {
+                      updateKey("backgroundFrom", e.target.value)
+                    }
+                  }}
+                  className="w-14 h-9 p-1 rounded-none cursor-pointer shrink-0 border-slate-300"
+                />
+                <Input
+                  value={value.backgroundFrom || value.background_from || value.backgroundColor || value.background_color || "#ed1c24"}
+                  onChange={(e) => {
+                    if (value.background_from !== undefined) {
+                      updateKey("background_from", e.target.value)
+                    } else {
+                      updateKey("backgroundFrom", e.target.value)
+                    }
+                  }}
+                  className="rounded-none font-mono text-xs"
+                  placeholder="#ed1c24"
+                />
+              </div>
+            </Field>
+
+            <Field label="Màu nền / Gradient Kết thúc (To)">
+              <div className="flex gap-2">
+                <Input
+                  type="color"
+                  value={value.backgroundTo || value.background_to || value.backgroundColor || value.background_color || "#ed1c24"}
+                  onChange={(e) => {
+                    if (value.background_to !== undefined) {
+                      updateKey("background_to", e.target.value)
+                    } else {
+                      updateKey("backgroundTo", e.target.value)
+                    }
+                  }}
+                  className="w-14 h-9 p-1 rounded-none cursor-pointer shrink-0 border-slate-300"
+                />
+                <Input
+                  value={value.backgroundTo || value.background_to || value.backgroundColor || value.background_color || "#ed1c24"}
+                  onChange={(e) => {
+                    if (value.background_to !== undefined) {
+                      updateKey("background_to", e.target.value)
+                    } else {
+                      updateKey("backgroundTo", e.target.value)
+                    }
+                  }}
+                  className="rounded-none font-mono text-xs"
+                  placeholder="#ed1c24"
+                />
+              </div>
+            </Field>
+          </div>
+
+          {/* Live Gradient Preview Strip */}
+          <div
+            className="h-10 w-full flex items-center justify-center text-xs font-bold text-white rounded-none shadow-inner select-none transition-all"
+            style={{
+              background: `linear-gradient(90deg, ${value.backgroundFrom || value.background_from || value.backgroundColor || value.background_color || "#ed1c24"}, ${value.backgroundTo || value.background_to || value.backgroundColor || value.background_color || "#ed1c24"})`,
+            }}
+          >
+            Xem trước màu nền Section
+          </div>
+        </div>
+      )}
+
+      {/* 4. Image Editor with Drag-to-align & Zoom */}
+      {hasImage && (
+        <ImagePositionAndZoomEditor
+          imageUrl={value.image_url || value.image || ""}
+          positionX={value.position_x ?? 50}
+          positionY={value.position_y ?? 50}
+          imageSize={value.image_size ?? 100}
+          onChange={(patch) => onChange({ ...(value || {}), ...patch })}
+          onPickImage={onPickSingleImage}
+          title="Ảnh minh họa Section"
         />
-      </Field>
-      {jsonError && <p className="text-xs font-bold text-red-600">{jsonError}</p>}
+      )}
+
+      {/* 5. Stats Field */}
+      {hasStats && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-white/10">
+            <div>
+              <Label className="text-xs font-black uppercase tracking-wide text-slate-800 dark:text-slate-200">
+                Chỉ số thống kê (Stats)
+              </Label>
+              <p className="text-[11px] text-slate-500">Các khối số liệu nổi bật hiển thị kèm theo section.</p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-none text-[11px] font-black uppercase h-7 border-[#ed1c24] text-[#ed1c24] hover:bg-[#ed1c24] hover:text-white transition"
+              onClick={() => {
+                const current = Array.isArray(value.stats) ? [...value.stats] : []
+                updateKey("stats", [...current, { label: "Nhãn mới", value: "10+" }])
+              }}
+            >
+              <Plus className="mr-1 h-3.5 w-3.5" /> Thêm chỉ số
+            </Button>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {(value.stats || []).map((st: any, idx: number) => (
+              <div
+                key={idx}
+                className="border border-slate-200 bg-white p-3 shadow-2xs dark:border-white/10 dark:bg-slate-900 space-y-2 relative"
+              >
+                <div className="flex justify-between items-center pb-1 border-b border-slate-100 dark:border-white/5">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-[#ed1c24]">
+                    Chỉ số #{idx + 1}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+                    onClick={() => {
+                      const current = Array.isArray(value.stats) ? [...value.stats] : []
+                      updateKey("stats", current.filter((_, i) => i !== idx))
+                    }}
+                    title="Xóa chỉ số"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+
+                <Field label="Số liệu hiển thị">
+                  <Input
+                    value={st.value || ""}
+                    onChange={(e) => {
+                      const current = Array.isArray(value.stats) ? [...value.stats] : []
+                      current[idx] = { ...(current[idx] || {}), value: e.target.value }
+                      updateKey("stats", current)
+                    }}
+                    placeholder="Ví dụ: 50+, 5000+, 10..."
+                    className="h-8 text-xs font-black rounded-none font-mono"
+                  />
+                </Field>
+
+                <Field label="Nhãn mô tả">
+                  <Input
+                    value={st.label || ""}
+                    onChange={(e) => {
+                      const current = Array.isArray(value.stats) ? [...value.stats] : []
+                      current[idx] = { ...(current[idx] || {}), label: e.target.value }
+                      updateKey("stats", current)
+                    }}
+                    placeholder="Ví dụ: Doanh nghiệp, Học viên..."
+                    className="h-8 text-xs rounded-none"
+                  />
+                </Field>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 6. Items Field (if component has items instead of stats) */}
+      {hasItems && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-white/10">
+            <Label className="text-xs font-black uppercase tracking-wide text-slate-800 dark:text-slate-200">
+              Danh sách mục (Items)
+            </Label>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-none text-[11px] font-black uppercase h-7 border-[#ed1c24] text-[#ed1c24] hover:bg-[#ed1c24] hover:text-white"
+              onClick={() => {
+                const current = Array.isArray(value.items) ? [...value.items] : []
+                updateKey("items", [...current, { title: "Mục mới", description: "" }])
+              }}
+            >
+              <Plus className="mr-1 h-3.5 w-3.5" /> Thêm mục
+            </Button>
+          </div>
+
+          <div className="space-y-2">
+            {(value.items || []).map((it: any, idx: number) => (
+              <div key={idx} className="border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-slate-900 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] font-black uppercase text-[#ed1c24]">Mục #{idx + 1}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-red-500 hover:bg-red-50"
+                    onClick={() => {
+                      const current = Array.isArray(value.items) ? [...value.items] : []
+                      updateKey("items", current.filter((_, i) => i !== idx))
+                    }}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+                <Input
+                  value={it.title || ""}
+                  onChange={(e) => {
+                    const current = Array.isArray(value.items) ? [...value.items] : []
+                    current[idx] = { ...(current[idx] || {}), title: e.target.value }
+                    updateKey("items", current)
+                  }}
+                  placeholder="Tiêu đề mục..."
+                  className="h-8 text-xs font-bold rounded-none"
+                />
+                <Textarea
+                  rows={2}
+                  value={it.description || ""}
+                  onChange={(e) => {
+                    const current = Array.isArray(value.items) ? [...value.items] : []
+                    current[idx] = { ...(current[idx] || {}), description: e.target.value }
+                    updateKey("items", current)
+                  }}
+                  placeholder="Mô tả mục..."
+                  className="text-xs rounded-none"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -669,15 +1357,24 @@ function BlockPropsEditor({
   blockIndex,
   onChange,
   onPickImage,
+  onPickSingleImage,
 }: {
   block: PageBlock
   blockIndex: number
   onChange: (value: Record<string, any>) => void
   onPickImage: (imageIndex: number) => void
+  onPickSingleImage?: () => void
 }) {
   const [dragImageIndex, setDragImageIndex] = useState<number | null>(null)
   if (block.component_type !== "image_gallery") {
-    return <PropsEditor value={block.props || {}} onChange={onChange} />
+    return (
+      <PropsEditor
+        value={block.props || {}}
+        onChange={onChange}
+        onPickSingleImage={onPickSingleImage}
+        componentType={block.component_type || block.block_key || ""}
+      />
+    )
   }
 
   const props = block.props || {}
@@ -771,6 +1468,178 @@ function BlockPropsEditor({
   )
 }
 
+function SortableHomeSectionRow({
+  id,
+  section,
+  isSelected,
+  onSelect,
+  onToggleVisible,
+  onDelete,
+}: {
+  id: string
+  section: HomeSection
+  isSelected: boolean
+  onSelect: () => void
+  onToggleVisible: () => void
+  onDelete: () => void
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
+
+  const style: React.CSSProperties = {
+    transform: CSS.Translate.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 50 : 1,
+    position: "relative",
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`mb-2 flex items-center justify-between border bg-white dark:bg-slate-900 transition-colors ${isSelected
+        ? "border-[#ed1c24] bg-red-50/40 shadow-xs dark:border-[#ed1c24] dark:bg-red-950/20"
+        : "border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20"
+        }`}
+    >
+      <div
+        {...attributes}
+        {...listeners}
+        className="cursor-grab active:cursor-grabbing p-2.5 text-slate-400 hover:text-slate-700 dark:hover:text-white touch-none select-none"
+        title="Kéo thả để sắp xếp"
+      >
+        <GripVertical className="h-4 w-4" />
+      </div>
+
+      <button
+        type="button"
+        onClick={onSelect}
+        className="flex-1 py-2 px-1 text-left text-xs font-bold truncate flex flex-col justify-center min-w-0"
+      >
+        <span className={`truncate uppercase font-black text-xs ${isSelected ? "text-[#ed1c24]" : "text-slate-800 dark:text-slate-200"}`}>
+          {section.title || section.section_key}
+        </span>
+        <span className="text-[9px] font-mono text-slate-400 lowercase font-normal truncate">
+          {section.section_key}
+        </span>
+      </button>
+
+      <div className="flex items-center gap-1 pr-1.5">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 rounded-none text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+          onClick={onToggleVisible}
+          title={section.is_visible ? "Đang hiện" : "Đang ẩn"}
+        >
+          {section.is_visible ? <Eye className="h-3.5 w-3.5 text-emerald-600" /> : <EyeOff className="h-3.5 w-3.5 text-slate-300" />}
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 rounded-none text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+          onClick={onDelete}
+          title="Xóa section"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+function SortableBuilderBlockRow({
+  id,
+  block,
+  isSelected,
+  onSelect,
+  onToggleVisible,
+  onDelete,
+  onMoveUp,
+  onMoveDown,
+  isFirst,
+  isLast,
+}: {
+  id: string
+  block: PageBlock
+  isSelected: boolean
+  onSelect: () => void
+  onToggleVisible: () => void
+  onDelete: () => void
+  onMoveUp: () => void
+  onMoveDown: () => void
+  isFirst: boolean
+  isLast: boolean
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
+
+  const style: React.CSSProperties = {
+    transform: CSS.Translate.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 50 : 1,
+    position: "relative",
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`mb-2 flex items-center justify-between border bg-white dark:bg-slate-900 transition-colors ${isSelected
+        ? "border-[#ed1c24] bg-red-50/40 shadow-xs dark:border-[#ed1c24] dark:bg-red-950/20"
+        : "border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20"
+        }`}
+    >
+      <div
+        {...attributes}
+        {...listeners}
+        className="cursor-grab active:cursor-grabbing p-2.5 text-slate-400 hover:text-slate-700 dark:hover:text-white touch-none select-none"
+        title="Kéo thả để sắp xếp"
+      >
+        <GripVertical className="h-4 w-4" />
+      </div>
+
+      <button
+        type="button"
+        onClick={onSelect}
+        className="flex-1 py-2 px-1 text-left text-xs font-bold truncate flex flex-col justify-center min-w-0"
+      >
+        <span className={`truncate uppercase font-black text-xs ${isSelected ? "text-[#ed1c24]" : "text-slate-800 dark:text-slate-200"}`}>
+          {block.title || block.component_type || "Section"}
+        </span>
+        <span className="text-[9px] font-mono text-slate-400 lowercase font-normal truncate">
+          {block.component_type}
+        </span>
+      </button>
+
+      <div className="flex items-center gap-1 pr-1.5">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 rounded-none text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+          onClick={onToggleVisible}
+          title={block.is_visible !== false ? "Đang hiện" : "Đang ẩn"}
+        >
+          {block.is_visible !== false ? <Eye className="h-3.5 w-3.5 text-emerald-600" /> : <EyeOff className="h-3.5 w-3.5 text-slate-300" />}
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 rounded-none text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+          onClick={onDelete}
+          title="Xóa section"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 function SiteContentManager() {
   const [activeTab, setActiveTab] = useState("menu")
   const [navItems, setNavItems] = useState<NavItem[]>(defaultNav)
@@ -785,10 +1654,14 @@ function SiteContentManager() {
   const [builderSlug, setBuilderSlug] = useState("gioi-thieu")
   const [slugRenames, setSlugRenames] = useState<Record<string, string>>({})
   const [selectedSectionKey, setSelectedSectionKey] = useState("hero")
+  const [selectedBlockKey, setSelectedBlockKey] = useState<string | null>(null)
+  const [isTemplateSelectorOpen, setIsTemplateSelectorOpen] = useState(false)
+  const [showBlockAdvancedJson, setShowBlockAdvancedJson] = useState(false)
   const [loadingSettings, setLoadingSettings] = useState<LoadingSettings>(defaultLoading)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [pickerOpen, setPickerOpen] = useState<string | { blockImageIndex: number; imageIndex: number } | null>(null)
+  const [pickerOpen, setPickerOpen] = useState<string | { blockImageIndex: number; imageIndex: number } | { singleBlockIndex: number } | null>(null)
+  const [showAdvancedJson, setShowAdvancedJson] = useState(false)
 
   // Hero Banner states
   const [globalBannerConfig, setGlobalBannerConfig] = useState<any>(defaultBannerConfig)
@@ -810,6 +1683,12 @@ function SiteContentManager() {
       .sort((a, b) => (a.block.sort_order || 0) - (b.block.sort_order || 0)),
     [pageBlocks, builderSlug],
   )
+  const activeBlockItem = useMemo(() => {
+    if (builderBlocks.length === 0) return null
+    const match = builderBlocks.find((item) => item.block.block_key === selectedBlockKey)
+    return match || builderBlocks[0] || null
+  }, [builderBlocks, selectedBlockKey])
+
   const selectedSection = useMemo(() => homeSections.find((section) => section.section_key === selectedSectionKey) || null, [homeSections, selectedSectionKey])
   const builderSlugs = useMemo(() => {
     const navSlugs = defaultNav
@@ -818,12 +1697,62 @@ function SiteContentManager() {
     return [...new Set([...navSlugs, ...pages.map((page) => page.slug), ...pageBlocks.map((block) => block.page_slug)])]
   }, [pages, pageBlocks])
   const orderedHomeSections = useMemo(() => {
-    const validHomeKeys = ["hero", "about_gzv", "projects", "services_three", "about_boxes", "partners", "news", "mentors", "gzvers"]
+    const validHomeKeys = ["hero", "about_gzv", "projects", "services_three", "about_boxes", "partners", "news"]
     return homeSections
       .filter((section) => validHomeKeys.includes(section.section_key))
       .map((section, index) => ({ section, index }))
       .sort((a, b) => (a.section.sort_order || 0) - (b.section.sort_order || 0))
   }, [homeSections])
+
+  const handleHomeDragEnd = (event: any) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const oldIndex = orderedHomeSections.findIndex((item) => item.section.section_key === active.id)
+    const newIndex = orderedHomeSections.findIndex((item) => item.section.section_key === over.id)
+    if (oldIndex === -1 || newIndex === -1) return
+
+    const reordered = arrayMove(orderedHomeSections, oldIndex, newIndex)
+    const updated = [...homeSections]
+
+    reordered.forEach((item, pos) => {
+      const origIdx = updated.findIndex((s) => s.section_key === item.section.section_key)
+      if (origIdx !== -1) {
+        updated[origIdx] = {
+          ...updated[origIdx],
+          sort_order: (pos + 1) * 10,
+        }
+      }
+    })
+
+    setHomeSections(updated)
+  }
+
+  const handleBuilderDragEnd = (event: any) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const oldIndex = builderBlocks.findIndex((b) => b.block.block_key === active.id)
+    const newIndex = builderBlocks.findIndex((b) => b.block.block_key === over.id)
+    if (oldIndex === -1 || newIndex === -1) return
+
+    const reordered = arrayMove(builderBlocks, oldIndex, newIndex)
+    const updatedGlobal = [...pageBlocks]
+
+    reordered.forEach((item, pos) => {
+      const originalIdx = updatedGlobal.findIndex(
+        (b) => b.page_slug === builderSlug && b.block_key === item.block.block_key
+      )
+      if (originalIdx !== -1) {
+        updatedGlobal[originalIdx] = {
+          ...updatedGlobal[originalIdx],
+          sort_order: (pos + 1) * 10,
+        }
+      }
+    })
+
+    setPageBlocks(updatedGlobal)
+  }
 
   useEffect(() => {
     const load = async () => {
@@ -946,15 +1875,29 @@ function SiteContentManager() {
           og_url: headerMeta.og_url || fetchedBranding.og_url || "",
         })
         setTemplates((templatesResult.data || []) as SectionTemplate[])
-        setPageBlocks((blocksResult.data || []) as PageBlock[])
 
-        if (settingsResult.data) {
-          if (settingsResult.data.page_heroes?.global_banner) {
-            setGlobalBannerConfig({ ...defaultBannerConfig, ...settingsResult.data.page_heroes.global_banner })
+        const fetchedBlocks = (blocksResult.data || []) as PageBlock[]
+        const existingSlugs = new Set(fetchedBlocks.map((b) => b.page_slug))
+        const mergedBlocks = [...fetchedBlocks]
+
+        defaultPageBlocks.forEach((defBlock) => {
+          if (!existingSlugs.has(defBlock.page_slug)) {
+            mergedBlocks.push(defBlock)
           }
-          if (typeof settingsResult.data.page_heroes?.sync_all_banners === "boolean") {
-            setSyncAllBanners(settingsResult.data.page_heroes.sync_all_banners)
-          }
+        })
+
+        setPageBlocks(mergedBlocks)
+
+        if (headerMeta.global_banner) {
+          setGlobalBannerConfig({ ...defaultBannerConfig, ...headerMeta.global_banner })
+        } else if (settingsResult.data?.page_heroes?.global_banner) {
+          setGlobalBannerConfig({ ...defaultBannerConfig, ...settingsResult.data.page_heroes.global_banner })
+        }
+
+        if (typeof headerMeta.sync_all_banners === "boolean") {
+          setSyncAllBanners(headerMeta.sync_all_banners)
+        } else if (typeof settingsResult.data?.page_heroes?.sync_all_banners === "boolean") {
+          setSyncAllBanners(settingsResult.data.page_heroes.sync_all_banners)
         }
       } catch (error: any) {
         toast.error(error.message || "Không tải được cấu hình website.")
@@ -1014,39 +1957,59 @@ function SiteContentManager() {
   const saveBannerConfig = async (targetSlug?: string) => {
     try {
       setSaving(true)
-      if (targetSlug && selectedPageObj) {
-        const { error } = await supabase.from("site_pages").upsert([
-          {
-            ...selectedPageObj,
-            slug: selectedPageObj.slug,
-            banner_badge: selectedPageObj.banner_badge,
-            banner_title: selectedPageObj.banner_title,
-            banner_subtitle: selectedPageObj.banner_subtitle,
-            banner_image_url: selectedPageObj.banner_image_url,
-          },
-        ], { onConflict: "slug" })
-        if (error) throw error
-        toast.success(`Đã lưu banner trang ${selectedPageObj.title || selectedPageObj.slug}!`)
-      } else {
-        let existingSettings: any = null
-        try {
-          const res = await supabase.from("site_settings").select("page_heroes").eq("id", 1).maybeSingle()
-          existingSettings = res.data
-        } catch (e) { }
 
-        const pageHeroes = existingSettings?.page_heroes || {}
-        const updatedHeroes = {
-          ...pageHeroes,
-          global_banner: globalBannerConfig,
-          sync_all_banners: syncAllBanners,
-        }
-
-        try {
-          await supabase.from("site_settings").upsert([{ id: 1, page_heroes: updatedHeroes }], { onConflict: "id" })
-        } catch (e) { }
-
-        toast.success("Đã lưu cấu hình Giao diện Banner chung!")
+      // 1. Lưu nội dung các trang (tiêu đề, phụ đề, badge, cover) vào site_pages
+      if (pages.length > 0) {
+        const pagesPayload = pages.map((p) => ({
+          ...p,
+          banner_badge: p.banner_badge || null,
+          banner_title: p.banner_title || p.title || null,
+          banner_subtitle: p.banner_subtitle || p.banner_description || null,
+          banner_image_url: p.banner_image_url || null,
+        }))
+        const { error: pagesErr } = await supabase.from("site_pages").upsert(pagesPayload, { onConflict: "slug" })
+        if (pagesErr) console.warn("Lỗi khi cập nhật site_pages:", pagesErr)
       }
+
+      // 2. Lưu cấu hình Giao diện Banner chung vào site_branding_settings
+      const fetchedBrandingRes = await supabase.from("site_branding_settings").select("*").eq("id", 1).maybeSingle()
+      const currentBranding = fetchedBrandingRes.data || {}
+
+      let headerMeta: any = {}
+      try {
+        if (currentBranding.default_keywords && currentBranding.default_keywords.startsWith("{")) {
+          headerMeta = JSON.parse(currentBranding.default_keywords)
+        }
+      } catch (e) {
+        headerMeta = {}
+      }
+
+      const updatedHeaderMeta = {
+        ...headerMeta,
+        global_banner: globalBannerConfig,
+        sync_all_banners: syncAllBanners,
+      }
+
+      const brandingPayload = {
+        id: 1,
+        site_name: currentBranding.site_name || branding.site_name || "GZV",
+        header_logo_url: currentBranding.header_logo_url !== undefined ? currentBranding.header_logo_url : (branding.header_logo_url || ""),
+        footer_logo_url: currentBranding.footer_logo_url !== undefined ? currentBranding.footer_logo_url : (branding.footer_logo_url || ""),
+        favicon_url: currentBranding.favicon_url || branding.favicon_url || "/logo/favicon.ico",
+        default_title: currentBranding.default_title || branding.default_title || "GZV - The Voice of Genzers",
+        title_template: currentBranding.title_template || branding.title_template || "%s | GZV",
+        default_description: currentBranding.default_description || branding.default_description || "",
+        default_keywords: JSON.stringify(updatedHeaderMeta),
+        og_image_url: currentBranding.og_image_url || branding.og_image_url || "",
+        topbar_email_label: currentBranding.topbar_email_label || branding.topbar_email_label || "gzv.one@gmail.com",
+        topbar_phone_label: currentBranding.topbar_phone_label || branding.topbar_phone_label || "(+84) 329 381 489",
+        topbar_badge_label: currentBranding.topbar_badge_label || branding.topbar_badge_label || "GZV",
+      }
+
+      const { error: brandingErr } = await supabase.from("site_branding_settings").upsert([brandingPayload], { onConflict: "id" })
+      if (brandingErr) throw brandingErr
+
+      toast.success("Đã lưu cấu hình Banner và nội dung các trang thành công!")
     } catch (err: any) {
       toast.error(err.message || "Lỗi khi lưu banner")
     } finally {
@@ -1106,6 +2069,8 @@ function SiteContentManager() {
         og_title: branding.og_title || "",
         og_description: branding.og_description || "",
         og_url: branding.og_url || "",
+        global_banner: globalBannerConfig,
+        sync_all_banners: syncAllBanners,
       }
 
       const brandingPayload = {
@@ -1418,9 +2383,21 @@ function SiteContentManager() {
       setActiveTab("home")
       toast.success("Đã chuyển tới phần chỉnh sửa Section Trang Chủ!")
     } else {
-      const cleanSlug = normalizeSlug(rawPath.replace(/^\//, "")) || "gioi-thieu"
+      let cleanSlug = normalizeSlug(rawPath.replace(/^\//, "")) || "gioi-thieu"
+      if (cleanSlug === "gzvers") cleanSlug = "gzver"
       setBuilderSlug(cleanSlug)
       setSelectedSlug(cleanSlug)
+
+      setPageBlocks((currentBlocks) => {
+        if (!currentBlocks.some((b) => b.page_slug === cleanSlug)) {
+          const defaultsForSlug = defaultPageBlocks.filter((b) => b.page_slug === cleanSlug)
+          if (defaultsForSlug.length > 0) {
+            return [...currentBlocks, ...defaultsForSlug]
+          }
+        }
+        return currentBlocks
+      })
+
       setActiveTab("builder")
       toast.success(`Đã chuyển tới phần chỉnh sửa Section trang /${cleanSlug}!`)
     }
@@ -1452,7 +2429,14 @@ function SiteContentManager() {
     useImage: globalBannerConfig.use_image,
     backgroundImageUrl: selectedPageObj?.banner_image_url || globalBannerConfig.cover_url,
     imagePositionY: globalBannerConfig.imagePositionY || "50%",
+    imageOpacity: globalBannerConfig.image_opacity !== undefined ? globalBannerConfig.image_opacity : 100,
+    imageGrayscale: !!globalBannerConfig.image_grayscale,
     bgColor: globalBannerConfig.bg_color || "#050505",
+    bgFrom: globalBannerConfig.bg_from || globalBannerConfig.bg_color || "#050505",
+    bgTo: globalBannerConfig.bg_to || globalBannerConfig.bg_color || "#ed1c24",
+    overlayEnabled: globalBannerConfig.overlay_enabled !== false,
+    overlayColor: globalBannerConfig.overlay_color || "#050505",
+    overlayOpacity: globalBannerConfig.overlay_opacity !== undefined ? globalBannerConfig.overlay_opacity : 60,
     titleAlignment: globalBannerConfig.titleAlignment || "center",
   }
 
@@ -1632,33 +2616,53 @@ function SiteContentManager() {
               </div>
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
-              <ListCard title="Section trang chủ">
-                <div className="mb-2 grid grid-cols-[1fr_auto] gap-2">
-                  <Button type="button" variant="outline" onClick={addHomeSection} className="w-full rounded-none text-xs font-bold uppercase">
-                    <Plus className="mr-2 h-4 w-4" /> Thêm section
-                  </Button>
-                  <Button type="button" variant="outline" onClick={normalizeHomeSectionOrder} className="rounded-none px-3" title="Chuẩn hóa thứ tự">
-                    <GripVertical className="h-4 w-4" />
-                  </Button>
-                </div>
-                {orderedHomeSections.map(({ section }, position) => (
-                  <div key={section.section_key} className={`mb-2 grid grid-cols-[1fr_auto] border ${selectedSectionKey === section.section_key ? "border-[#ed1c24]" : "border-slate-200 dark:border-white/10"}`}>
-                    <button onClick={() => setSelectedSectionKey(section.section_key)} className={`flex w-full items-center justify-between px-3 py-2 text-left text-xs font-bold transition ${selectedSectionKey === section.section_key ? "bg-[#ed1c24] text-white" : "hover:bg-slate-100 dark:hover:bg-slate-800"}`}>
-                      <span className="line-clamp-2 uppercase">{section.title || section.section_key}</span>
-                      {section.is_visible ? <Eye className="h-4 w-4 shrink-0" /> : <EyeOff className="h-4 w-4 shrink-0 opacity-50" />}
-                    </button>
-                    <div className="flex border-l bg-white dark:bg-slate-950">
-                      <Button type="button" variant="ghost" size="icon" className="h-full w-8 rounded-none" disabled={position === 0} onClick={() => moveHomeSection(section.section_key, -1)} title="Đưa lên">
-                        <ArrowUp className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button type="button" variant="ghost" size="icon" className="h-full w-8 rounded-none" disabled={position === orderedHomeSections.length - 1} onClick={() => moveHomeSection(section.section_key, 1)} title="Đưa xuống">
-                        <ArrowDown className="h-3.5 w-3.5" />
+            <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+              {/* Left Sidebar: List of Home Sections with Drag & Drop */}
+              <div className="space-y-4">
+                <Card className="rounded-none border-slate-200 dark:border-white/10 shadow-xs">
+                  <CardHeader className="p-4 border-b border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-slate-900/50">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
+                        Danh sách Section ({orderedHomeSections.length})
+                      </CardTitle>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="rounded-none text-[11px] font-black uppercase h-7 border-[#ed1c24] text-[#ed1c24] hover:bg-[#ed1c24] hover:text-white transition"
+                        onClick={addHomeSection}
+                      >
+                        <Plus className="mr-1 h-3.5 w-3.5" /> Thêm Section
                       </Button>
                     </div>
-                  </div>
-                ))}
-              </ListCard>
+                  </CardHeader>
+                  <CardContent className="p-3 space-y-2">
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleHomeDragEnd}>
+                      <SortableContext
+                        items={orderedHomeSections.map((item) => item.section.section_key)}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        {orderedHomeSections.map(({ section }) => (
+                          <SortableHomeSectionRow
+                            key={section.section_key}
+                            id={section.section_key}
+                            section={section}
+                            isSelected={selectedSectionKey === section.section_key}
+                            onSelect={() => setSelectedSectionKey(section.section_key)}
+                            onToggleVisible={() => {
+                              const updated = homeSections.map((s) =>
+                                s.section_key === section.section_key ? { ...s, is_visible: !s.is_visible } : s
+                              )
+                              setHomeSections(updated)
+                            }}
+                            onDelete={() => deleteHomeSection(section.section_key)}
+                          />
+                        ))}
+                      </SortableContext>
+                    </DndContext>
+                  </CardContent>
+                </Card>
+              </div>
 
               {selectedSection && (
                 <Card className="rounded-none border-slate-200 dark:border-white/10">
@@ -1673,10 +2677,12 @@ function SiteContentManager() {
                   </CardHeader>
                   <CardContent className="space-y-4 pt-4">
                     <div className="grid gap-4 md:grid-cols-2">
-                      <Field label="Mã Section (Key)"><Input value={selectedSection.section_key} disabled className="rounded-none font-mono text-xs bg-slate-100 dark:bg-slate-800" /></Field>
-                      <SwitchLine label="Bật hiển thị Section trên Trang Chủ" checked={selectedSection.is_visible} onChange={(v) => updateSection({ is_visible: v })} />
-                      <Field label="Tiêu đề chính Section"><Input value={selectedSection.title || ""} onChange={(e) => updateSection({ title: e.target.value })} className="rounded-none font-bold" /></Field>
-                      <Field label="Thứ tự hiển thị (sort_order)"><Input type="number" value={selectedSection.sort_order} onChange={(e) => updateSection({ sort_order: Number(e.target.value) })} className="rounded-none" /></Field>
+                      <Field label="Tiêu đề chính Section">
+                        <Input value={selectedSection.title || ""} onChange={(e) => updateSection({ title: e.target.value })} className="rounded-none font-bold" />
+                      </Field>
+                      <div className="flex items-end">
+                        <SwitchLine label="Bật hiển thị Section trên Trang Chủ" checked={selectedSection.is_visible} onChange={(v) => updateSection({ is_visible: v })} />
+                      </div>
                       {(selectedSection.section_key === "hero" || selectedSection.section_key === "about_gzv") && (
                         <>
                           <Field label="Tên nút bấm (CTA Label)"><Input value={selectedSection.button_label || ""} onChange={(e) => updateSection({ button_label: e.target.value })} placeholder="Ví dụ: Xem chi tiết" className="rounded-none" /></Field>
@@ -1703,8 +2709,8 @@ function SiteContentManager() {
                         <div className="flex items-center gap-2 border-b border-slate-200 dark:border-white/10 pb-2">
                           <Video className="h-5 w-5 text-[#ed1c24]" />
                           <div>
-                            <p className="text-sm font-black uppercase text-slate-950 dark:text-white">Cấu hình Hero Video & Banner</p>
-                            <p className="text-xs text-slate-500">Video giới thiệu, Poster và thông số ấn tượng trên màn hình đầu trang.</p>
+                            <p className="text-sm font-black uppercase text-slate-950 dark:text-white">Cấu hình Video Banner</p>
+                            <p className="text-xs text-slate-500">Video giới thiệu hiển thị trên màn hình đầu trang.</p>
                           </div>
                         </div>
                         <Field label="Video URL (mp4, webm hoặc YouTube/Vimeo)">
@@ -1720,88 +2726,6 @@ function SiteContentManager() {
                             </Button>
                           </div>
                         </Field>
-                        <Field label="Poster ảnh đại diện Video">
-                          <div className="flex gap-2">
-                            <Input
-                              value={selectedSection.settings?.poster_url || ""}
-                              onChange={(e) => updateSectionSettings({ poster_url: e.target.value })}
-                              placeholder="/og-image.jpg"
-                              className="rounded-none font-mono text-xs"
-                            />
-                            <Button type="button" variant="outline" className="rounded-none shrink-0" onClick={() => setPickerOpen("heroPoster")}>
-                              <ImageIcon className="mr-2 h-4 w-4" /> Chọn ảnh
-                            </Button>
-                          </div>
-                        </Field>
-                        {selectedSection.settings?.poster_url && (
-                          <div className="w-48 h-28 border border-slate-200 overflow-hidden bg-black">
-                            <img src={selectedSection.settings.poster_url} alt="Poster preview" className="w-full h-full object-cover" />
-                          </div>
-                        )}
-
-                        {/* Hero Stats */}
-                        <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-white/10">
-                          <div className="flex items-center justify-between">
-                            <p className="text-xs font-black uppercase">Chỉ số thống kê (Stats):</p>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              className="rounded-none text-xs h-7"
-                              onClick={() => {
-                                const currentStats = Array.isArray(selectedSection.settings?.stats) ? [...selectedSection.settings.stats] : []
-                                updateSectionSettings({ stats: [...currentStats, { value: "10+", label: "Chỉ số mới" }] })
-                              }}
-                            >
-                              <Plus className="h-3.5 w-3.5 mr-1" /> Thêm chỉ số
-                            </Button>
-                          </div>
-                          <div className="grid gap-2 sm:grid-cols-3">
-                            {(Array.isArray(selectedSection.settings?.stats) ? selectedSection.settings.stats : [
-                              { value: "10+", label: "Dự án tiêu biểu" },
-                              { value: "5000+", label: "Học viên kết nối" },
-                              { value: "50+", label: "Đối tác đồng hành" }
-                            ]).map((st: any, sIdx: number) => (
-                              <div key={sIdx} className="border border-slate-200 bg-white p-2 dark:border-white/10 dark:bg-slate-900 space-y-1.5 relative">
-                                <div className="flex justify-between items-center">
-                                  <span className="text-[10px] font-bold text-slate-400">#{sIdx + 1}</span>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-5 w-5 text-red-500 hover:bg-red-50"
-                                    onClick={() => {
-                                      const currentStats = Array.isArray(selectedSection.settings?.stats) ? [...selectedSection.settings.stats] : []
-                                      updateSectionSettings({ stats: currentStats.filter((_, idx) => idx !== sIdx) })
-                                    }}
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
-                                </div>
-                                <Input
-                                  value={st.value || ""}
-                                  onChange={(e) => {
-                                    const currentStats = Array.isArray(selectedSection.settings?.stats) ? [...selectedSection.settings.stats] : []
-                                    currentStats[sIdx] = { ...(currentStats[sIdx] || {}), value: e.target.value }
-                                    updateSectionSettings({ stats: currentStats })
-                                  }}
-                                  placeholder="Số liệu: 10+"
-                                  className="h-7 text-xs font-black rounded-none"
-                                />
-                                <Input
-                                  value={st.label || ""}
-                                  onChange={(e) => {
-                                    const currentStats = Array.isArray(selectedSection.settings?.stats) ? [...selectedSection.settings.stats] : []
-                                    currentStats[sIdx] = { ...(currentStats[sIdx] || {}), label: e.target.value }
-                                    updateSectionSettings({ stats: currentStats })
-                                  }}
-                                  placeholder="Nhãn: Dự án"
-                                  className="h-7 text-xs rounded-none"
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
                       </div>
                     )}
 
@@ -1828,8 +2752,96 @@ function SiteContentManager() {
                             </Button>
                           </div>
                         </Field>
-                        <div className="grid gap-3 sm:grid-cols-3">
-                          <Field label="Vị trí ngang X (%)">
+                        {/* Interactive Drag & Drop / Click Focal Point Alignment */}
+                        {selectedSection.settings?.image_url && (
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
+                              <span className="flex items-center gap-1.5">
+                                <Move className="h-3.5 w-3.5 text-[#ed1c24]" /> Kéo thả / Nhấp chuột vào ảnh để căn chỉnh trọng tâm:
+                              </span>
+                              <span className="font-mono text-[11px] text-[#ed1c24] font-black">
+                                X: {selectedSection.settings?.position_x ?? 50}% | Y: {selectedSection.settings?.position_y ?? 50}%
+                              </span>
+                            </div>
+
+                            <div
+                              className="relative h-64 w-full cursor-crosshair overflow-hidden border-2 border-dashed border-slate-300 bg-slate-100 select-none dark:border-white/20 dark:bg-slate-900 group"
+                              onMouseDown={(e) => {
+                                const rect = e.currentTarget.getBoundingClientRect()
+                                const updateCoords = (clientX: number, clientY: number) => {
+                                  const x = Math.max(0, Math.min(100, Math.round(((clientX - rect.left) / rect.width) * 100)))
+                                  const y = Math.max(0, Math.min(100, Math.round(((clientY - rect.top) / rect.height) * 100)))
+                                  updateSectionSettings({ position_x: x, position_y: y })
+                                }
+                                updateCoords(e.clientX, e.clientY)
+
+                                const handleMouseMove = (moveEvent: MouseEvent) => {
+                                  updateCoords(moveEvent.clientX, moveEvent.clientY)
+                                }
+                                const handleMouseUp = () => {
+                                  window.removeEventListener("mousemove", handleMouseMove)
+                                  window.removeEventListener("mouseup", handleMouseUp)
+                                }
+                                window.addEventListener("mousemove", handleMouseMove)
+                                window.addEventListener("mouseup", handleMouseUp)
+                              }}
+                            >
+                              <img
+                                src={selectedSection.settings.image_url}
+                                alt="About preview"
+                                className="pointer-events-none h-full w-full object-cover select-none"
+                                style={{
+                                  objectPosition: `${selectedSection.settings?.position_x ?? 50}% ${selectedSection.settings?.position_y ?? 50}%`,
+                                  transform: `scale(${(selectedSection.settings?.image_size ?? 100) / 100})`,
+                                }}
+                              />
+
+                              {/* Crosshair Target Indicator */}
+                              <div
+                                className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
+                                style={{
+                                  left: `${selectedSection.settings?.position_x ?? 50}%`,
+                                  top: `${selectedSection.settings?.position_y ?? 50}%`,
+                                }}
+                              >
+                                <div className="h-7 w-7 rounded-full border-2 border-[#ed1c24] bg-white/40 shadow-[0_0_10px_rgba(237,28,36,0.8)]" />
+                                <div className="absolute h-2 w-2 rounded-full bg-[#ed1c24]" />
+                              </div>
+
+                              <div className="absolute bottom-2 left-2 rounded bg-black/75 px-2 py-1 text-[10px] font-bold text-white backdrop-blur">
+                                🖱️ Kéo hoặc nhấp chuột để di chuyển góc nhìn
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Zoom Slider Control */}
+                        <div className="space-y-1.5 rounded border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-slate-900">
+                          <div className="flex items-center justify-between text-xs font-bold">
+                            <span className="flex items-center gap-1.5">
+                              <ZoomIn className="h-3.5 w-3.5 text-[#ed1c24]" /> Thanh phóng to / thu nhỏ ảnh (Zoom):
+                            </span>
+                            <span className="font-mono text-[#ed1c24] text-xs font-black">
+                              {selectedSection.settings?.image_size ?? 100}%
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-bold text-slate-400">50%</span>
+                            <input
+                              type="range"
+                              min="50"
+                              max="200"
+                              step="1"
+                              value={selectedSection.settings?.image_size ?? 100}
+                              onChange={(e) => updateSectionSettings({ image_size: Number(e.target.value) })}
+                              className="h-2 w-full cursor-pointer accent-[#ed1c24]"
+                            />
+                            <span className="text-[10px] font-bold text-slate-400">200%</span>
+                          </div>
+                        </div>
+
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <Field label="Tọa độ ngang X (%)">
                             <Input
                               type="number"
                               min={0}
@@ -1839,7 +2851,7 @@ function SiteContentManager() {
                               className="rounded-none text-xs"
                             />
                           </Field>
-                          <Field label="Vị trí dọc Y (%)">
+                          <Field label="Tọa độ dọc Y (%)">
                             <Input
                               type="number"
                               min={0}
@@ -1849,30 +2861,7 @@ function SiteContentManager() {
                               className="rounded-none text-xs"
                             />
                           </Field>
-                          <Field label="Tỉ lệ phóng to (%)">
-                            <Input
-                              type="number"
-                              min={50}
-                              max={200}
-                              value={selectedSection.settings?.image_size ?? 100}
-                              onChange={(e) => updateSectionSettings({ image_size: Number(e.target.value) })}
-                              className="rounded-none text-xs"
-                            />
-                          </Field>
                         </div>
-                        {selectedSection.settings?.image_url && (
-                          <div className="relative h-44 w-full border border-slate-200 overflow-hidden bg-slate-200 dark:bg-slate-900">
-                            <img
-                              src={selectedSection.settings.image_url}
-                              alt="About preview"
-                              className="h-full w-full object-cover"
-                              style={{
-                                objectPosition: `${selectedSection.settings?.position_x ?? 50}% ${selectedSection.settings?.position_y ?? 50}%`,
-                                transform: `scale(${(selectedSection.settings?.image_size ?? 100) / 100})`,
-                              }}
-                            />
-                          </div>
-                        )}
                       </div>
                     )}
 
@@ -1963,83 +2952,158 @@ function SiteContentManager() {
                       </div>
                     )}
 
-                    {/* 4. ABOUT BOXES CONTROLS */}
-                    {selectedSection.section_key === "about_boxes" && (
-                      <div className="space-y-4 border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
-                        <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-2">
+                    {/* 4. PROJECTS CONTROLS ON HOME */}
+                    {selectedSection.section_key === "projects" && (
+                      <div className="space-y-4 border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-slate-900">
+                        <div className="flex items-center gap-2 border-b border-slate-200 dark:border-white/10 pb-2">
+                          <Filter className="h-4 w-4 text-[#ed1c24]" />
                           <div>
-                            <p className="text-sm font-black uppercase text-slate-950 dark:text-white">Khối Sứ Mệnh, Tầm Nhìn & Giá Trị</p>
-                            <p className="text-xs text-slate-500">Chỉnh sửa các khối định hướng chiến lược của GZV.</p>
+                            <p className="text-xs font-black uppercase text-slate-950 dark:text-white">Cấu hình Bộ lọc & Tìm kiếm Dự án</p>
+                            <p className="text-[11px] text-slate-500">Tùy chọn ẩn/hiện thanh tìm kiếm, bộ lọc danh mục và số lượng dự án trên Trang Chủ.</p>
                           </div>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="rounded-none text-xs h-7"
-                            onClick={() => {
-                              const currentItems = Array.isArray(selectedSection.settings?.items) ? [...selectedSection.settings.items] : []
-                              updateSectionSettings({
-                                items: [...currentItems, { title: "GIÁ TRỊ MỚI", description: "Mô tả giá trị cốt lõi.", icon: "award" }]
-                              })
+                        </div>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <div className="flex items-center justify-between border border-slate-100 p-3 bg-slate-50/50 dark:border-white/5 dark:bg-slate-950">
+                            <div>
+                              <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Hiện thanh tìm kiếm</p>
+                              <p className="text-[10px] text-slate-400">Ô gõ tìm kiếm tên dự án</p>
+                            </div>
+                            <Switch
+                              checked={selectedSection.settings?.show_search !== false && selectedSection.settings?.showSearch !== false}
+                              onCheckedChange={(checked) => updateSectionSettings({ show_search: checked, showSearch: checked })}
+                            />
+                          </div>
+
+                          <div className="flex items-center justify-between border border-slate-100 p-3 bg-slate-50/50 dark:border-white/5 dark:bg-slate-950">
+                            <div>
+                              <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Hiện bộ lọc danh mục</p>
+                              <p className="text-[10px] text-slate-400">Các nút: Marketing, Sales, v.v.</p>
+                            </div>
+                            <Switch
+                              checked={selectedSection.settings?.show_categories !== false && selectedSection.settings?.showCategories !== false && selectedSection.settings?.show_filter !== false}
+                              onCheckedChange={(checked) => updateSectionSettings({ show_categories: checked, showCategories: checked, show_filter: checked })}
+                            />
+                          </div>
+                        </div>
+
+                        <Field label="Số lượng dự án hiển thị (Limit)">
+                          <Input
+                            type="number"
+                            value={selectedSection.settings?.limit ?? 6}
+                            onChange={(e) => updateSectionSettings({ limit: Number(e.target.value) })}
+                            placeholder="6"
+                            className="rounded-none text-xs w-full sm:w-48"
+                          />
+                        </Field>
+                      </div>
+                    )}
+
+                    {/* 5. CTA SECTION CONTROLS ON HOME */}
+                    {(selectedSection.section_key === "cta" || selectedSection.section_key === "cta_band") && (
+                      <div className="space-y-4">
+                        <div className="space-y-3 border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-slate-900">
+                          <div className="flex items-center gap-2 border-b border-slate-200 dark:border-white/10 pb-2">
+                            <Link2 className="h-4 w-4 text-[#ed1c24]" />
+                            <div>
+                              <p className="text-xs font-black uppercase text-slate-950 dark:text-white">Cấu hình Nút bấm & Liên kết (CTA Button)</p>
+                              <p className="text-[11px] text-slate-500">Tên hiển thị trên nút và đường dẫn khi người dùng nhấp vào.</p>
+                            </div>
+                          </div>
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            <Field label="Tên nút bấm (CTA Label)">
+                              <Input
+                                value={selectedSection.settings?.button_label || selectedSection.settings?.buttonLabel || ""}
+                                onChange={(e) => updateSectionSettings({ button_label: e.target.value, buttonLabel: e.target.value })}
+                                placeholder="Ví dụ: Đăng ký tư vấn miễn phí"
+                                className="rounded-none text-xs font-bold"
+                              />
+                            </Field>
+                            <Field label="Đường dẫn nút bấm (CTA URL)">
+                              <Input
+                                value={selectedSection.settings?.button_url || selectedSection.settings?.buttonUrl || ""}
+                                onChange={(e) => updateSectionSettings({ button_url: e.target.value, buttonUrl: e.target.value })}
+                                placeholder="Ví dụ: /lien-he hoặc https://..."
+                                className="rounded-none text-xs font-mono"
+                              />
+                            </Field>
+                          </div>
+                        </div>
+
+                        <div className="space-y-3 border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-slate-900">
+                          <div className="flex items-center gap-2 border-b border-slate-200 dark:border-white/10 pb-2">
+                            <Palette className="h-4 w-4 text-[#ed1c24]" />
+                            <div>
+                              <p className="text-xs font-black uppercase text-slate-950 dark:text-white">Màu nền Section (Background Color / Gradient)</p>
+                              <p className="text-[11px] text-slate-500">Tùy chỉnh màu sắc nền đơn sắc hoặc gradient trải dài.</p>
+                            </div>
+                          </div>
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            <Field label="Màu nền / Gradient Bắt đầu (From)">
+                              <div className="flex gap-2">
+                                <Input
+                                  type="color"
+                                  value={selectedSection.settings?.background_from || selectedSection.settings?.backgroundFrom || "#ed1c24"}
+                                  onChange={(e) => updateSectionSettings({ background_from: e.target.value, backgroundFrom: e.target.value })}
+                                  className="w-14 h-9 p-1 rounded-none cursor-pointer shrink-0 border-slate-300"
+                                />
+                                <Input
+                                  value={selectedSection.settings?.background_from || selectedSection.settings?.backgroundFrom || "#ed1c24"}
+                                  onChange={(e) => updateSectionSettings({ background_from: e.target.value, backgroundFrom: e.target.value })}
+                                  className="rounded-none font-mono text-xs"
+                                  placeholder="#ed1c24"
+                                />
+                              </div>
+                            </Field>
+
+                            <Field label="Màu nền / Gradient Kết thúc (To)">
+                              <div className="flex gap-2">
+                                <Input
+                                  type="color"
+                                  value={selectedSection.settings?.background_to || selectedSection.settings?.backgroundTo || "#ed1c24"}
+                                  onChange={(e) => updateSectionSettings({ background_to: e.target.value, backgroundTo: e.target.value })}
+                                  className="w-14 h-9 p-1 rounded-none cursor-pointer shrink-0 border-slate-300"
+                                />
+                                <Input
+                                  value={selectedSection.settings?.background_to || selectedSection.settings?.backgroundTo || "#ed1c24"}
+                                  onChange={(e) => updateSectionSettings({ background_to: e.target.value, backgroundTo: e.target.value })}
+                                  className="rounded-none font-mono text-xs"
+                                  placeholder="#ed1c24"
+                                />
+                              </div>
+                            </Field>
+                          </div>
+
+                          <div
+                            className="h-10 w-full flex items-center justify-center text-xs font-bold text-white rounded-none shadow-inner select-none transition-all"
+                            style={{
+                              background: `linear-gradient(90deg, ${selectedSection.settings?.background_from || selectedSection.settings?.backgroundFrom || "#ed1c24"}, ${selectedSection.settings?.background_to || selectedSection.settings?.backgroundTo || "#ed1c24"})`,
                             }}
                           >
-                            <Plus className="h-3.5 w-3.5 mr-1" /> Thêm khối
-                          </Button>
-                        </div>
-                        <div className="space-y-3">
-                          {(Array.isArray(selectedSection.settings?.items) ? selectedSection.settings.items : [
-                            { title: "SỨ MỆNH", description: "Truyền cảm hứng và khai phóng tiềm năng của thế hệ trẻ Việt Nam.", icon: "target" },
-                            { title: "TẦM NHÌN", description: "Trở thành hệ sinh thái đào tạo & phát triển tư duy hàng đầu.", icon: "eye" },
-                            { title: "GIÁ TRỊ", description: "Chân thật - Đột phá - Bền vững - Đồng hành.", icon: "award" }
-                          ]).map((bx: any, bIdx: number) => (
-                            <div key={bIdx} className="border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-slate-900 space-y-2 relative">
-                              <div className="flex justify-between items-center">
-                                <span className="text-xs font-bold text-[#ed1c24]">Khối #{bIdx + 1}</span>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-6 w-6 text-red-500 hover:bg-red-50"
-                                  onClick={() => {
-                                    const currentItems = Array.isArray(selectedSection.settings?.items) ? [...selectedSection.settings.items] : []
-                                    updateSectionSettings({ items: currentItems.filter((_, idx) => idx !== bIdx) })
-                                  }}
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
-                              </div>
-                              <Field label="Tiêu đề khối">
-                                <Input
-                                  value={bx.title || ""}
-                                  onChange={(e) => {
-                                    const currentItems = Array.isArray(selectedSection.settings?.items) ? [...selectedSection.settings.items] : []
-                                    currentItems[bIdx] = { ...(currentItems[bIdx] || {}), title: e.target.value }
-                                    updateSectionSettings({ items: currentItems })
-                                  }}
-                                  className="rounded-none text-xs font-bold"
-                                />
-                              </Field>
-                              <Field label="Mô tả chi tiết">
-                                <Textarea
-                                  rows={2}
-                                  value={bx.description || ""}
-                                  onChange={(e) => {
-                                    const currentItems = Array.isArray(selectedSection.settings?.items) ? [...selectedSection.settings.items] : []
-                                    currentItems[bIdx] = { ...(currentItems[bIdx] || {}), description: e.target.value }
-                                    updateSectionSettings({ items: currentItems })
-                                  }}
-                                  className="rounded-none text-xs"
-                                />
-                              </Field>
-                            </div>
-                          ))}
+                            Xem trước màu nền Section
+                          </div>
                         </div>
                       </div>
                     )}
 
-                    <Field label="Cấu hình JSON nâng cao (Settings)">
-                      <PropsEditor value={selectedSection.settings || {}} onChange={(settings) => updateSection({ settings })} />
-                    </Field>
+                    {selectedSection.section_key !== "hero" && (
+                      <div className="pt-2 border-t border-slate-200 dark:border-white/10 space-y-3">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowAdvancedJson(!showAdvancedJson)}
+                          className="rounded-none text-xs font-bold uppercase border-slate-300 dark:border-white/10 flex items-center gap-1.5"
+                        >
+                          <Code2 className="h-4 w-4 text-[#ed1c24]" />
+                          {showAdvancedJson ? "▲ Thu gọn cấu hình JSON nâng cao" : "▼ Mở cấu hình JSON nâng cao (Settings)"}
+                        </Button>
+                        {showAdvancedJson && (
+                          <Field label="Cấu hình JSON nâng cao (Raw JSON)">
+                            <RawJsonEditor value={selectedSection.settings || {}} onChange={(settings) => updateSection({ settings })} />
+                          </Field>
+                        )}
+                      </div>
+                    )}
 
                     <Button onClick={saveHomeSections} disabled={saving} className="gap-2 rounded-none bg-[#ed1c24] hover:bg-[#c91218] text-white uppercase text-xs font-black w-full sm:w-auto">
                       <Save className="h-4 w-4" /> {saving ? "Đang lưu..." : "Lưu tất cả thay đổi Section"}
@@ -2052,9 +3116,9 @@ function SiteContentManager() {
 
           {/* TAB 3: PAGE BUILDER & SECTIONS TỪNG TRANG */}
           <TabsContent value="builder" className="space-y-6">
-            {/* Top Bar with Page Switcher & Navigation */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 border border-slate-200 shadow-xs dark:border-white/10 dark:bg-slate-900">
-              <div className="flex items-center gap-3 flex-wrap">
+            {/* Top Bar with Navigation & Save */}
+            <div className="flex items-center justify-between gap-4 bg-white p-3.5 border border-slate-200 shadow-xs dark:border-white/10 dark:bg-slate-900">
+              <div className="flex items-center gap-3">
                 <Button
                   type="button"
                   variant="outline"
@@ -2064,33 +3128,33 @@ function SiteContentManager() {
                 >
                   ← Quay lại Menu
                 </Button>
-                <div className="h-4 w-[1px] bg-slate-200 dark:bg-white/10 hidden sm:block" />
-
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-black text-[#ed1c24] uppercase tracking-wide">
-                    Đang sửa Section:
-                  </span>
-                  <Select value={builderSlug} onValueChange={(val) => setBuilderSlug(val)}>
-                    <SelectTrigger className="h-8 w-44 rounded-none font-bold text-xs border-slate-300 dark:border-white/10">
-                      <SelectValue placeholder="Chọn trang..." />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-none">
-                      {builderSlugs.map((slug) => (
-                        <SelectItem key={slug} value={slug} className="text-xs font-bold uppercase">
-                          /{slug}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <div className="h-4 w-[1px] bg-slate-200 dark:bg-white/10" />
+                <span className="text-xs font-black text-[#ed1c24] uppercase tracking-wide">
+                  Đang chỉnh sửa: Section trang /{builderSlug}
+                </span>
               </div>
 
-              <div className="flex items-center gap-2 flex-wrap">
-                <Button asChild variant="outline" size="sm" className="rounded-none text-xs font-bold">
-                  <a href="/admin/images" target="_blank"><ImageIcon className="mr-1.5 h-3.5 w-3.5 text-[#ed1c24]" /> Media</a>
-                </Button>
-                <Button asChild variant="outline" size="sm" className="rounded-none text-xs font-bold">
-                  <a href={`https://www.gzv.one/${builderSlug}`} target="_blank" rel="noreferrer"><Eye className="mr-1.5 h-3.5 w-3.5 text-emerald-600" /> Xem trang</a>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const defaultsForSlug = defaultPageBlocks.filter((b) => b.page_slug === builderSlug)
+                    if (defaultsForSlug.length > 0) {
+                      setPageBlocks((current) => [
+                        ...current.filter((b) => b.page_slug !== builderSlug),
+                        ...defaultsForSlug,
+                      ])
+                      toast.success(`Đã nạp lại ${defaultsForSlug.length} section mẫu cho trang /${builderSlug}!`)
+                    } else {
+                      toast.info(`Trang /${builderSlug} chưa có mẫu mặc định sẵn.`)
+                    }
+                  }}
+                  className="rounded-none border-slate-300 text-xs font-black uppercase text-slate-800 hover:bg-slate-100 dark:border-white/10 dark:text-white"
+                  title="Nạp lại các section mẫu mặc định cho trang này"
+                >
+                  <RotateCcw className="mr-1.5 h-3.5 w-3.5 text-[#ed1c24]" /> Nạp Section mẫu
                 </Button>
                 <Button
                   type="button"
@@ -2099,146 +3163,257 @@ function SiteContentManager() {
                   disabled={saving}
                   className="rounded-none bg-[#ed1c24] hover:bg-[#c91218] text-white text-xs font-black uppercase"
                 >
-                  <Save className="mr-1.5 h-4 w-4" /> {saving ? "Đang lưu..." : `Lưu Layout /${builderSlug}`}
+                  <Save className="mr-1.5 h-4 w-4" /> {saving ? "Đang lưu..." : "Lưu"}
                 </Button>
               </div>
             </div>
 
-            {/* Standalone Dedicated Section Editor Card for Current Page */}
-            <Card className="rounded-none border-slate-200 dark:border-white/10 shadow-xs">
-              <CardHeader className="border-b border-slate-200 dark:border-white/10 pb-4 bg-slate-50/50 dark:bg-slate-900/50">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
-                    <CardTitle className="text-lg font-black uppercase flex items-center gap-2">
-                      <span>Cấu hình Section & Block: <span className="text-[#ed1c24]">/{builderSlug}</span></span>
-                      {builderPage?.title && (
-                        <Badge variant="outline" className="rounded-none font-bold text-[10px] uppercase border-[#ed1c24] text-[#ed1c24]">
-                          {builderPage.title}
-                        </Badge>
-                      )}
-                    </CardTitle>
-                    <CardDescription className="text-xs font-semibold mt-1">
-                      Các section và block dưới đây được thiết kế hoàn toàn riêng biệt cho trang <strong>/{builderSlug}</strong>.
-                    </CardDescription>
-                  </div>
-
-                  <Button type="button" variant="outline" size="sm" onClick={addPage} className="rounded-none text-xs font-bold uppercase shrink-0">
-                    <Plus className="mr-1.5 h-3.5 w-3.5 text-[#ed1c24]" /> Thêm trang mới
-                  </Button>
-                </div>
-              </CardHeader>
-
-              <CardContent className="space-y-6 pt-6">
-                {/* 1. Page Specific Config */}
-                <div className="border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-slate-950">
-                  <div className="mb-3 flex items-center gap-2">
-                    <Layers className="h-4 w-4 text-[#ed1c24]" />
-                    <p className="font-black text-slate-900 dark:text-white uppercase text-xs">Cấu hình trang public (/{builderSlug})</p>
-                  </div>
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <Field label="Slug đường dẫn">
-                      <Input value={builderSlug} onChange={(event) => renameBuilderSlug(event.target.value)} placeholder="vi-du-slug" className="rounded-none font-mono text-xs" />
-                    </Field>
-                    <SwitchLine label="Hiện trang công khai" checked={builderPage?.is_visible !== false} onChange={(value) => updateBuilderPage({ is_visible: value })} />
-                    <Field label="Tên hiển thị trang"><Input value={builderPage?.title || ""} onChange={(event) => updateBuilderPage({ title: event.target.value })} className="rounded-none text-xs font-bold" /></Field>
-                    <Field label="Tiêu đề Thẻ Tab / SEO"><Input value={(builderPage as any)?.seo_title || ""} onChange={(event) => updateBuilderPage({ seo_title: event.target.value } as any)} className="rounded-none text-xs" /></Field>
-                  </div>
-                </div>
-
-                {/* 2. Available Block Templates Picker */}
-                <div className="space-y-3">
-                  <Label className="text-xs font-black uppercase text-slate-900 dark:text-white flex items-center gap-1.5">
-                    <Plus className="h-4 w-4 text-[#ed1c24]" /> Thêm Section / Block mới vào trang /{builderSlug}
-                  </Label>
-                  <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
-                    {(templates.length ? templates : fallbackTemplates).map((template) => (
+            {/* Sidebar + Content 2-Column Layout */}
+            <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+              {/* Left Sidebar: List of Sections / Blocks with Drag & Drop */}
+              <div className="space-y-4">
+                <Card className="rounded-none border-slate-200 dark:border-white/10 shadow-xs">
+                  <CardHeader className="p-4 border-b border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-slate-900/50">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
+                        Danh sách Section ({builderBlocks.length})
+                      </CardTitle>
                       <Button
-                        key={template.template_key}
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="h-auto justify-start rounded-none border-slate-300 p-3 text-left font-bold uppercase text-[11px] hover:border-[#ed1c24] hover:bg-red-50/40 hover:text-[#ed1c24] dark:border-white/10 dark:hover:bg-red-950/20"
-                        onClick={() => setPageBlocks((rows) => [...rows, {
-                          page_slug: builderSlug,
-                          block_key: `${template.template_key}-${Date.now()}`,
-                          component_type: template.component_type,
-                          title: template.name,
-                          props: template.default_props || {},
-                          content_html: "",
-                          sort_order: rows.filter((r) => r.page_slug === builderSlug).length * 10 + 10,
-                          is_visible: true,
-                          responsive: {},
-                          seo: {},
-                        }])}
+                        className="rounded-none text-[11px] font-black uppercase h-7 border-[#ed1c24] text-[#ed1c24] hover:bg-[#ed1c24] hover:text-white transition"
+                        onClick={() => setIsTemplateSelectorOpen(!isTemplateSelectorOpen)}
                       >
-                        <Plus className="mr-2 h-4 w-4 text-[#ed1c24] shrink-0" />
-                        <div>
-                          <div>{template.name}</div>
-                          <div className="text-[9px] font-mono text-slate-400 font-normal lowercase">{template.component_type}</div>
-                        </div>
+                        <Plus className="mr-1 h-3.5 w-3.5" /> Thêm Section
                       </Button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 3. Page Blocks List */}
-                <div className="space-y-4 pt-2">
-                  <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-2">
-                    <Label className="text-xs font-black uppercase text-slate-900 dark:text-white">
-                      Danh sách Section & Block đang có trên trang /{builderSlug} ({builderBlocks.length})
-                    </Label>
-                    <span className="text-[11px] font-semibold text-slate-400">Kéo / dùng mũi tên để đổi thứ tự</span>
-                  </div>
-
-                  {builderBlocks.length === 0 && (
-                    <div className="p-10 text-center space-y-2 border border-dashed border-slate-300 dark:border-white/10 bg-slate-50/50 dark:bg-slate-950/50">
-                      <Layers className="h-8 w-8 text-slate-300 mx-auto" />
-                      <p className="text-xs font-bold text-slate-600 dark:text-slate-400">Chưa có Section nào trên trang /{builderSlug}</p>
-                      <p className="text-[11px] text-slate-400">Bấm các mẫu Template ở trên để thêm khối nội dung mới cho trang này.</p>
                     </div>
-                  )}
-
-                  {builderBlocks.map(({ block, index }, position) => (
-                    <div key={`${block.page_slug}-${block.block_key}-${index}`} className="space-y-3 border border-slate-200 bg-white p-4 shadow-xs dark:border-white/10 dark:bg-slate-900">
-                      <div className="grid gap-3 md:grid-cols-[1fr_1fr_1fr_0.5fr_auto]">
-                        <Field label="Slug trang"><Input value={block.page_slug} onChange={(e) => updateBlock(index, { page_slug: e.target.value })} className="rounded-none font-mono text-xs" disabled /></Field>
-                        <Field label="Block key"><Input value={block.block_key} onChange={(e) => updateBlock(index, { block_key: e.target.value })} className="rounded-none font-mono text-xs" /></Field>
-                        <Field label="Loại Component"><Input value={block.component_type} onChange={(e) => updateBlock(index, { component_type: e.target.value })} className="rounded-none text-xs font-semibold" /></Field>
-                        <Field label="Thứ tự"><Input type="number" value={block.sort_order} onChange={(e) => updateBlock(index, { sort_order: Number(e.target.value) })} className="rounded-none text-xs" /></Field>
-                        <div className="flex items-end gap-1">
-                          <Button type="button" variant="outline" size="icon" className="h-9 w-9 rounded-none" disabled={position === 0} onClick={() => moveBlock(index, -1)} title="Lên"><ArrowUp className="h-4 w-4" /></Button>
-                          <Button type="button" variant="outline" size="icon" className="h-9 w-9 rounded-none" disabled={position === builderBlocks.length - 1} onClick={() => moveBlock(index, 1)} title="Xuống"><ArrowDown className="h-4 w-4" /></Button>
-                          <Button type="button" variant="outline" size="icon" className="h-9 w-9 rounded-none" onClick={() => duplicateBlock(block)} title="Nhân bản"><Copy className="h-4 w-4" /></Button>
-                          <Button variant="destructive" size="icon" className="h-9 w-9 rounded-none" onClick={() => setPageBlocks((rows) => rows.filter((_, i) => i !== index))} title="Xóa block"><Trash2 className="h-4 w-4" /></Button>
+                  </CardHeader>
+                  <CardContent className="p-3 space-y-2">
+                    {/* Template Selector Drawer/Accordion */}
+                    {isTemplateSelectorOpen && (
+                      <div className="mb-3 p-3 border border-slate-300 bg-slate-50 dark:border-white/10 dark:bg-slate-950 space-y-2">
+                        <div className="flex items-center justify-between pb-1 border-b border-slate-200 dark:border-white/10">
+                          <span className="text-[10px] font-black uppercase text-slate-500">Chọn mẫu để thêm:</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-5 px-1.5 text-[10px] text-slate-400 hover:text-slate-700"
+                            onClick={() => setIsTemplateSelectorOpen(false)}
+                          >
+                            Đóng ✕
+                          </Button>
+                        </div>
+                        <div className="space-y-1.5 max-h-60 overflow-y-auto pr-1">
+                          {(templates.length ? templates : fallbackTemplates).map((template) => (
+                            <button
+                              key={template.template_key}
+                              type="button"
+                              onClick={() => {
+                                const newBlockKey = `${template.template_key}-${Date.now()}`
+                                setPageBlocks((rows) => [
+                                  ...rows,
+                                  {
+                                    page_slug: builderSlug,
+                                    block_key: newBlockKey,
+                                    component_type: template.component_type,
+                                    title: template.name,
+                                    props: template.default_props || {},
+                                    content_html: "",
+                                    sort_order: rows.filter((r) => r.page_slug === builderSlug).length * 10 + 10,
+                                    is_visible: true,
+                                    responsive: {},
+                                    seo: {},
+                                  },
+                                ])
+                                setSelectedBlockKey(newBlockKey)
+                                setIsTemplateSelectorOpen(false)
+                              }}
+                              className="w-full text-left p-2 border border-slate-200 bg-white hover:border-[#ed1c24] hover:bg-red-50/30 dark:border-white/10 dark:bg-slate-900 transition flex items-center justify-between group"
+                            >
+                              <div className="min-w-0 flex-1 pr-2">
+                                <div className="text-[11px] font-bold uppercase truncate group-hover:text-[#ed1c24]">{template.name}</div>
+                                <div className="text-[9px] font-mono text-slate-400 truncate">{template.component_type}</div>
+                              </div>
+                              <Plus className="h-3.5 w-3.5 text-slate-400 group-hover:text-[#ed1c24] shrink-0" />
+                            </button>
+                          ))}
                         </div>
                       </div>
+                    )}
 
-                      <Field label="Tên tiêu đề block (Quản trị)"><Input value={block.title || ""} onChange={(e) => updateBlock(index, { title: e.target.value })} className="rounded-none text-xs font-bold" /></Field>
+                    {/* Drag and drop sortable list of sections */}
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleBuilderDragEnd}>
+                      <SortableContext
+                        items={builderBlocks.map((item) => item.block.block_key)}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        {builderBlocks.length === 0 ? (
+                          <div className="py-8 text-center text-xs text-slate-400 border border-dashed border-slate-200 dark:border-white/10 p-3">
+                            <Layers className="h-6 w-6 text-slate-300 mx-auto mb-1.5" />
+                            Chưa có Section nào trên trang này. Nhấn "+ Thêm Section" ở trên để tạo mới.
+                          </div>
+                        ) : (
+                          builderBlocks.map(({ block, index }, pos) => (
+                            <SortableBuilderBlockRow
+                              key={block.block_key}
+                              id={block.block_key}
+                              block={block}
+                              isSelected={activeBlockItem?.block.block_key === block.block_key}
+                              onSelect={() => setSelectedBlockKey(block.block_key)}
+                              onToggleVisible={() => updateBlock(index, { is_visible: block.is_visible === false ? true : false })}
+                              onDelete={() => {
+                                setPageBlocks((rows) => rows.filter((_, i) => i !== index))
+                                if (selectedBlockKey === block.block_key) {
+                                  setSelectedBlockKey(null)
+                                }
+                              }}
+                              onMoveUp={() => moveBlock(index, -1)}
+                              onMoveDown={() => moveBlock(index, 1)}
+                              isFirst={pos === 0}
+                              isLast={pos === builderBlocks.length - 1}
+                            />
+                          ))
+                        )}
+                      </SortableContext>
+                    </DndContext>
+                  </CardContent>
+                </Card>
+              </div>
 
+              {/* Right Panel: Content / Form Editor for Selected Section */}
+              <div className="space-y-6">
+                {activeBlockItem ? (
+                  <Card className="rounded-none border-slate-200 dark:border-white/10 shadow-xs">
+                    <CardHeader className="border-b border-slate-200 dark:border-white/10 pb-4 bg-slate-50/50 dark:bg-slate-900/50">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                          <CardTitle className="text-base font-black uppercase flex items-center gap-2">
+                            <span>{activeBlockItem.block.title || activeBlockItem.block.component_type}</span>
+                            <Badge variant="outline" className="rounded-none font-bold text-[10px] uppercase border-[#ed1c24] text-[#ed1c24]">
+                              {activeBlockItem.block.component_type}
+                            </Badge>
+                          </CardTitle>
+                          <CardDescription className="text-xs font-semibold mt-0.5">
+                            Trang: <strong>/{builderSlug}</strong> | Mã: <span className="font-mono">{activeBlockItem.block.block_key}</span>
+                          </CardDescription>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => duplicateBlock(activeBlockItem.block)}
+                            className="rounded-none text-xs font-bold"
+                          >
+                            <Copy className="mr-1.5 h-3.5 w-3.5" /> Nhân bản
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                              setPageBlocks((rows) => rows.filter((_, i) => i !== activeBlockItem.index))
+                              setSelectedBlockKey(null)
+                            }}
+                            className="rounded-none text-xs font-bold"
+                          >
+                            <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Xóa
+                          </Button>
+                        </div>
+                      </div>
+                    </CardHeader>
+
+                    <CardContent className="space-y-5 pt-5">
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <Field label="Tên tiêu đề Section">
+                          <Input
+                            value={activeBlockItem.block.title || ""}
+                            onChange={(e) => updateBlock(activeBlockItem.index, { title: e.target.value })}
+                            className="rounded-none font-bold text-xs"
+                            placeholder="Ví dụ: CÂU CHUYỆN GZV"
+                          />
+                        </Field>
+                        <Field label="Phụ đề (Subtitle)">
+                          <Input
+                            value={activeBlockItem.block.props?.subtitle || ""}
+                            onChange={(e) => updateBlock(activeBlockItem.index, {
+                              props: { ...(activeBlockItem.block.props || {}), subtitle: e.target.value }
+                            })}
+                            className="rounded-none text-xs"
+                            placeholder="Ví dụ: Từ một cộng đồng học hỏi đến hệ sinh thái..."
+                          />
+                        </Field>
+                      </div>
+
+                      {/* Specialized / Props Block Editor */}
                       <BlockPropsEditor
-                        block={block}
-                        blockIndex={index}
-                        onChange={(props) => updateBlock(index, { props })}
-                        onPickImage={(imageIndex) => setPickerOpen({ blockImageIndex: index, imageIndex })}
+                        block={activeBlockItem.block}
+                        blockIndex={activeBlockItem.index}
+                        onChange={(props) => updateBlock(activeBlockItem.index, { props })}
+                        onPickImage={(imageIndex) => setPickerOpen({ blockImageIndex: activeBlockItem.index, imageIndex })}
+                        onPickSingleImage={() => setPickerOpen({ singleBlockIndex: activeBlockItem.index })}
                       />
 
-                      <Field label="HTML tùy biến bổ sung (nếu có)">
-                        <Textarea
-                          className="min-h-[90px] font-mono text-xs rounded-none"
-                          value={block.content_html || ""}
-                          onChange={(e) => updateBlock(index, { content_html: e.target.value })}
-                          placeholder="<div>Nội dung HTML tùy biến...</div>"
-                        />
-                      </Field>
-                    </div>
-                  ))}
-                </div>
+                      {/* Collapsible Advanced JSON & HTML Editor */}
+                      <div className="pt-2 border-t border-slate-200 dark:border-white/10 space-y-3">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowBlockAdvancedJson(!showBlockAdvancedJson)}
+                          className="rounded-none text-xs font-bold uppercase border-slate-300 dark:border-white/10 flex items-center gap-1.5"
+                        >
+                          <Code2 className="h-4 w-4 text-[#ed1c24]" />
+                          {showBlockAdvancedJson ? "▲ Thu gọn Cấu hình JSON & HTML nâng cao" : "▼ Mở Cấu hình JSON & HTML nâng cao"}
+                        </Button>
 
-                <Button type="button" onClick={saveBuilderLayout} disabled={saving} className="w-full rounded-none bg-[#ed1c24] hover:bg-[#c91218] text-white text-xs font-black uppercase h-10">
-                  <Save className="mr-2 h-4 w-4" /> {saving ? "Đang lưu..." : `Lưu toàn bộ Section & Blocks cho trang /${builderSlug}`}
-                </Button>
-              </CardContent>
-            </Card>
+                        {showBlockAdvancedJson && (
+                          <div className="space-y-4 pt-2">
+                            <Field label="Cấu hình JSON nâng cao (Raw JSON)">
+                              <RawJsonEditor
+                                value={activeBlockItem.block.props || {}}
+                                onChange={(props) => updateBlock(activeBlockItem.index, { props })}
+                              />
+                            </Field>
+
+                            <Field label="HTML tùy biến bổ sung (nếu có)">
+                              <Textarea
+                                className="min-h-[120px] font-mono text-xs rounded-none"
+                                value={activeBlockItem.block.content_html || ""}
+                                onChange={(e) => updateBlock(activeBlockItem.index, { content_html: e.target.value })}
+                                placeholder="<div>Nội dung HTML tùy biến...</div>"
+                              />
+                            </Field>
+                          </div>
+                        )}
+                      </div>
+
+                      <Button
+                        type="button"
+                        onClick={saveBuilderLayout}
+                        disabled={saving}
+                        className="w-full sm:w-auto rounded-none bg-[#ed1c24] hover:bg-[#c91218] text-white text-xs font-black uppercase h-10 px-8"
+                      >
+                        <Save className="mr-2 h-4 w-4" /> {saving ? "Đang lưu..." : "Lưu thay đổi Section"}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="p-12 text-center space-y-3 border border-slate-200 bg-white dark:border-white/10 dark:bg-slate-900 shadow-xs">
+                    <Layers className="h-10 w-10 text-slate-300 mx-auto" />
+                    <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                      Chưa chọn Section nào
+                    </p>
+                    <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                      Vui lòng nhấp chọn một Section từ danh sách bên trái hoặc nhấn nút <strong>"+ Thêm Section"</strong> để tạo mới.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
           </TabsContent>
 
           {/* TAB 4: HERO BANNER DESIGN & CONTENT */}
@@ -2270,7 +3445,14 @@ function SiteContentManager() {
                   useImage={previewBannerData.useImage}
                   backgroundImageUrl={previewBannerData.backgroundImageUrl}
                   imagePositionY={previewBannerData.imagePositionY}
+                  imageOpacity={previewBannerData.imageOpacity}
+                  imageGrayscale={previewBannerData.imageGrayscale}
                   bgColor={previewBannerData.bgColor}
+                  bgFrom={previewBannerData.bgFrom}
+                  bgTo={previewBannerData.bgTo}
+                  overlayEnabled={previewBannerData.overlayEnabled}
+                  overlayColor={previewBannerData.overlayColor}
+                  overlayOpacity={previewBannerData.overlayOpacity}
                   titleAlignment={previewBannerData.titleAlignment}
                   isPreviewMode={true}
                 />
@@ -2302,7 +3484,7 @@ function SiteContentManager() {
                 <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 dark:bg-slate-950/40 dark:border-white/10">
                   <div>
                     <Label className="text-xs font-bold text-slate-900 dark:text-white">Sử dụng ảnh làm nền</Label>
-                    <p className="text-[10px] text-slate-400">Bật để dùng ảnh bìa, tắt để dùng màu phẳng</p>
+                    <p className="text-[10px] text-slate-400">Bật để dùng ảnh bìa, tắt để dùng dải màu Gradient 2 màu</p>
                   </div>
                   <Switch
                     checked={globalBannerConfig.use_image}
@@ -2311,59 +3493,177 @@ function SiteContentManager() {
                 </div>
 
                 {globalBannerConfig.use_image ? (
-                  <div className="space-y-3 pt-2">
-                    <Label className="text-xs font-bold text-slate-900 dark:text-white">Ảnh bìa nền (Cover Image)</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        value={globalBannerConfig.cover_url || ""}
-                        onChange={(e) => setGlobalBannerConfig({ ...globalBannerConfig, cover_url: e.target.value })}
-                        placeholder="URL ảnh bìa"
-                        className="flex-1 h-9 text-xs rounded-none border-slate-200 font-mono dark:border-white/10"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPickerOpen("globalCover")}
-                        className="h-9 rounded-none text-xs font-black uppercase border-slate-200 shrink-0 dark:border-white/10"
-                      >
-                        <ImageIcon className="h-4 w-4 mr-1 text-[#ed1c24]" /> Chọn ảnh
-                      </Button>
+                  <div className="space-y-4 pt-1">
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold text-slate-900 dark:text-white">Ảnh bìa nền (Cover Image)</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          value={globalBannerConfig.cover_url || ""}
+                          onChange={(e) => setGlobalBannerConfig({ ...globalBannerConfig, cover_url: e.target.value })}
+                          placeholder="URL ảnh bìa"
+                          className="flex-1 h-9 text-xs rounded-none border-slate-200 font-mono dark:border-white/10"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setPickerOpen("globalCover")}
+                          className="h-9 rounded-none text-xs font-black uppercase border-slate-200 shrink-0 dark:border-white/10"
+                        >
+                          <ImageIcon className="h-4 w-4 mr-1 text-[#ed1c24]" /> Chọn ảnh
+                        </Button>
+                      </div>
                     </div>
 
-                    <div className="space-y-1.5 pt-2">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1">
-                          <MoveVertical className="h-3.5 w-3.5 text-[#ed1c24]" /> Vị trí ảnh dọc (Y-Offset)
-                        </Label>
-                        <span className="text-xs font-mono text-slate-500">{globalBannerConfig.imagePositionY || "50%"}</span>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-[11px] font-bold text-slate-900 dark:text-white flex items-center gap-1">
+                            <MoveVertical className="h-3 w-3 text-[#ed1c24]" /> Vị trí dọc (Y)
+                          </Label>
+                          <span className="text-[10px] font-mono text-slate-500">{globalBannerConfig.imagePositionY || "50%"}</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          step="1"
+                          value={parseInt(globalBannerConfig.imagePositionY || "50", 10)}
+                          onChange={(e) => setGlobalBannerConfig({ ...globalBannerConfig, imagePositionY: `${e.target.value}%` })}
+                          className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#ed1c24] dark:bg-slate-700"
+                        />
                       </div>
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        step="1"
-                        value={parseInt(globalBannerConfig.imagePositionY || "50", 10)}
-                        onChange={(e) => setGlobalBannerConfig({ ...globalBannerConfig, imagePositionY: `${e.target.value}%` })}
-                        className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#ed1c24] dark:bg-slate-700"
+
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-[11px] font-bold text-slate-900 dark:text-white">
+                            Độ rõ ảnh nền
+                          </Label>
+                          <span className="text-[10px] font-mono text-slate-500">{globalBannerConfig.image_opacity ?? 100}%</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="10"
+                          max="100"
+                          step="5"
+                          value={globalBannerConfig.image_opacity ?? 100}
+                          onChange={(e) => setGlobalBannerConfig({ ...globalBannerConfig, image_opacity: parseInt(e.target.value, 10) })}
+                          className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#ed1c24] dark:bg-slate-700"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 dark:bg-slate-950/40 dark:border-white/10">
+                      <div>
+                        <Label className="text-[11px] font-bold text-slate-900 dark:text-white">Hiệu ứng Đen trắng (Grayscale)</Label>
+                        <p className="text-[9px] text-slate-400">Chuyển ảnh nền thành đen trắng cổ điển</p>
+                      </div>
+                      <Switch
+                        checked={!!globalBannerConfig.image_grayscale}
+                        onCheckedChange={(v) => setGlobalBannerConfig({ ...globalBannerConfig, image_grayscale: v })}
                       />
+                    </div>
+
+                    {/* Tinh chỉnh Lớp phủ màu (Overlay) */}
+                    <div className="p-3 bg-red-50/40 border border-red-200/60 dark:bg-red-950/20 dark:border-red-900/30 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Label className="text-xs font-black uppercase text-slate-900 dark:text-white flex items-center gap-1.5">
+                            <Palette className="h-3.5 w-3.5 text-[#ed1c24]" /> Lớp phủ màu (Overlay BG)
+                          </Label>
+                          <p className="text-[10px] text-slate-500">Giúp chữ trên Banner luôn nổi bật và dễ đọc</p>
+                        </div>
+                        <Switch
+                          checked={globalBannerConfig.overlay_enabled !== false}
+                          onCheckedChange={(v) => setGlobalBannerConfig({ ...globalBannerConfig, overlay_enabled: v })}
+                        />
+                      </div>
+
+                      {globalBannerConfig.overlay_enabled !== false && (
+                        <div className="space-y-3 pt-1 border-t border-slate-200/60 dark:border-white/10">
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <Label className="text-[11px] font-bold text-slate-800 dark:text-slate-200">Màu lớp phủ</Label>
+                              <div className="flex gap-1.5">
+                                <Input
+                                  type="color"
+                                  value={globalBannerConfig.overlay_color || "#050505"}
+                                  onChange={(e) => setGlobalBannerConfig({ ...globalBannerConfig, overlay_color: e.target.value })}
+                                  className="w-8 h-8 p-0.5 rounded-none cursor-pointer border-slate-300 shrink-0"
+                                />
+                                <Input
+                                  value={globalBannerConfig.overlay_color || "#050505"}
+                                  onChange={(e) => setGlobalBannerConfig({ ...globalBannerConfig, overlay_color: e.target.value })}
+                                  className="font-mono text-[11px] uppercase h-8 rounded-none border-slate-300 dark:border-white/10"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between">
+                                <Label className="text-[11px] font-bold text-slate-800 dark:text-slate-200">Độ che phủ (Opacity)</Label>
+                                <span className="text-[10px] font-mono text-[#ed1c24] font-bold">{globalBannerConfig.overlay_opacity ?? 60}%</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="0"
+                                max="100"
+                                step="5"
+                                value={globalBannerConfig.overlay_opacity ?? 60}
+                                onChange={(e) => setGlobalBannerConfig({ ...globalBannerConfig, overlay_opacity: parseInt(e.target.value, 10) })}
+                                className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#ed1c24] dark:bg-slate-700 mt-2"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-1.5 pt-2">
-                    <Label className="text-xs font-bold text-slate-900 dark:text-white">Màu nền phẳng (Background Color)</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        type="color"
-                        value={globalBannerConfig.bg_color || "#050505"}
-                        onChange={(e) => setGlobalBannerConfig({ ...globalBannerConfig, bg_color: e.target.value })}
-                        className="w-9 h-9 p-0.5 rounded-none cursor-pointer border-slate-200 shrink-0"
-                      />
-                      <Input
-                        value={globalBannerConfig.bg_color || "#050505"}
-                        onChange={(e) => setGlobalBannerConfig({ ...globalBannerConfig, bg_color: e.target.value })}
-                        className="font-mono text-xs uppercase h-9 rounded-none border-slate-200 dark:border-white/10"
-                      />
+                  <div className="space-y-3 pt-1">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-bold text-slate-900 dark:text-white">Màu bắt đầu (From)</Label>
+                        <div className="flex gap-1.5">
+                          <Input
+                            type="color"
+                            value={globalBannerConfig.bg_from || globalBannerConfig.bg_color || "#050505"}
+                            onChange={(e) => setGlobalBannerConfig({ ...globalBannerConfig, bg_from: e.target.value, bg_color: e.target.value })}
+                            className="w-9 h-9 p-0.5 rounded-none cursor-pointer border-slate-200 shrink-0"
+                          />
+                          <Input
+                            value={globalBannerConfig.bg_from || globalBannerConfig.bg_color || "#050505"}
+                            onChange={(e) => setGlobalBannerConfig({ ...globalBannerConfig, bg_from: e.target.value, bg_color: e.target.value })}
+                            className="font-mono text-xs uppercase h-9 rounded-none border-slate-200 dark:border-white/10"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-bold text-slate-900 dark:text-white">Màu kết thúc (To)</Label>
+                        <div className="flex gap-1.5">
+                          <Input
+                            type="color"
+                            value={globalBannerConfig.bg_to || "#ed1c24"}
+                            onChange={(e) => setGlobalBannerConfig({ ...globalBannerConfig, bg_to: e.target.value })}
+                            className="w-9 h-9 p-0.5 rounded-none cursor-pointer border-slate-200 shrink-0"
+                          />
+                          <Input
+                            value={globalBannerConfig.bg_to || "#ed1c24"}
+                            onChange={(e) => setGlobalBannerConfig({ ...globalBannerConfig, bg_to: e.target.value })}
+                            className="font-mono text-xs uppercase h-9 rounded-none border-slate-200 dark:border-white/10"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      className="h-10 w-full flex items-center justify-center text-xs font-bold text-white shadow-inner select-none transition-all"
+                      style={{
+                        background: `linear-gradient(90deg, ${globalBannerConfig.bg_from || globalBannerConfig.bg_color || "#050505"}, ${globalBannerConfig.bg_to || "#ed1c24"})`,
+                      }}
+                    >
+                      Xem trước dải màu Gradient Banner
                     </div>
                   </div>
                 )}
@@ -2598,11 +3898,18 @@ function SiteContentManager() {
               updateSectionSettings({ image_url: res.url })
             } else if (pickerOpen === "builderBanner") {
               updateBuilderPage({ banner_image_url: res.url })
-            } else if (typeof pickerOpen === "object" && pickerOpen !== null && "blockImageIndex" in pickerOpen) {
-              const block = pageBlocks[pickerOpen.blockImageIndex]
-              const images = Array.isArray(block?.props?.images) ? [...block.props.images] : []
-              images[pickerOpen.imageIndex] = { ...(images[pickerOpen.imageIndex] || {}), src: res.url, alt: res.alt || "GZV" }
-              updateBlock(pickerOpen.blockImageIndex, { props: { ...(block.props || {}), images } })
+            } else if (typeof pickerOpen === "object" && pickerOpen !== null) {
+              if ("blockImageIndex" in pickerOpen) {
+                const block = pageBlocks[pickerOpen.blockImageIndex]
+                const images = Array.isArray(block?.props?.images) ? [...block.props.images] : []
+                images[pickerOpen.imageIndex] = { ...(images[pickerOpen.imageIndex] || {}), src: res.url, alt: res.alt || "GZV" }
+                updateBlock(pickerOpen.blockImageIndex, { props: { ...(block.props || {}), images } })
+              } else if ("singleBlockIndex" in pickerOpen) {
+                const block = pageBlocks[pickerOpen.singleBlockIndex]
+                updateBlock(pickerOpen.singleBlockIndex, {
+                  props: { ...(block?.props || {}), image_url: res.url }
+                })
+              }
             }
             setPickerOpen(null)
           }}
