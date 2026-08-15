@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Facebook, Instagram, Youtube, Mail, Phone, MapPin, Send, Loader2, ArrowUpRight } from "lucide-react"
 import { supabase } from "@/lib/api-supabase"
+import { getFooterSettings, getBrandingSettings } from "@/lib/site-content"
 import { toast } from "sonner"
 import { motion } from "framer-motion"
 
@@ -78,13 +79,51 @@ export interface FooterProps {
 }
 
 export default function Footer({ overrideConfig, activeColumn, onSelectColumn }: FooterProps = {}) {
-  const fc: any = overrideConfig ?? {}
-  const logoUrl = overrideConfig?.logo_url !== undefined
-    ? overrideConfig.logo_url
-    : "/logo.webp"
-  const siteTitle = overrideConfig?.site_title !== undefined
-    ? overrideConfig.site_title
-    : "GZV Center"
+  const [dbFooter, setDbFooter] = useState<any>(null)
+  const [dbBranding, setDbBranding] = useState<any>(null)
+
+  useEffect(() => {
+    if (overrideConfig) return
+    let active = true
+    Promise.all([getFooterSettings(), getBrandingSettings()]).then(([f, b]) => {
+      if (active) {
+        setDbFooter(f)
+        setDbBranding(b)
+      }
+    })
+    return () => {
+      active = false
+    }
+  }, [overrideConfig])
+
+  const metaItem = (Array.isArray(dbFooter?.social_links) ? dbFooter.social_links : [])?.find((item: any) => item && item._meta === "contact_person_info") || {}
+
+  const fc: any = overrideConfig ?? {
+    logo_url: dbFooter?.logo_url || dbBranding?.footer_logo_url || "/logo.webp",
+    site_title: dbBranding?.site_name || "GZV Center",
+    brand_tagline: dbFooter?.intro_text,
+    contact_address: dbFooter?.address,
+    contact_phone: dbFooter?.phone_label,
+    contact_email: dbFooter?.email_label,
+    links: dbFooter?.links,
+    social_facebook: metaItem.social_facebook || dbFooter?.social_facebook || dbFooter?.facebook_page_url,
+    social_youtube: metaItem.social_youtube || dbFooter?.social_youtube,
+    social_instagram: metaItem.social_instagram || dbFooter?.social_instagram,
+    social_tiktok: metaItem.social_tiktok || dbFooter?.social_tiktok,
+    facebook_page_url: dbFooter?.facebook_page_url,
+    contact_person: metaItem.contact_person || dbFooter?.contact_person || "Dương Thế Khải",
+    contact_person_phone: metaItem.contact_person_phone || dbFooter?.contact_person_phone || "(+84) 329 381 489",
+    contact_person_email: metaItem.contact_person_email || dbFooter?.contact_person_email || "one.gzv@gmail.com",
+    copyright_text: dbFooter?.copyright_text,
+    terms_url: metaItem.terms_url || dbFooter?.terms_url,
+    privacy_url: metaItem.privacy_url || dbFooter?.privacy_url,
+    show_social: dbFooter?.show_social,
+    footer_bg_color: dbFooter?.background_color,
+    footer_text_color: dbFooter?.footer_text_color,
+    footer_link_color: dbFooter?.footer_link_color,
+  }
+  const logoUrl = fc.logo_url !== undefined ? fc.logo_url : "/logo.webp"
+  const siteTitle = fc.site_title !== undefined ? fc.site_title : "GZV Center"
 
   const primaryRaw = overrideConfig?.primary_color || "#ed1c24"
   const secondaryRaw = overrideConfig?.secondary_color
@@ -193,7 +232,14 @@ export default function Footer({ overrideConfig, activeColumn, onSelectColumn }:
           >
             <Link href="/" className="inline-flex items-center gap-2" onClick={(e) => onSelectColumn && e.preventDefault()}>
               {logoUrl ? (
-                <img src={logoUrl} alt={siteTitle} className="h-12 object-contain" />
+                <img
+                  src={logoUrl}
+                  alt={siteTitle}
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = "/logo.webp"
+                  }}
+                  className="h-12 object-contain"
+                />
               ) : (
                 <div className="w-12 h-12 rounded-none bg-[#ed1c24] text-white flex items-center justify-center">
                   <span className="font-extrabold text-sm">GZV</span>
@@ -246,7 +292,7 @@ export default function Footer({ overrideConfig, activeColumn, onSelectColumn }:
               {quickLinks.map((l) => (
                 <li key={l.url}>
                   <Link
-                    href={l.url}
+                    href={l.url || "#"}
                     onClick={(e) => onSelectColumn && e.preventDefault()}
                     className="group inline-flex items-center gap-2 text-slate-300 hover:text-[#ed1c24] transition-colors"
                   >
@@ -342,7 +388,7 @@ export default function Footer({ overrideConfig, activeColumn, onSelectColumn }:
             </form>
 
             {(() => {
-              const personName = fc.contact_person || "GZV Ltd"
+              const personName = fc.contact_person || "Dương Thế Khải"
               const personPhone = fc.contact_person_phone || "(+84) 329 381 489"
               const personEmail = fc.contact_person_email || "one.gzv@gmail.com"
 
