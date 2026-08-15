@@ -5,7 +5,7 @@ import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { api } from "@/lib/api-supabase"
+import { api, supabase } from "@/lib/api-supabase"
 
 export interface MentorsGridProps {
   title?: string
@@ -15,12 +15,13 @@ export interface MentorsGridProps {
 }
 
 export default function MentorsGrid({
-  title = "BAN GIẢNG HUẤN",
-  subtitle = "Đội ngũ Ban giảng huấn Mentoring & Coaching của GZV Center",
+  title: propTitle,
+  subtitle: propSubtitle,
   limit = 9,
   background,
 }: MentorsGridProps) {
   const [items, setItems] = useState<any[]>([])
+  const [dbData, setDbData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
   const isDark = background ? String(background).toLowerCase() !== "#ffffff" && String(background).toLowerCase() !== "white" : false
@@ -28,11 +29,17 @@ export default function MentorsGrid({
   useEffect(() => {
     let active = true
     setLoading(true)
-    api
-      .getMentors()
-      .then((data) => {
+    Promise.all([
+      supabase.from("site_home_sections").select("*").eq("section_key", "mentors").maybeSingle(),
+      api.getMentors(),
+    ])
+      .then(([homeRes, data]) => {
         if (!active) return
-        setItems((data || []).slice(0, Number(limit) || 9))
+        if (homeRes.data) {
+          setDbData(homeRes.data)
+        }
+        const finalLimit = homeRes.data?.item_limit || limit || 9
+        setItems((data || []).slice(0, Number(finalLimit)))
       })
       .catch((err) => {
         console.error("Lỗi tải danh sách mentor:", err)
@@ -47,6 +54,13 @@ export default function MentorsGrid({
       active = false
     }
   }, [limit])
+
+  if (dbData?.is_visible === false && !propTitle) {
+    return null
+  }
+
+  const title = propTitle || dbData?.title || "BAN GIẢNG HUẤN"
+  const subtitle = propSubtitle || dbData?.subtitle || "Đội ngũ Ban giảng huấn Mentoring & Coaching của GZV Center"
 
   return (
     <section className="bg-white py-16 dark:bg-gray-900 sm:py-20" style={background ? { background } : undefined}>

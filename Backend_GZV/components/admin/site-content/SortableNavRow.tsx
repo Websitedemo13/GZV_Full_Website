@@ -14,7 +14,7 @@ interface SortableNavRowProps {
   onEdit: () => void
   onDelete?: () => void
   onToggleVisible: () => void
-  onEditSections?: () => void
+  onGoToSection?: () => void
 }
 
 export function SortableNavRow({
@@ -24,7 +24,7 @@ export function SortableNavRow({
   onEdit,
   onDelete,
   onToggleVisible,
-  onEditSections,
+  onGoToSection,
 }: SortableNavRowProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
 
@@ -122,16 +122,27 @@ export function SortableNavRow({
       </div>
 
       <div className="flex items-center gap-1.5 shrink-0">
-        {onEditSections && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onEdit}
+          title="Chỉnh sửa chi tiết menu này"
+          className="h-8 px-2.5 rounded-none border-[#ed1c24] text-[#ed1c24] text-[10px] font-black uppercase hover:bg-[#ed1c24] hover:text-white transition"
+        >
+          Sửa
+        </Button>
+
+        {onGoToSection && (
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             size="sm"
-            onClick={onEditSections}
-            title={isHome ? "Sửa các section Trang chủ" : "Sửa section & nội dung trang này"}
-            className="h-8 px-2.5 rounded-none border-[#ed1c24] text-[#ed1c24] text-[10px] font-black uppercase hover:bg-[#ed1c24] hover:text-white transition"
+            onClick={onGoToSection}
+            title={isHome ? "Sửa các Section Trang chủ" : "Sửa các Section & Block của trang này"}
+            className="h-8 p-1.5 rounded-none text-slate-500 hover:bg-slate-100 text-[10px] font-bold uppercase dark:text-slate-400 dark:hover:bg-slate-800"
           >
-            Sửa
+            Section
           </Button>
         )}
 
@@ -149,17 +160,6 @@ export function SortableNavRow({
                 }`}
             >
               {item.is_visible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-            </Button>
-
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={onEdit}
-              title="Chỉnh sửa menu"
-              className="h-8 w-8 p-0 rounded-none text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
-            >
-              <Pencil className="h-4 w-4" />
             </Button>
 
             {!isDefaultPage && onDelete && (

@@ -26,18 +26,18 @@ export default function PartnersGrid({
     const fetchData = async () => {
       try {
         setLoading(true)
-        const [blockRes, partnersRes] = await Promise.all([
-          (!propTitle || !propSubtitle)
-            ? supabase.from("site_page_blocks").select("props").eq("component_type", "partners_grid").limit(1).maybeSingle()
-            : Promise.resolve({ data: null }),
+        const [homeRes, blockRes, partnersRes] = await Promise.all([
+          supabase.from("site_home_sections").select("*").eq("section_key", "partners").maybeSingle(),
+          supabase.from("site_page_blocks").select("props").eq("component_type", "partners_grid").limit(1).maybeSingle(),
           supabase.from("partners").select("*").order("sort_order", { ascending: true }).limit(Number(limit) || 40),
         ])
 
         if (!active) return
 
-        if (blockRes.data?.props) {
-          setDbProps(blockRes.data.props)
-        }
+        const homeData = homeRes.data
+        const blockProps = blockRes.data?.props
+        const combined = { ...(blockProps || {}), ...(homeData || {}), ...(homeData?.settings || {}) }
+        setDbProps(combined)
 
         if (partnersRes.data && partnersRes.data.length > 0) {
           const activeOnly = partnersRes.data.filter((p: any) => p.is_active !== false)
@@ -57,8 +57,12 @@ export default function PartnersGrid({
     }
   }, [limit, propTitle, propSubtitle])
 
+  if (dbProps?.is_visible === false && !propTitle) {
+    return null
+  }
+
   const title = propTitle || dbProps?.title || "ĐỐI TÁC"
-  const subtitle = propSubtitle || dbProps?.subtitle || "Các đơn vị đồng hành cùng hệ sinh thái GZV."
+  const subtitle = propSubtitle || dbProps?.subtitle || "ĐỐI TÁC ĐỒNG HÀNH KHẮP CẢ NƯỚC"
 
   return (
     <section className="bg-white py-16 dark:bg-slate-950 lg:py-24">

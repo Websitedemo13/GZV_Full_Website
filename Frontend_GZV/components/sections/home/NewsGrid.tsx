@@ -42,21 +42,22 @@ export default function NewsGrid({
     const fetchData = async () => {
       try {
         setLoading(true)
-        const [blockRes, posts] = await Promise.all([
-          (!propTitle || !propSubtitle)
-            ? supabase.from("site_page_blocks").select("props").eq("component_type", "news_grid").limit(1).maybeSingle()
-            : Promise.resolve({ data: null }),
+        const [homeRes, blockRes, posts] = await Promise.all([
+          supabase.from("site_home_sections").select("*").eq("section_key", "news").maybeSingle(),
+          supabase.from("site_page_blocks").select("props").eq("component_type", "news_grid").limit(1).maybeSingle(),
           api.getBlogPosts(),
         ])
 
         if (!active) return
 
-        if (blockRes.data?.props) {
-          setDbProps(blockRes.data.props)
-        }
+        const homeData = homeRes.data
+        const blockProps = blockRes.data?.props
+        const combined = { ...(blockProps || {}), ...(homeData || {}), ...(homeData?.settings || {}) }
+        setDbProps(combined)
 
+        const finalLimit = combined?.item_limit || limit || 6
         if (posts) {
-          setItems(posts.slice(0, Number(limit) || 6))
+          setItems(posts.slice(0, Number(finalLimit)))
         }
       } catch (err: any) {
         console.error("Lỗi tải tin tức:", err?.message || err)
@@ -72,8 +73,12 @@ export default function NewsGrid({
     }
   }, [limit, propTitle, propSubtitle])
 
-  const title = propTitle || dbProps?.title || "TIN TỨC"
-  const subtitle = propSubtitle || dbProps?.subtitle || "Cập nhật hoạt động, góc nhìn và câu chuyện phát triển từ GZV."
+  if (dbProps?.is_visible === false && !propTitle) {
+    return null
+  }
+
+  const title = propTitle || dbProps?.title || "TIN TỨC & BÀI VIẾT MỚI NHẤT"
+  const subtitle = propSubtitle || dbProps?.subtitle || "Cập nhật những thông tin, sự kiện và bài viết chia sẻ tri thức mới nhất từ GZV."
 
   const filteredItems = useMemo(() => {
     if (selectedCategory === "all") return items

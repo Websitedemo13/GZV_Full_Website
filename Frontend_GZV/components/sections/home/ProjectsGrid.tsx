@@ -42,18 +42,18 @@ export default function ProjectsGrid({
     const fetchData = async () => {
       try {
         setLoading(true)
-        const [blockRes, projectsRes] = await Promise.all([
-          (!propTitle || !propSubtitle)
-            ? supabase.from("site_page_blocks").select("props").eq("component_type", "projects_grid").limit(1).maybeSingle()
-            : Promise.resolve({ data: null }),
+        const [homeRes, blockRes, projectsRes] = await Promise.all([
+          supabase.from("site_home_sections").select("*").eq("section_key", "projects").maybeSingle(),
+          supabase.from("site_page_blocks").select("props").eq("component_type", "projects_grid").limit(1).maybeSingle(),
           supabase.from("projects").select("*").order("order_index", { ascending: true }).order("created_at", { ascending: false }).limit(Number(limit) || 6),
         ])
 
         if (!active) return
 
-        if (blockRes.data?.props) {
-          setDbProps(blockRes.data.props)
-        }
+        const homeData = homeRes.data
+        const blockProps = blockRes.data?.props
+        const combined = { ...(blockProps || {}), ...(homeData || {}), ...(homeData?.settings || {}) }
+        setDbProps(combined)
 
         if (projectsRes.data) {
           setItems(projectsRes.data)
@@ -72,8 +72,12 @@ export default function ProjectsGrid({
     }
   }, [limit, propTitle, propSubtitle])
 
+  if (dbProps?.is_visible === false && !propTitle) {
+    return null
+  }
+
   const title = propTitle || dbProps?.title || "DỰ ÁN ĐÃ TRIỂN KHAI"
-  const subtitle = propSubtitle || dbProps?.subtitle || "Các dự án Mentoring, Coaching và triển khai thực tế mà GZV đồng hành."
+  const subtitle = propSubtitle || dbProps?.subtitle || "Những chiến dịch và dự án tiêu biểu do GZV cùng đối tác triển khai"
 
   const filteredItems = useMemo(() => {
     if (selectedCategory === "all") return items

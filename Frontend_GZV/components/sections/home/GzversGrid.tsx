@@ -5,7 +5,7 @@ import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { api } from "@/lib/api-supabase"
+import { api, supabase } from "@/lib/api-supabase"
 
 export interface GzversGridProps {
   title?: string
@@ -15,12 +15,13 @@ export interface GzversGridProps {
 }
 
 export default function GzversGrid({
-  title = "GZVERS",
-  subtitle = "Hành trình trưởng thành từ GZV Center",
+  title: propTitle,
+  subtitle: propSubtitle,
   limit = 9,
   background,
 }: GzversGridProps) {
   const [items, setItems] = useState<any[]>([])
+  const [dbData, setDbData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
   const isDark = background ? String(background).toLowerCase() !== "#ffffff" && String(background).toLowerCase() !== "white" : false
@@ -28,11 +29,17 @@ export default function GzversGrid({
   useEffect(() => {
     let active = true
     setLoading(true)
-    api
-      .getGzvers()
-      .then((data) => {
+    Promise.all([
+      supabase.from("site_home_sections").select("*").eq("section_key", "gzvers").maybeSingle(),
+      api.getGzvers(),
+    ])
+      .then(([homeRes, data]) => {
         if (!active) return
-        setItems((data || []).slice(0, Number(limit) || 9))
+        if (homeRes.data) {
+          setDbData(homeRes.data)
+        }
+        const finalLimit = homeRes.data?.item_limit || limit || 9
+        setItems((data || []).slice(0, Number(finalLimit)))
       })
       .catch((err) => {
         console.error("Lỗi tải danh sách GZVers:", err)
@@ -47,6 +54,13 @@ export default function GzversGrid({
       active = false
     }
   }, [limit])
+
+  if (dbData?.is_visible === false && !propTitle) {
+    return null
+  }
+
+  const title = propTitle || dbData?.title || "GZVERS"
+  const subtitle = propSubtitle || dbData?.subtitle || "Hành trình trưởng thành từ GZV Center"
 
   return (
     <section className="bg-white py-16 dark:bg-gray-900 sm:py-20" style={background ? { background } : undefined}>
