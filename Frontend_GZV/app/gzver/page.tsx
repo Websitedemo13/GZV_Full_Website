@@ -108,22 +108,13 @@ export default function GzverPage() {
   }, [filteredGzvers])
 
   return (
-    <>
+    <BuilderPageGate slug="gzver">
       <PageBanner
         badge="GZV ORGANIZATION"
         title="GZVers"
         subtitle="Hệ sinh thái nhân sự GZV được chia theo từng ban để thể hiện rõ vai trò, trách nhiệm và năng lực triển khai."
-        stats={[
-          { value: `${gzvers.length}+`, label: 'Thành viên' },
-          { value: `${visibleGroups.length}+`, label: 'Ban chuyên môn' },
-          { value: '3+', label: 'Mũi triển khai' },
-          { value: '100%', label: 'Thực chiến' },
-        ]}
       />
-
-      <BuilderPageGate slug="gzver">
-        <div className="bg-white dark:bg-slate-950">
-
+      <div className="bg-white dark:bg-slate-950">
           <section className="border-b border-slate-200 bg-white py-8 dark:border-white/10 dark:bg-slate-950">
             <div className="container">
               <div className="flex flex-wrap items-center justify-center gap-2">
@@ -132,11 +123,10 @@ export default function GzverPage() {
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveGroup(tab.id)}
-                    className={`h-11 border px-6 text-xs font-black uppercase tracking-wider transition ${
-                      activeGroup === tab.id
+                    className={`h-11 border px-6 text-xs font-black uppercase tracking-wider transition ${activeGroup === tab.id
                         ? 'border-[#ed1c24] bg-[#ed1c24] text-white shadow-md'
                         : 'border-slate-200 bg-white text-slate-900 hover:border-[#ed1c24] dark:border-white/10 dark:bg-slate-900 dark:text-white'
-                    }`}
+                      }`}
                   >
                     {tab.label}
                   </button>
@@ -224,6 +214,5 @@ export default function GzverPage() {
           </section>
         </div>
       </BuilderPageGate>
-    </>
   )
 }

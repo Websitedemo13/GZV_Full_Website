@@ -104,22 +104,14 @@ export default function ProjectsPage() {
   )
 
   return (
-    <>
+    <BuilderPageGate slug="du-an">
       <PageBanner
         badge="Những dự án tiêu biểu"
         title="Dự án đã triển khai"
         subtitle="Các dự án Mentoring & Coaching thực tế mà GZV Center đã triển khai, đem lại giá trị thực cho các đối tác và học viên."
-        stats={[
-          { value: `${projects.length}+`, label: 'Dự án tiêu biểu' },
-          { value: '50+', label: 'Doanh nghiệp' },
-          { value: '5000+', label: 'Học viên' },
-          { value: '10+', label: 'Lĩnh vực' },
-        ]}
       />
-
-      <BuilderPageGate slug="du-an">
-        <div className="bg-white dark:bg-gray-900">
-          <section className="py-24 bg-gray-50 dark:bg-gray-900">
+      <div className="bg-white dark:bg-gray-900">
+        <section className="py-24 bg-gray-50 dark:bg-gray-900">
             <div className="container px-4 mx-auto">
 
               {/* SEARCH BAR & CATEGORY FILTER BUTTONS */}
@@ -292,8 +284,7 @@ export default function ProjectsPage() {
               </motion.div>
             </div>
           </section>
-        </div>
+          </div>
       </BuilderPageGate>
-    </>
   )
 }

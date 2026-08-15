@@ -24,6 +24,9 @@ export type SitePageContent = {
   banner_subtitle?: string | null
   banner_description?: string | null
   banner_image_url?: string | null
+  show_badge?: boolean | null
+  show_title?: boolean | null
+  show_subtitle?: boolean | null
   content_html?: string | null
   is_visible: boolean
   seo_title?: string | null

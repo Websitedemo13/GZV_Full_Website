@@ -81,6 +81,18 @@ export default function PageBanner({
   const displayDescription = managedPage?.banner_subtitle || managedPage?.banner_description || subtitle || description || globalBanner?.subtitle || ''
   const displayBadge = managedPage?.banner_badge || badge || globalBanner?.badge || ''
 
+  const showBadge = syncAll
+    ? globalBanner?.show_badge !== false
+    : (managedPage?.show_badge !== undefined && managedPage?.show_badge !== null ? managedPage.show_badge : globalBanner?.show_badge !== false)
+
+  const showTitle = syncAll
+    ? globalBanner?.show_title !== false
+    : (managedPage?.show_title !== undefined && managedPage?.show_title !== null ? managedPage.show_title : globalBanner?.show_title !== false)
+
+  const showDescription = syncAll
+    ? (globalBanner?.show_subtitle !== false && globalBanner?.show_description !== false)
+    : (managedPage?.show_subtitle !== undefined && managedPage?.show_subtitle !== null ? managedPage.show_subtitle : (globalBanner?.show_subtitle !== false && globalBanner?.show_description !== false))
+
   const isUseImage = useImage !== undefined
     ? useImage
     : (globalBanner?.use_image !== undefined ? globalBanner.use_image : true)
@@ -153,7 +165,7 @@ export default function PageBanner({
 
       <div className="container relative z-10">
         <div className={`mx-auto max-w-4xl flex flex-col ${alignClass}`}>
-          {displayBadge && (
+          {showBadge && displayBadge && (
             <motion.div
               className="mb-6 inline-flex items-center gap-2 border-l-4 border-[#ed1c24] bg-white/10 px-4 py-2 backdrop-blur-sm"
               initial={{ opacity: 0, scale: 0.9 }}
@@ -166,16 +178,18 @@ export default function PageBanner({
             </motion.div>
           )}
 
-          <motion.h1
-            className="mb-6 text-4xl sm:text-5xl lg:text-6xl font-black uppercase leading-tight"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-          >
-            {typeof displayTitle === 'string' ? displayTitle.replace(/<[^>]*>?/gm, '') : displayTitle}
-          </motion.h1>
+          {showTitle && displayTitle && (
+            <motion.h1
+              className="mb-6 text-4xl sm:text-5xl lg:text-6xl font-black uppercase leading-tight"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7 }}
+            >
+              {typeof displayTitle === 'string' ? displayTitle.replace(/<[^>]*>?/gm, '') : displayTitle}
+            </motion.h1>
+          )}
 
-          {displayDescription && (
+          {showDescription && displayDescription && (
             <motion.p
               className="mb-8 text-lg sm:text-xl leading-relaxed text-white/85 font-medium"
               initial={{ opacity: 0, y: 20 }}
@@ -184,22 +198,6 @@ export default function PageBanner({
             >
               {typeof displayDescription === 'string' ? displayDescription.replace(/<[^>]*>?/gm, '') : displayDescription}
             </motion.p>
-          )}
-
-          {stats && stats.length > 0 && (
-            <motion.div
-              className="mt-12 grid grid-cols-2 gap-4 md:grid-cols-4 w-full"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.4 }}
-            >
-              {stats.map((stat, idx) => (
-                <div key={idx} className="border border-white/12 bg-white/6 px-4 py-5 text-center">
-                  <div className="mb-2 text-3xl font-black text-[#ed1c24]">{stat.value}</div>
-                  <div className="text-sm font-bold uppercase tracking-wide text-white/65">{stat.label}</div>
-                </div>
-              ))}
-            </motion.div>
           )}
         </div>
       </div>

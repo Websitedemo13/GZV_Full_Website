@@ -15,6 +15,7 @@ import CtaBand from "@/components/sections/common/CtaBand"
 import MscWords from "@/components/sections/common/MscWords"
 import WhyColumns from "@/components/sections/common/WhyColumns"
 import HtmlBlock from "@/components/sections/common/HtmlBlock"
+import StatsBar from "@/components/sections/common/StatsBar"
 
 // Home Sections
 import HeroStats from "@/components/sections/home/HeroStats"
@@ -57,11 +58,13 @@ export default function PageBuilderRenderer({ slug, fallback }: { slug: string; 
 }
 
 function RenderBlock({ block, language }: { block: PageBlock; language: "vi" | "en" }) {
+  if (block.is_visible === false) return null
   const props = localizeRecord(block.props || {}, language)
   const contentHtml = language === "en" ? ((block as any).content_html_en || props.content_html_en || block.content_html || "") : (block.content_html || "")
   switch (block.component_type) {
+    case "stats_bar":
     case "hero_stats":
-      return <HeroStats {...props} />
+      return <StatsBar {...props} />
     case "msc_words":
       return <MscWords {...props} />
     case "about_gzv":

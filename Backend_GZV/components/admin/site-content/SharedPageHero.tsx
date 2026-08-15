@@ -23,6 +23,9 @@ interface SharedPageHeroProps {
   overlayOpacity?: number
   textColor?: string
   titleAlignment?: "left" | "center" | "right"
+  showBadge?: boolean
+  showTitle?: boolean
+  showDescription?: boolean
   isPreviewMode?: boolean
   onPositionChange?: (val: string) => void
   onBadgeClick?: () => void
@@ -49,6 +52,9 @@ export function SharedPageHero({
   overlayColor = "#050505",
   overlayOpacity = 60,
   titleAlignment = "center",
+  showBadge = true,
+  showTitle = true,
+  showDescription = true,
   isPreviewMode = false,
   onPositionChange,
   onBadgeClick,
@@ -115,7 +121,7 @@ export function SharedPageHero({
 
       <div className="container relative z-10 px-6">
         <div className={`mx-auto max-w-4xl flex flex-col ${alignClass}`}>
-          {badge && (
+          {showBadge && badge && (
             <motion.div
               onClick={onBadgeClick}
               className={`mb-6 inline-flex items-center gap-2 border-l-4 border-[#ed1c24] bg-white/10 px-4 py-2 backdrop-blur-sm ${
@@ -134,7 +140,7 @@ export function SharedPageHero({
             </motion.div>
           )}
 
-          {title && (
+          {showTitle && title && (
             <motion.h1
               onClick={onTitleClick}
               className={`mb-6 text-4xl sm:text-5xl lg:text-6xl font-black uppercase leading-tight ${
@@ -149,7 +155,7 @@ export function SharedPageHero({
             </motion.h1>
           )}
 
-          {description && (
+          {showDescription && description && (
             <motion.p
               onClick={onDescriptionClick}
               className={`mb-8 text-lg sm:text-xl font-semibold leading-relaxed ${
