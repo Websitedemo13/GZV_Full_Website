@@ -64,7 +64,7 @@ const Header = () => {
         }
       } catch (e) {}
 
-      setHeaderLogo(branding.header_logo_url || "/logo.webp")
+      setHeaderLogo(branding.header_logo_url !== undefined ? branding.header_logo_url : "")
       setHeaderSiteName(meta.header_site_name || (branding as any).header_site_name || branding.site_name || "")
       setShowLogo(meta.show_logo !== undefined ? meta.show_logo : ((branding as any).show_logo !== false))
       setHeaderBgColor(meta.header_bg_color || (branding as any).header_bg_color || "")
@@ -134,7 +134,7 @@ const Header = () => {
       >
         <div className="container flex h-[74px] items-center justify-between gap-4 lg:h-[82px]">
           <Link href="/" className="flex min-w-0 items-center gap-3" aria-label="GZV home">
-            {showLogo && headerLogo ? (
+            {showLogo && headerLogo && headerLogo.trim() !== "" ? (
               <div className="relative h-12 w-[156px] shrink-0 lg:h-14 lg:w-[186px]">
                 <Image src={headerLogo} alt="GZV" fill priority unoptimized className="object-contain" />
               </div>

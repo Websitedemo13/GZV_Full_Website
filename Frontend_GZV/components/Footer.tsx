@@ -232,7 +232,14 @@ export default function Footer({ overrideConfig, activeColumn, onSelectColumn }:
           >
             <Link href="/" className="inline-flex items-center gap-2" onClick={(e) => onSelectColumn && e.preventDefault()}>
               {logoUrl ? (
-                <img src={logoUrl} alt={siteTitle} className="h-12 object-contain" />
+                <img
+                  src={logoUrl}
+                  alt={siteTitle}
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = "/logo.webp"
+                  }}
+                  className="h-12 object-contain"
+                />
               ) : (
                 <div className="w-12 h-12 rounded-none bg-[#ed1c24] text-white flex items-center justify-center">
                   <span className="font-extrabold text-sm">GZV</span>

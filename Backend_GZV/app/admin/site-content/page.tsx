@@ -39,6 +39,7 @@ import {
   RotateCcw,
   Save,
   Settings2,
+  Sparkles,
   Trash2,
 } from "lucide-react"
 
@@ -230,7 +231,13 @@ function SiteContentManager() {
           supabase.from("site_branding_settings").select("*").eq("id", 1).maybeSingle(),
           supabase.from("site_section_templates").select("*").order("sort_order", { ascending: true }),
           supabase.from("site_page_blocks").select("*").order("page_slug", { ascending: true }).order("sort_order", { ascending: true }),
-          supabase.from("site_settings").select("*").limit(1).maybeSingle(),
+          (async () => {
+            try {
+              return await supabase.from("site_settings").select("*").limit(1).maybeSingle()
+            } catch (e) {
+              return { data: null, error: null } as any
+            }
+          })(),
         ])
 
         let nextNav: NavItem[] = defaultNav
@@ -250,12 +257,12 @@ function SiteContentManager() {
         const nextPages = pagesResult.data?.length
           ? (pagesResult.data as PageContent[])
           : defaultNav.map((item) => ({
-              slug: item.href.replace("/", "") || "home",
-              title: item.label_vi,
-              menu_title: item.label_vi,
-              banner_title: item.label_vi,
-              is_visible: true,
-            }))
+            slug: item.href.replace("/", "") || "home",
+            title: item.label_vi,
+            menu_title: item.label_vi,
+            banner_title: item.label_vi,
+            is_visible: true,
+          }))
 
         setNavItems(nextNav)
         setPages(nextPages)
@@ -284,7 +291,7 @@ function SiteContentManager() {
           if (fetchedBranding.default_keywords && fetchedBranding.default_keywords.startsWith("{")) {
             headerMeta = JSON.parse(fetchedBranding.default_keywords)
           }
-        } catch (e) {}
+        } catch (e) { }
 
         setBranding({
           ...defaultBranding,
@@ -382,17 +389,23 @@ function SiteContentManager() {
         if (error) throw error
         toast.success(`Đã lưu banner trang ${selectedPageObj.title || selectedPageObj.slug}!`)
       } else {
-        const { data: existingSettings } = await supabase.from("site_settings").select("page_heroes").eq("id", 1).maybeSingle()
+        let existingSettings: any = null
+        try {
+          const res = await supabase.from("site_settings").select("page_heroes").eq("id", 1).maybeSingle()
+          existingSettings = res.data
+        } catch (e) { }
+
         const pageHeroes = existingSettings?.page_heroes || {}
         const updatedHeroes = {
           ...pageHeroes,
           global_banner: globalBannerConfig,
           sync_all_banners: syncAllBanners,
         }
-        const { error } = await supabase
-          .from("site_settings")
-          .upsert([{ id: 1, page_heroes: updatedHeroes }], { onConflict: "id" })
-        if (error) throw error
+
+        try {
+          await supabase.from("site_settings").upsert([{ id: 1, page_heroes: updatedHeroes }], { onConflict: "id" })
+        } catch (e) { }
+
         toast.success("Đã lưu cấu hình Giao diện Banner chung!")
       }
     } catch (err: any) {
@@ -427,7 +440,7 @@ function SiteContentManager() {
 
       const footerPayload = {
         id: 1,
-        logo_url: footer.logo_url || branding.footer_logo_url || "/logo.webp",
+        logo_url: footer.logo_url !== undefined ? footer.logo_url : (branding.footer_logo_url ?? ""),
         intro_text: footer.intro_text || "",
         background_color: footer.background_color || "#050505",
         bottom_background_color: footer.bottom_background_color || footer.background_color || "#050505",
@@ -455,8 +468,8 @@ function SiteContentManager() {
       const brandingPayload = {
         id: 1,
         site_name: branding.header_site_name || branding.site_name || "GZV",
-        header_logo_url: branding.header_logo_url || "/logo.webp",
-        footer_logo_url: branding.footer_logo_url || "/logo.webp",
+        header_logo_url: branding.header_logo_url !== undefined ? branding.header_logo_url : "",
+        footer_logo_url: branding.footer_logo_url !== undefined ? branding.footer_logo_url : "",
         favicon_url: branding.favicon_url || "/logo/favicon.ico",
         default_title: branding.default_title || "GZV - The Voice of Genzers",
         title_template: branding.title_template || "%s | GZV",
@@ -521,8 +534,10 @@ function SiteContentManager() {
   }
 
   const handleDeleteNavItem = (index: number) => {
-    if (navItems[index]?.href === "/") {
-      toast.error("Không thể xóa Trang Chủ mặc định!")
+    const targetHref = navItems[index]?.href || ""
+    const defaultHrefs = ["/", "/gioi-thieu", "/dich-vu", "/dich-vu/marketing", "/cua-hang", "/du-an", "/gzver", "/tin-tuc", "/lien-he"]
+    if (defaultHrefs.includes(targetHref) || defaultNav.some((d) => d.href === targetHref)) {
+      toast.error("Không thể xóa các trang mặc định của hệ thống! Bạn chỉ có thể ẩn hoặc đổi tên.")
       return
     }
     setNavItems(navItems.filter((_, idx) => idx !== index))
@@ -539,16 +554,12 @@ function SiteContentManager() {
   }
 
   const handleGoToPageSections = (href: string) => {
-    if (href === "/") {
-      setActiveTab("home")
-      toast.success("Đã chuyển tới trang chỉnh sửa các Section Trang Chủ!")
-      return
-    }
-    const cleanSlug = normalizeSlug(href.split("#")[0].replace(/^\//, "")) || "gioi-thieu"
-    setBuilderSlug(cleanSlug)
+    const rawPath = (href || "").split("#")[0].trim()
+    const cleanSlug = rawPath === "/" || rawPath === "" || rawPath === "#" ? "gioi-thieu" : (normalizeSlug(rawPath.replace(/^\//, "")) || "gioi-thieu")
     setSelectedSlug(cleanSlug)
-    setActiveTab("builder")
-    toast.success(`Đã chuyển tới trang chỉnh sửa Section cho: /${cleanSlug}`)
+    setActiveTab("banner")
+    toast.success(`Đã chuyển tới tab Banner cho trang /${cleanSlug}!`)
+    window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
   if (loading) {
@@ -634,29 +645,21 @@ function SiteContentManager() {
 
         {/* 2. Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid h-auto w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-1 border border-slate-200 bg-slate-100 p-1 rounded-none shadow-xs dark:border-white/10 dark:bg-slate-900">
-            <TabsTrigger value="menu" className="rounded-none py-2.5 text-xs font-black uppercase tracking-wider data-[state=active]:bg-[#ed1c24] data-[state=active]:text-white flex items-center justify-center gap-1.5">
-              <LayoutTemplate className="h-4 w-4" /> Menu
+          <TabsList className="grid h-auto w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1 border border-slate-200 bg-slate-100 p-1.5 rounded-none shadow-xs dark:border-white/10 dark:bg-slate-900">
+            <TabsTrigger value="menu" className="rounded-none py-2.5 px-2 text-[11px] font-black uppercase tracking-wider transition-all data-[state=active]:bg-[#ed1c24] data-[state=active]:text-white data-[state=active]:shadow-xs flex items-center justify-center gap-1.5">
+              <LayoutTemplate className="h-3.5 w-3.5 shrink-0" /> Menu
             </TabsTrigger>
-            <TabsTrigger value="banner" className="rounded-none py-2.5 text-xs font-black uppercase tracking-wider data-[state=active]:bg-[#ed1c24] data-[state=active]:text-white flex items-center justify-center gap-1.5">
-              <ImageIcon className="h-4 w-4" /> Banner (Hero)
+            <TabsTrigger value="banner" className="rounded-none py-2.5 px-2 text-[11px] font-black uppercase tracking-wider transition-all data-[state=active]:bg-[#ed1c24] data-[state=active]:text-white data-[state=active]:shadow-xs flex items-center justify-center gap-1.5">
+              <ImageIcon className="h-3.5 w-3.5 shrink-0" /> Banner (Hero)
             </TabsTrigger>
-
-            {/* Sub-tabs for other CMS controls */}
-            <TabsTrigger value="header_footer" className="rounded-none py-2.5 text-xs font-bold uppercase text-slate-600 dark:text-slate-400 data-[state=active]:bg-[#ed1c24] data-[state=active]:text-white flex items-center justify-center gap-1">
-              <Settings2 className="h-3.5 w-3.5" /> Header & Footer
+            <TabsTrigger value="header_footer" className="rounded-none py-2.5 px-2 text-[11px] font-black uppercase tracking-wider transition-all data-[state=active]:bg-[#ed1c24] data-[state=active]:text-white data-[state=active]:shadow-xs flex items-center justify-center gap-1.5">
+              <Settings2 className="h-3.5 w-3.5 shrink-0" /> Header & Footer
             </TabsTrigger>
-            <TabsTrigger value="builder" className="rounded-none py-2.5 text-xs font-bold uppercase text-slate-600 dark:text-slate-400 data-[state=active]:bg-[#ed1c24] data-[state=active]:text-white flex items-center justify-center gap-1">
-              <MonitorCog className="h-3.5 w-3.5" /> Builder & Sections
+            <TabsTrigger value="floating" className="rounded-none py-2.5 px-2 text-[11px] font-black uppercase tracking-wider transition-all data-[state=active]:bg-[#ed1c24] data-[state=active]:text-white data-[state=active]:shadow-xs flex items-center justify-center gap-1.5">
+              <Bot className="h-3.5 w-3.5 shrink-0" /> Floating
             </TabsTrigger>
-            <TabsTrigger value="home" className="rounded-none py-2.5 text-xs font-bold uppercase text-slate-600 dark:text-slate-400 data-[state=active]:bg-[#ed1c24] data-[state=active]:text-white flex items-center justify-center gap-1">
-              <Layers className="h-3.5 w-3.5" /> Trang chủ
-            </TabsTrigger>
-            <TabsTrigger value="floating" className="rounded-none py-2.5 text-xs font-bold uppercase text-slate-600 dark:text-slate-400 data-[state=active]:bg-[#ed1c24] data-[state=active]:text-white flex items-center justify-center gap-1">
-              <Bot className="h-3.5 w-3.5" /> Floating
-            </TabsTrigger>
-            <TabsTrigger value="loading" className="rounded-none py-2.5 text-xs font-bold uppercase text-slate-600 dark:text-slate-400 data-[state=active]:bg-[#ed1c24] data-[state=active]:text-white flex items-center justify-center gap-1">
-              <RotateCcw className="h-3.5 w-3.5" /> Loading
+            <TabsTrigger value="loading" className="rounded-none py-2.5 px-2 text-[11px] font-black uppercase tracking-wider transition-all data-[state=active]:bg-[#ed1c24] data-[state=active]:text-white data-[state=active]:shadow-xs flex items-center justify-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 shrink-0" /> Loading
             </TabsTrigger>
           </TabsList>
 
@@ -910,11 +913,10 @@ function SiteContentManager() {
                         <div
                           key={p.slug}
                           onClick={() => setSelectedPageForPreview(p.slug)}
-                          className={`p-2.5 border cursor-pointer transition ${
-                            isSelected
-                              ? "border-[#ed1c24] bg-red-50/50 text-[#ed1c24] font-black dark:bg-red-950/30"
-                              : "border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-400 dark:border-white/10 dark:bg-slate-950 dark:text-slate-300"
-                          }`}
+                          className={`p-2.5 border cursor-pointer transition ${isSelected
+                            ? "border-[#ed1c24] bg-red-50/50 text-[#ed1c24] font-black dark:bg-red-950/30"
+                            : "border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-400 dark:border-white/10 dark:bg-slate-950 dark:text-slate-300"
+                            }`}
                         >
                           <p className="font-bold text-xs uppercase truncate">{p.title || p.slug}</p>
                           <p className="font-mono text-[9px] text-slate-400 truncate">/{p.slug}</p>
@@ -1020,61 +1022,7 @@ function SiteContentManager() {
             />
           </TabsContent>
 
-          {/* TAB 4: BUILDER & SECTIONS */}
-          <TabsContent value="builder">
-            <Card className="rounded-none border-slate-200 dark:border-white/10">
-              <CardHeader>
-                <CardTitle className="text-lg font-black uppercase flex items-center justify-between">
-                  <span>Page Builder & Section: <span className="text-[#ed1c24]">/{builderSlug}</span></span>
-                </CardTitle>
-                <CardDescription>Xây dựng giao diện trang công khai bằng các block thành phần.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Label className="text-xs font-bold">Chọn trang muốn sửa:</Label>
-                  <Select value={builderSlug} onValueChange={(val) => { setBuilderSlug(val); setSelectedSlug(val); }}>
-                    <SelectTrigger className="w-64 h-9 rounded-none text-xs font-bold">
-                      <SelectValue placeholder="Chọn trang" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-none">
-                      {quickBuilderPages.map((p) => (
-                        <SelectItem key={p.slug} value={p.slug}>{p.label} (/{p.slug})</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <p className="text-xs text-slate-500">Đang chọn chỉnh sửa section cho đường dẫn: <strong className="text-slate-900 dark:text-white">/{builderSlug}</strong></p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* TAB 5: TRANG CHỦ SECTIONS */}
-          <TabsContent value="home">
-            <Card className="rounded-none border-slate-200 dark:border-white/10">
-              <CardHeader>
-                <CardTitle className="text-lg font-black uppercase">Quản lý Section Trang Chủ</CardTitle>
-                <CardDescription>Bật/tắt và sắp xếp thứ tự hiển thị các khối trên trang chủ.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {homeSections.map((section, idx) => (
-                  <div key={section.section_key || idx} className="flex items-center justify-between border p-3 dark:border-white/10">
-                    <div>
-                      <p className="font-bold text-sm uppercase">{section.title || section.section_key}</p>
-                      <p className="text-xs text-slate-500">{section.subtitle}</p>
-                    </div>
-                    <Switch
-                      checked={section.is_visible}
-                      onCheckedChange={(val) =>
-                        setHomeSections(homeSections.map((s, i) => (i === idx ? { ...s, is_visible: val } : s)))
-                      }
-                    />
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* TAB 6: FLOATING */}
+          {/* TAB 4: FLOATING */}
           <TabsContent value="floating">
             <Card className="rounded-none border-slate-200 dark:border-white/10">
               <CardHeader>

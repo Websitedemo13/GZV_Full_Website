@@ -548,6 +548,17 @@ export function HeaderFooterSeoTab({
                       >
                         <ImageIcon className="h-4 w-4 mr-1 text-[#ed1c24]" /> Chọn ảnh
                       </Button>
+                      {faviconUrl && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setFaviconUrl("")}
+                          className="h-9 rounded-none text-xs font-black uppercase text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+                        >
+                          Xóa
+                        </Button>
+                      )}
                     </div>
                     <p className="text-[10px] text-slate-500 font-semibold">Kích thước vuông ≥ 64×64 (PNG / ICO / SVG).</p>
                   </div>
@@ -607,8 +618,8 @@ export function HeaderFooterSeoTab({
                   <div
                     onClick={() => setActiveFooterCol(1)}
                     className={`space-y-4 rounded-none transition-all cursor-pointer p-3 border ${activeFooterCol === 1
-                        ? "border-[#ed1c24] bg-[#ed1c24]/10 ring-2 ring-[#ed1c24]"
-                        : "border-white/10 hover:border-[#ed1c24]/60 hover:bg-white/5"
+                      ? "border-[#ed1c24] bg-[#ed1c24]/10 ring-2 ring-[#ed1c24]"
+                      : "border-white/10 hover:border-[#ed1c24]/60 hover:bg-white/5"
                       }`}
                   >
                     <div className="inline-flex items-center gap-2">
@@ -647,8 +658,8 @@ export function HeaderFooterSeoTab({
                   <div
                     onClick={() => setActiveFooterCol(2)}
                     className={`space-y-4 rounded-none transition-all cursor-pointer p-3 border ${activeFooterCol === 2
-                        ? "border-[#ed1c24] bg-[#ed1c24]/10 ring-2 ring-[#ed1c24]"
-                        : "border-white/10 hover:border-[#ed1c24]/60 hover:bg-white/5"
+                      ? "border-[#ed1c24] bg-[#ed1c24]/10 ring-2 ring-[#ed1c24]"
+                      : "border-white/10 hover:border-[#ed1c24]/60 hover:bg-white/5"
                       }`}
                   >
                     <h3 className="font-black text-xs uppercase tracking-wider relative inline-block text-white pb-1 border-b-2 border-[#ed1c24]">
@@ -669,8 +680,8 @@ export function HeaderFooterSeoTab({
                   <div
                     onClick={() => setActiveFooterCol(3)}
                     className={`space-y-4 rounded-none transition-all cursor-pointer p-3 border ${activeFooterCol === 3
-                        ? "border-[#ed1c24] bg-[#ed1c24]/10 ring-2 ring-[#ed1c24]"
-                        : "border-white/10 hover:border-[#ed1c24]/60 hover:bg-white/5"
+                      ? "border-[#ed1c24] bg-[#ed1c24]/10 ring-2 ring-[#ed1c24]"
+                      : "border-white/10 hover:border-[#ed1c24]/60 hover:bg-white/5"
                       }`}
                   >
                     <h3 className="font-black text-xs uppercase tracking-wider relative inline-block text-white pb-1 border-b-2 border-[#ed1c24]">
@@ -712,8 +723,8 @@ export function HeaderFooterSeoTab({
                   <div
                     onClick={() => setActiveFooterCol(4)}
                     className={`space-y-3 rounded-none transition-all cursor-pointer p-3 border ${activeFooterCol === 4
-                        ? "border-[#ed1c24] bg-[#ed1c24]/10 ring-2 ring-[#ed1c24]"
-                        : "border-white/10 hover:border-[#ed1c24]/60 hover:bg-white/5"
+                      ? "border-[#ed1c24] bg-[#ed1c24]/10 ring-2 ring-[#ed1c24]"
+                      : "border-white/10 hover:border-[#ed1c24]/60 hover:bg-white/5"
                       }`}
                   >
                     <h3 className="font-black text-xs uppercase tracking-wider relative inline-block text-white pb-1 border-b-2 border-[#ed1c24]">
@@ -885,8 +896,8 @@ export function HeaderFooterSeoTab({
               <div
                 onClick={() => setActiveFooterCol(1)}
                 className={`p-3.5 border rounded-none cursor-pointer transition-all ${activeFooterCol === 1
-                    ? "bg-red-50/60 border-[#ed1c24] text-slate-900 font-bold dark:bg-red-950/30 dark:text-white"
-                    : "bg-white border-slate-200 hover:border-slate-400 text-slate-500 dark:border-white/10 dark:bg-slate-900"
+                  ? "bg-red-50/60 border-[#ed1c24] text-slate-900 font-bold dark:bg-red-950/30 dark:text-white"
+                  : "bg-white border-slate-200 hover:border-slate-400 text-slate-500 dark:border-white/10 dark:bg-slate-900"
                   }`}
               >
                 <div className="flex items-center justify-between">
@@ -901,8 +912,8 @@ export function HeaderFooterSeoTab({
               <div
                 onClick={() => setActiveFooterCol(2)}
                 className={`p-3.5 border rounded-none cursor-pointer transition-all ${activeFooterCol === 2
-                    ? "bg-red-50/60 border-[#ed1c24] text-slate-900 font-bold dark:bg-red-950/30 dark:text-white"
-                    : "bg-white border-slate-200 hover:border-slate-400 text-slate-500 dark:border-white/10 dark:bg-slate-900"
+                  ? "bg-red-50/60 border-[#ed1c24] text-slate-900 font-bold dark:bg-red-950/30 dark:text-white"
+                  : "bg-white border-slate-200 hover:border-slate-400 text-slate-500 dark:border-white/10 dark:bg-slate-900"
                   }`}
               >
                 <div className="flex items-center justify-between">
@@ -917,8 +928,8 @@ export function HeaderFooterSeoTab({
               <div
                 onClick={() => setActiveFooterCol(3)}
                 className={`p-3.5 border rounded-none cursor-pointer transition-all ${activeFooterCol === 3
-                    ? "bg-red-50/60 border-[#ed1c24] text-slate-900 font-bold dark:bg-red-950/30 dark:text-white"
-                    : "bg-white border-slate-200 hover:border-slate-400 text-slate-500 dark:border-white/10 dark:bg-slate-900"
+                  ? "bg-red-50/60 border-[#ed1c24] text-slate-900 font-bold dark:bg-red-950/30 dark:text-white"
+                  : "bg-white border-slate-200 hover:border-slate-400 text-slate-500 dark:border-white/10 dark:bg-slate-900"
                   }`}
               >
                 <div className="flex items-center justify-between">
@@ -933,8 +944,8 @@ export function HeaderFooterSeoTab({
               <div
                 onClick={() => setActiveFooterCol(4)}
                 className={`p-3.5 border rounded-none cursor-pointer transition-all ${activeFooterCol === 4
-                    ? "bg-red-50/60 border-[#ed1c24] text-slate-900 font-bold dark:bg-red-950/30 dark:text-white"
-                    : "bg-white border-slate-200 hover:border-slate-400 text-slate-500 dark:border-white/10 dark:bg-slate-900"
+                  ? "bg-red-50/60 border-[#ed1c24] text-slate-900 font-bold dark:bg-red-950/30 dark:text-white"
+                  : "bg-white border-slate-200 hover:border-slate-400 text-slate-500 dark:border-white/10 dark:bg-slate-900"
                   }`}
               >
                 <div className="flex items-center justify-between">
@@ -949,8 +960,8 @@ export function HeaderFooterSeoTab({
               <div
                 onClick={() => setActiveFooterCol("copyright")}
                 className={`p-3.5 border rounded-none cursor-pointer transition-all ${activeFooterCol === "copyright"
-                    ? "bg-red-50/60 border-[#ed1c24] text-slate-900 font-bold dark:bg-red-950/30 dark:text-white"
-                    : "bg-white border-slate-200 hover:border-slate-400 text-slate-500 dark:border-white/10 dark:bg-slate-900"
+                  ? "bg-red-50/60 border-[#ed1c24] text-slate-900 font-bold dark:bg-red-950/30 dark:text-white"
+                  : "bg-white border-slate-200 hover:border-slate-400 text-slate-500 dark:border-white/10 dark:bg-slate-900"
                   }`}
               >
                 <div className="flex items-center justify-between">
@@ -997,6 +1008,17 @@ export function HeaderFooterSeoTab({
                       >
                         <ImageIcon className="h-4 w-4 mr-1 text-[#ed1c24]" /> Chọn ảnh
                       </Button>
+                      {footerLogoUrl && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setFooterLogoUrl("")}
+                          className="h-9 rounded-none text-xs font-black uppercase text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+                        >
+                          Xóa
+                        </Button>
+                      )}
                     </div>
                   </div>
                   <div>
