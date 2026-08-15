@@ -20,6 +20,10 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [navItems, setNavItems] = useState<SiteNavItem[]>(defaultNavigation)
   const [headerLogo, setHeaderLogo] = useState("/logo.webp")
+  const [headerSiteName, setHeaderSiteName] = useState("")
+  const [showLogo, setShowLogo] = useState(true)
+  const [headerBgColor, setHeaderBgColor] = useState("")
+  const [headerTextColor, setHeaderTextColor] = useState("")
   const [topbar, setTopbar] = useState({
     email: "gzv.one@gmail.com",
     phone: "(+84) 329 381 489",
@@ -53,7 +57,18 @@ const Header = () => {
     let active = true
     Promise.all([getBrandingSettings(), getSiteNavigation()]).then(([branding, navigation]) => {
       if (!active) return
+      let meta: any = {}
+      try {
+        if (branding.default_keywords && branding.default_keywords.startsWith("{")) {
+          meta = JSON.parse(branding.default_keywords)
+        }
+      } catch (e) {}
+
       setHeaderLogo(branding.header_logo_url || "/logo.webp")
+      setHeaderSiteName(meta.header_site_name || (branding as any).header_site_name || branding.site_name || "")
+      setShowLogo(meta.show_logo !== undefined ? meta.show_logo : ((branding as any).show_logo !== false))
+      setHeaderBgColor(meta.header_bg_color || (branding as any).header_bg_color || "")
+      setHeaderTextColor(meta.header_text_color || (branding as any).header_text_color || "")
       setNavItems(navigation.filter((item) => item.is_visible !== false))
       setTopbar({
         email: branding.topbar_email_label || "gzv.one@gmail.com",
@@ -105,16 +120,34 @@ const Header = () => {
       </div>
 
       <motion.header
-        className={`fixed inset-x-0 z-[70] border-b border-white/10 bg-[#050505] transition-all duration-300 ${isScrolled
+        style={{
+          backgroundColor: headerBgColor || undefined,
+          color: headerTextColor || undefined,
+        }}
+        className={`fixed inset-x-0 z-[70] border-b border-white/10 transition-all duration-300 ${
+          headerBgColor ? "" : "bg-[#050505]"
+        } ${
+          isScrolled
             ? "top-0 shadow-[0_16px_38px_rgba(0,0,0,0.50)] backdrop-blur-xl lg:top-0"
             : "top-0 shadow-[0_10px_30px_rgba(0,0,0,0.30)] backdrop-blur-xl lg:top-9"
-          }`}
+        }`}
       >
         <div className="container flex h-[74px] items-center justify-between gap-4 lg:h-[82px]">
           <Link href="/" className="flex min-w-0 items-center gap-3" aria-label="GZV home">
-            <div className="relative h-12 w-[156px] shrink-0 lg:h-14 lg:w-[186px]">
-              <Image src={headerLogo} alt="GZV" fill priority unoptimized className="object-contain" />
-            </div>
+            {showLogo && headerLogo ? (
+              <div className="relative h-12 w-[156px] shrink-0 lg:h-14 lg:w-[186px]">
+                <Image src={headerLogo} alt="GZV" fill priority unoptimized className="object-contain" />
+              </div>
+            ) : (
+              <div className="h-9 w-9 bg-[#ed1c24] text-white flex items-center justify-center font-black text-xs shrink-0">
+                G
+              </div>
+            )}
+            {headerSiteName && (
+              <span className="text-sm md:text-base font-black uppercase tracking-wider hidden sm:inline" style={{ color: headerTextColor || undefined }}>
+                {headerSiteName}
+              </span>
+            )}
           </Link>
 
           <nav className="hidden items-center gap-1 lg:flex">
@@ -144,7 +177,7 @@ const Header = () => {
                     </span>
                   ) : (
                     <Link
-                      href={item.href}
+                      href={item.href || "#"}
                       target={item.is_external ? "_blank" : undefined}
                       className={linkClass}
                     >
@@ -155,7 +188,7 @@ const Header = () => {
                     <div className="invisible absolute left-0 top-full w-72 translate-y-3 border border-white/10 bg-[#080808] p-2 opacity-0 shadow-[0_24px_60px_rgba(0,0,0,0.5)] transition duration-200 group-hover/menu:visible group-hover/menu:translate-y-0 group-hover/menu:opacity-100">
                       {children.map((child) => {
                         const childLabel = getLabel(child)
-                        const isChildShop = childLabel.toLowerCase().includes("cửa hàng") || childLabel.toLowerCase().includes("shop") || childLabel.toLowerCase().includes("store") || child.href.includes("cua-hang") || child.href === "#"
+                        const isChildShop = childLabel.toLowerCase().includes("cửa hàng") || childLabel.toLowerCase().includes("shop") || childLabel.toLowerCase().includes("store") || (child.href && child.href.includes("cua-hang")) || child.href === "#"
                         const childClass = "flex items-center justify-between border-b border-white/10 px-4 py-3 text-xs font-black uppercase text-white transition last:border-b-0 hover:bg-[#ed1c24] hover:text-white"
 
                         return isChildShop ? (
@@ -165,8 +198,8 @@ const Header = () => {
                           </span>
                         ) : (
                           <Link
-                            key={child.href}
-                            href={child.href}
+                            key={child.href || childLabel}
+                            href={child.href || "#"}
                             target={child.is_external ? "_blank" : undefined}
                             className={childClass}
                           >
@@ -271,7 +304,7 @@ const Header = () => {
                         </div>
                       ) : (
                         <Link
-                          href={item.href}
+                          href={item.href || "#"}
                           target={item.is_external ? "_blank" : undefined}
                           onClick={() => setIsMobileMenuOpen(false)}
                           className="flex items-center justify-between py-2 text-sm font-black uppercase tracking-wide text-white transition hover:text-[#ed1c24]"
@@ -284,7 +317,7 @@ const Header = () => {
                         <div className="mt-2 grid gap-2 border-l border-white/10 pl-4">
                           {children.map((child) => {
                             const childLabel = getLabel(child)
-                            const isChildShop = childLabel.toLowerCase().includes("cửa hàng") || childLabel.toLowerCase().includes("shop") || childLabel.toLowerCase().includes("store") || child.href.includes("cua-hang") || child.href === "#"
+                            const isChildShop = childLabel.toLowerCase().includes("cửa hàng") || childLabel.toLowerCase().includes("shop") || childLabel.toLowerCase().includes("store") || (child.href && child.href.includes("cua-hang")) || child.href === "#"
                             const childClass = "flex items-center justify-between bg-white/[0.04] px-3 py-3 text-xs font-black uppercase text-white/78 transition hover:bg-[#ed1c24] hover:text-white"
 
                             return isChildShop ? (
@@ -294,8 +327,8 @@ const Header = () => {
                               </div>
                             ) : (
                               <Link
-                                key={child.href}
-                                href={child.href}
+                                key={child.href || childLabel}
+                                href={child.href || "#"}
                                 target={child.is_external ? "_blank" : undefined}
                                 onClick={() => setIsMobileMenuOpen(false)}
                                 className={childClass}

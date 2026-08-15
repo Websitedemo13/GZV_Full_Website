@@ -77,15 +77,53 @@ export function MediaPickerDialog({ open, onClose, onSelect, defaultFolder = 'ar
   const handleUpload = async (files: FileList | null) => {
     if (!files?.length) return
     setUploading(true)
-    for (const file of Array.from(files)) {
-      const safe = file.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9._-]/g, '')
-      await supabase.storage.from(BUCKET).upload(`${folder}/${Date.now()}_${safe}`, file, {
-        cacheControl: '3600', upsert: false, contentType: file.type,
+    try {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const token = sessionData?.session?.access_token
+
+      for (const file of Array.from(files)) {
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('folder', folder)
+
+        const res = await fetch('/api/images', {
+          method: 'POST',
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          body: formData,
+        })
+
+        const json = await res.json()
+        if (!res.ok || !json.success) {
+          // Fallback to direct supabase storage upload
+          const safe = file.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9._-]/g, '')
+          const path = `${folder}/${Date.now()}_${safe}`
+          const { error: directErr } = await supabase.storage.from(BUCKET).upload(path, file, {
+            cacheControl: '3600',
+            upsert: true,
+            contentType: file.type,
+          })
+          if (directErr) {
+            toast({
+              title: 'Lỗi tải ảnh lên',
+              description: json.error || directErr.message || 'Không thể tải ảnh lên storage',
+              variant: 'destructive',
+            })
+            setUploading(false)
+            return
+          }
+        }
+      }
+      toast({ title: 'Đã tải ảnh lên thành công!' })
+      loadFolder(folder)
+    } catch (err: any) {
+      toast({
+        title: 'Lỗi tải ảnh',
+        description: err.message || 'Lỗi hệ thống khi tải ảnh',
+        variant: 'destructive',
       })
+    } finally {
+      setUploading(false)
     }
-    setUploading(false)
-    toast({ title: 'Đã tải lên' })
-    loadFolder(folder)
   }
 
   const filtered = useMemo(() => {
