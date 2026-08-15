@@ -102,13 +102,10 @@ export default function MentorsPage() {
   }
 
   return (
-    <BuilderPageGate slug="mentors">
-      <PageBanner
-        badge="Lãnh đạo & Chuyên gia hàng đầu"
-        title="Ban Giảng Huấn"
-        subtitle="Nơi hội tụ những nhà lãnh đạo, chuyên gia đầu ngành mang tâm thế phụng sự và khát vọng chuyển giao tri thức"
-      />
-      <div className="bg-white dark:bg-gray-950">
+    <>
+      <PageBanner />
+      <BuilderPageGate slug="mentors">
+        <div className="bg-white dark:bg-gray-950">
 
       {/* ===== STICKY TAB NAVIGATION ===== */}
       <section className="sticky top-[72px] bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl z-30 border-b border-gray-200 dark:border-gray-800 shadow-lg">
@@ -312,5 +309,6 @@ export default function MentorsPage() {
       </main>
     </div>
     </BuilderPageGate>
+    </>
   )
 }

@@ -27,10 +27,10 @@ export default function StatsBar({
   title,
   subtitle,
   stats = [
-    { value: "10+", label: "Năm kinh nghiệm", description: "Đồng hành và phát triển" },
-    { value: "5000+", label: "Học viên", description: "Tham gia đào tạo" },
-    { value: "50+", label: "Doanh nghiệp", description: "Đối tác chiến lược" },
-    { value: "98%", label: "Hài lòng", description: "Đánh giá chất lượng" },
+    { value: "3", label: "Mũi triển khai", description: "Marketing, Sales, Chuyển đổi số" },
+    { value: "50+", label: "Đối tác", description: "Doanh nghiệp đồng hành" },
+    { value: "10+", label: "Lĩnh vực", description: "Kinh nghiệm thực tiễn" },
+    { value: "100%", label: "Thực chiến", description: "Tập trung vào kết quả" },
   ],
   columns = 4,
   backgroundFrom = "#050505",
@@ -54,12 +54,15 @@ export default function StatsBar({
 
   return (
     <section
-      className={`relative overflow-hidden py-16 text-white ${className}`}
+      className={`relative overflow-hidden py-14 sm:py-16 text-white border-b border-white/10 ${className}`}
       style={bgStyle}
     >
+      {/* Subtle background glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/[0.03] via-transparent to-transparent pointer-events-none" />
+
       <div className="container relative z-10 mx-auto px-4">
         {(badge || title || subtitle) && (
-          <div className="mx-auto mb-12 max-w-3xl text-center">
+          <div className="mx-auto mb-10 max-w-3xl text-center">
             {badge && (
               <span
                 className="mb-3 inline-block border-l-2 px-3 py-1 text-xs font-black uppercase tracking-wider text-white"
@@ -88,20 +91,21 @@ export default function StatsBar({
               initial={{ opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: idx * 0.1 }}
-              className="relative overflow-hidden border border-white/10 bg-white/[0.04] p-6 text-center backdrop-blur-sm transition hover:border-white/20 hover:bg-white/[0.08]"
+              transition={{ duration: 0.45, delay: idx * 0.08 }}
+              className="group relative overflow-hidden border border-white/10 bg-white/[0.04] p-6 text-center backdrop-blur-sm transition hover:border-[#ed1c24]/50 hover:bg-white/[0.08] shadow-lg"
             >
+              <div className="absolute inset-x-0 top-0 h-1 bg-[#ed1c24] opacity-0 group-hover:opacity-100 transition-opacity" />
               <div
-                className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight"
+                className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight drop-shadow-sm"
                 style={{ color: accentColor }}
               >
                 {stat.value}
               </div>
-              <div className="mt-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-white">
+              <div className="mt-2 text-xs sm:text-sm font-black uppercase tracking-wider text-white">
                 {stat.label}
               </div>
               {stat.description && (
-                <div className="mt-1 text-[11px] text-white/60">
+                <div className="mt-1.5 text-[11px] text-white/60 font-medium leading-relaxed">
                   {stat.description}
                 </div>
               )}

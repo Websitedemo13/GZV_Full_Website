@@ -64,13 +64,10 @@ export default function BlogPage() {
   if (error || !featuredPost) return <div className="p-40 text-center font-bold text-slate-300 italic">Hiện tại chưa có bài viết nào được xuất bản.</div>
 
   return (
-    <BuilderPageGate slug="tin-tuc">
-      <PageBanner
-        badge="Knowledge Hub"
-        title="Chia sẻ & Tri thức"
-        subtitle="Nơi hội tụ kiến thức thực tiễn từ chuyên gia GZV Center, chia sẻ kinh nghiệm và phát triển chuyên môn."
-      />
-      <div className="bg-white dark:bg-gray-900">
+    <>
+      <PageBanner />
+      <BuilderPageGate slug="tin-tuc">
+        <div className="bg-white dark:bg-gray-900">
 
         {/* FEATURED - Cinematic Article (Show only when no filter applied) */}
         {!selectedCategory && featuredPost && (
@@ -233,5 +230,6 @@ export default function BlogPage() {
         </section>
         </div>
       </BuilderPageGate>
+    </>
   )
 }

@@ -104,13 +104,10 @@ export default function ProjectsPage() {
   )
 
   return (
-    <BuilderPageGate slug="du-an">
-      <PageBanner
-        badge="Những dự án tiêu biểu"
-        title="Dự án đã triển khai"
-        subtitle="Các dự án Mentoring & Coaching thực tế mà GZV Center đã triển khai, đem lại giá trị thực cho các đối tác và học viên."
-      />
-      <div className="bg-white dark:bg-gray-900">
+    <>
+      <PageBanner />
+      <BuilderPageGate slug="du-an">
+        <div className="bg-white dark:bg-gray-900">
         <section className="py-24 bg-gray-50 dark:bg-gray-900">
             <div className="container px-4 mx-auto">
 
@@ -286,5 +283,6 @@ export default function ProjectsPage() {
           </section>
           </div>
       </BuilderPageGate>
+    </>
   )
 }

@@ -64,7 +64,13 @@ function RenderBlock({ block, language }: { block: PageBlock; language: "vi" | "
   switch (block.component_type) {
     case "stats_bar":
     case "hero_stats":
-      return <StatsBar {...props} />
+      return (
+        <StatsBar
+          {...props}
+          title={props.title === "DỊCH VỤ GZV" ? undefined : props.title}
+          subtitle={props.subtitle?.includes("Marketing | Sales") ? undefined : props.subtitle}
+        />
+      )
     case "msc_words":
       return <MscWords {...props} />
     case "about_gzv":
@@ -100,7 +106,7 @@ function RenderBlock({ block, language }: { block: PageBlock; language: "vi" | "
     case "contact_form":
       return <ContactFormBlock {...props} />
     case "page_banner":
-      return <PageBanner title={props.title || ""} {...props} />
+      return null
     case "core_showcase":
       return <CoreShowcase {...props} />
     case "image_gallery":
