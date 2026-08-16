@@ -43,7 +43,11 @@ export default function PageBuilderRenderer({ slug, fallback }: { slug: string; 
     let active = true
     getPageBlocks(slug).then((data) => {
       if (!active) return
-      setBlocks(data || [])
+      let filtered = data || []
+      if (slug === "lien-he") {
+        filtered = filtered.filter((b) => b.component_type !== "cta_band" && b.block_key !== "cta")
+      }
+      setBlocks(filtered)
       setLoading(false)
     })
     return () => {

@@ -345,27 +345,32 @@ export default function AdminGzversPage() {
             </div>
 
             {/* Bottom Toolbar: Larger Department Filter Buttons */}
-            <div className="pt-3 border-t border-slate-100 dark:border-white/5 space-y-2">
+            <div className="pt-4 border-t border-slate-200 dark:border-white/10 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <span className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   Lọc Theo Phòng Ban:
                 </span>
-                <span className="text-[11px] font-bold text-slate-400">
-                  Đang hiển thị {filteredGzvers.length} / {gzvers.length} nhân sự
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                  Đang hiển thị <strong className="text-[#ed1c24]">{filteredGzvers.length}</strong> / {gzvers.length} nhân sự
                 </span>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2.5">
                 <button
+                  type="button"
                   onClick={() => setActiveDepartment("all")}
-                  className={`h-9.5 px-4 text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 border ${activeDepartment === "all"
-                    ? "border-[#ed1c24] bg-[#ed1c24] text-white shadow-sm"
-                    : "border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-400 hover:bg-slate-100 dark:border-white/10 dark:bg-slate-950 dark:text-slate-300"
-                    }`}
+                  className={`h-11 px-5 text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2.5 border rounded-none ${
+                    activeDepartment === "all"
+                      ? "border-[#ed1c24] bg-[#ed1c24] text-white shadow-sm"
+                      : "border-slate-200 bg-white text-slate-800 hover:border-slate-400 hover:bg-slate-50 dark:border-white/10 dark:bg-slate-900 dark:text-slate-200"
+                  }`}
                 >
-                  <span>Tất Cả</span>
-                  <span className={`px-1.5 py-0.5 text-[10px] font-bold ${activeDepartment === "all" ? "bg-white/20 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
-                    }`}>
+                  <span>Tất Cả Ban</span>
+                  <span
+                    className={`px-2 py-0.5 text-xs font-bold rounded-none ${
+                      activeDepartment === "all" ? "bg-white/20 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                    }`}
+                  >
                     {gzvers.length}
                   </span>
                 </button>
@@ -379,16 +384,21 @@ export default function AdminGzversPage() {
                     const isSelected = activeDepartment === dept.id
                     return (
                       <button
+                        type="button"
                         key={dept.id}
                         onClick={() => setActiveDepartment(dept.id || "")}
-                        className={`h-9.5 px-4 text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 border ${isSelected
-                          ? "border-[#ed1c24] bg-[#ed1c24] text-white shadow-sm"
-                          : "border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-400 hover:bg-slate-100 dark:border-white/10 dark:bg-slate-950 dark:text-slate-300"
-                          }`}
+                        className={`h-11 px-5 text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2.5 border rounded-none ${
+                          isSelected
+                            ? "border-[#ed1c24] bg-[#ed1c24] text-white shadow-sm"
+                            : "border-slate-200 bg-white text-slate-800 hover:border-slate-400 hover:bg-slate-50 dark:border-white/10 dark:bg-slate-900 dark:text-slate-200"
+                        }`}
                       >
                         <span>{dept.name}</span>
-                        <span className={`px-1.5 py-0.5 text-[10px] font-bold ${isSelected ? "bg-white/20 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
-                          }`}>
+                        <span
+                          className={`px-2 py-0.5 text-xs font-bold rounded-none ${
+                            isSelected ? "bg-white/20 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                          }`}
+                        >
                           {count}
                         </span>
                       </button>

@@ -81,12 +81,8 @@ export function GZVersTable({ gzvers, onEdit, onDelete, onToggleStatus }: GZVers
 
                   {/* Column 2: Department */}
                   <TableCell className="py-3">
-                    <div className="inline-flex items-center gap-1.5 border border-slate-200 bg-slate-50 px-2.5 py-1 dark:border-white/10 dark:bg-slate-950">
-                      <span
-                        className="h-2 w-2 rounded-none inline-block shrink-0"
-                        style={{ backgroundColor: deptColor }}
-                      />
-                      <span className="text-[10px] font-black uppercase tracking-wide text-slate-800 dark:text-slate-200 truncate">
+                    <div className="inline-flex items-center border border-slate-200 bg-slate-50 px-3 py-1.5 dark:border-white/10 dark:bg-slate-950">
+                      <span className="text-xs font-bold uppercase tracking-wide text-slate-800 dark:text-slate-200 truncate">
                         {department}
                       </span>
                     </div>

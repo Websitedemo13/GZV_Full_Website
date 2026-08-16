@@ -264,6 +264,290 @@ function GzversGridPropsEditor({
   )
 }
 
+function ContactSectionPropsEditor({
+  value = {},
+  updateKey,
+  onChange,
+}: {
+  value: Record<string, any>
+  updateKey: (key: string, nextValue: any) => void
+  onChange: (patch: Record<string, any>) => void
+}) {
+  return (
+    <div className="space-y-6">
+      {/* 1. Thông tin liên hệ (Cột trái) */}
+      <div className="border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-slate-900 shadow-2xs">
+        <div className="border-b border-slate-200 pb-3 mb-4 dark:border-white/10 flex items-center gap-2">
+          <div className="h-4 w-1 bg-[#ed1c24]" />
+          <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
+            1. Cột Thông Tin Liên Hệ (Bên trái)
+          </h4>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field label="Tiêu đề khối">
+            <Input
+              value={value.info_title ?? value.title ?? "THÔNG TIN LIÊN HỆ"}
+              onChange={(e) => updateKey("info_title", e.target.value)}
+              className="rounded-none h-9 text-xs font-bold"
+            />
+          </Field>
+
+          <Field label="Mô tả phụ">
+            <Input
+              value={value.info_subtitle ?? value.subtitle ?? "Phản hồi nhanh trong vòng 24 giờ làm việc."}
+              onChange={(e) => updateKey("info_subtitle", e.target.value)}
+              className="rounded-none h-9 text-xs"
+            />
+          </Field>
+
+          <Field label="Email liên hệ">
+            <Input
+              value={value.email ?? "vsm.org.vn@gmail.com"}
+              onChange={(e) => updateKey("email", e.target.value)}
+              placeholder="vsm.org.vn@gmail.com"
+              className="rounded-none h-9 text-xs font-mono font-bold"
+            />
+          </Field>
+
+          <Field label="Hotline / Số điện thoại">
+            <Input
+              value={value.phone ?? "0329 381 489"}
+              onChange={(e) => updateKey("phone", e.target.value)}
+              placeholder="0329 381 489"
+              className="rounded-none h-9 text-xs font-bold"
+            />
+          </Field>
+
+          <div className="md:col-span-2">
+            <Field label="Địa chỉ trụ sở">
+              <Input
+                value={value.address ?? "139 Nguyễn Thị Thập, Tân Hưng, Q.7, TP.HCM"}
+                onChange={(e) => updateKey("address", e.target.value)}
+                placeholder="139 Nguyễn Thị Thập, Tân Hưng, Q.7, TP.HCM"
+                className="rounded-none h-9 text-xs font-semibold"
+              />
+            </Field>
+          </div>
+
+          <div className="md:col-span-2">
+            <Field label="Giờ làm việc">
+              <Input
+                value={value.working_hours ?? "Thứ 2 – Thứ 6: 8:00 – 18:00"}
+                onChange={(e) => updateKey("working_hours", e.target.value)}
+                placeholder="Thứ 2 – Thứ 6: 8:00 – 18:00"
+                className="rounded-none h-9 text-xs"
+              />
+            </Field>
+          </div>
+        </div>
+
+        {/* Social Links */}
+        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-white/5 space-y-3">
+          <Label className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
+            Liên kết Mạng xã hội
+          </Label>
+          <div className="grid gap-3 md:grid-cols-2">
+            <Field label="Facebook URL">
+              <Input
+                value={value.social_facebook ?? "https://www.facebook.com/gzv.one"}
+                onChange={(e) => updateKey("social_facebook", e.target.value)}
+                placeholder="https://facebook.com/..."
+                className="rounded-none h-9 text-xs font-mono"
+              />
+            </Field>
+            <Field label="YouTube URL">
+              <Input
+                value={value.social_youtube ?? "https://youtube.com"}
+                onChange={(e) => updateKey("social_youtube", e.target.value)}
+                placeholder="https://youtube.com/..."
+                className="rounded-none h-9 text-xs font-mono"
+              />
+            </Field>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Biểu mẫu gửi tin nhắn (Cột phải) */}
+      <div className="border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-slate-900 shadow-2xs">
+        <div className="border-b border-slate-200 pb-3 mb-4 dark:border-white/10 flex items-center gap-2">
+          <div className="h-4 w-1 bg-[#ed1c24]" />
+          <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
+            2. Cột Biểu Mẫu Gửi Tin Nhắn (Bên phải)
+          </h4>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field label="Tiêu đề Form">
+            <Input
+              value={value.form_title ?? "GỬI TIN NHẮN"}
+              onChange={(e) => updateKey("form_title", e.target.value)}
+              className="rounded-none h-9 text-xs font-bold"
+            />
+          </Field>
+
+          <Field label="Nút gửi Form">
+            <Input
+              value={value.submit_label ?? "GỬI TIN NHẮN"}
+              onChange={(e) => updateKey("submit_label", e.target.value)}
+              className="rounded-none h-9 text-xs font-bold text-[#ed1c24]"
+            />
+          </Field>
+
+          <div className="md:col-span-2">
+            <Field label="Mô tả dưới tiêu đề form">
+              <Input
+                value={value.form_description ?? "Chúng tôi sẽ phản hồi qua email bạn cung cấp."}
+                onChange={(e) => updateKey("form_description", e.target.value)}
+                className="rounded-none h-9 text-xs"
+              />
+            </Field>
+          </div>
+
+          <div className="md:col-span-2">
+            <Field label="Thông báo gửi thành công">
+              <Input
+                value={value.success_message ?? "Cảm ơn bạn! Tin nhắn đã được gửi thành công. Chúng tôi sẽ phản hồi sớm nhất."}
+                onChange={(e) => updateKey("success_message", e.target.value)}
+                className="rounded-none h-9 text-xs text-emerald-600 font-bold"
+              />
+            </Field>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Bản đồ Google Maps */}
+      <div className="border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-slate-900 shadow-2xs">
+        <div className="border-b border-slate-200 pb-3 mb-4 dark:border-white/10 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-1 bg-[#ed1c24]" />
+            <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
+              3. Bản Đồ Google Maps
+            </h4>
+          </div>
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={value.map_enabled !== false}
+              onCheckedChange={(v) => updateKey("map_enabled", v)}
+            />
+            <span className="text-[10px] font-black uppercase text-slate-500">
+              {value.map_enabled !== false ? "Bật" : "Tắt"}
+            </span>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <Field label="Tiêu đề khối bản đồ">
+            <Input
+              value={value.map_title ?? "Tìm chúng tôi trên bản đồ"}
+              onChange={(e) => updateKey("map_title", e.target.value)}
+              className="rounded-none h-9 text-xs font-bold"
+            />
+          </Field>
+
+          <Field label="Google Maps iframe Embed URL (src)">
+            <Textarea
+              rows={3}
+              value={value.map_embed_url ?? ""}
+              onChange={(e) => updateKey("map_embed_url", e.target.value)}
+              placeholder="Dán mã nhúng iframe src từ Google Maps (VD: https://www.google.com/maps/embed?pb=...)"
+              className="rounded-none text-xs font-mono resize-none"
+            />
+            <p className="text-[10px] text-slate-500 mt-1">
+              Lưu ý: Lấy link từ Google Maps &gt; Chia sẻ &gt; Nhúng bản đồ (chọn sao chép HTML hoặc link src). Không dùng link trang chủ Google thông thường để tránh lỗi bảo mật X-Frame-Options.
+            </p>
+          </Field>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function GoogleMapPropsEditor({
+  value = {},
+  updateKey,
+}: {
+  value: Record<string, any>
+  updateKey: (key: string, nextValue: any) => void
+}) {
+  return (
+    <div className="space-y-4">
+      <div className="border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-slate-900 shadow-2xs">
+        <div className="border-b border-slate-200 pb-3 mb-4 dark:border-white/10 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-1 bg-[#ed1c24]" />
+            <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
+              Cấu hình Bản Đồ Google Maps
+            </h4>
+          </div>
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={value.map_enabled !== false}
+              onCheckedChange={(v) => updateKey("map_enabled", v)}
+            />
+            <span className="text-[10px] font-black uppercase text-slate-500">
+              {value.map_enabled !== false ? "Bật" : "Tắt"}
+            </span>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label="Tiêu đề khối bản đồ">
+              <Input
+                value={value.title ?? value.map_title ?? "Tìm chúng tôi trên bản đồ"}
+                onChange={(e) => {
+                  updateKey("title", e.target.value)
+                  updateKey("map_title", e.target.value)
+                }}
+                className="rounded-none h-9 text-xs font-bold"
+              />
+            </Field>
+
+            <Field label="Chiều cao bản đồ">
+              <Select
+                value={value.height || "medium"}
+                onValueChange={(v) => updateKey("height", v)}
+              >
+                <SelectTrigger className="rounded-none h-9 text-xs">
+                  <SelectValue placeholder="Chọn chiều cao..." />
+                </SelectTrigger>
+                <SelectContent className="rounded-none">
+                  <SelectItem value="small" className="text-xs">Nhỏ (300px)</SelectItem>
+                  <SelectItem value="medium" className="text-xs">Vừa (420px - Mặc định)</SelectItem>
+                  <SelectItem value="large" className="text-xs">Lớn (550px)</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+          </div>
+
+          <Field label="Địa chỉ hiển thị dưới tiêu đề">
+            <Input
+              value={value.address ?? "139 Nguyễn Thị Thập, Tân Hưng, Q.7, TP.HCM"}
+              onChange={(e) => updateKey("address", e.target.value)}
+              placeholder="139 Nguyễn Thị Thập, Tân Hưng, Q.7, TP.HCM"
+              className="rounded-none h-9 text-xs font-semibold"
+            />
+          </Field>
+
+          <Field label="Google Maps iframe Embed URL (src)">
+            <Textarea
+              rows={3}
+              value={value.map_embed_url ?? ""}
+              onChange={(e) => updateKey("map_embed_url", e.target.value)}
+              placeholder="Dán mã nhúng iframe src từ Google Maps (VD: https://www.google.com/maps/embed?pb=...)"
+              className="rounded-none text-xs font-mono resize-none"
+            />
+            <p className="text-[10px] text-slate-500 mt-1">
+              Lưu ý: Lấy link từ Google Maps &gt; Chia sẻ &gt; Nhúng bản đồ (chọn sao chép HTML hoặc link src). Không dùng link trang chủ Google thông thường để tránh lỗi bảo mật X-Frame-Options.
+            </p>
+          </Field>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function PropsEditor({
   value = {},
   onChange,
@@ -280,6 +564,33 @@ export function PropsEditor({
   }
 
   const typeLower = (componentType || "").toLowerCase().trim()
+
+  const isMap =
+    typeLower === "google_map" ||
+    typeLower === "map_block" ||
+    typeLower === "map_section" ||
+    typeLower.includes("google_map") ||
+    typeLower.includes("google-map")
+
+  if (isMap) {
+    return <GoogleMapPropsEditor value={value} updateKey={updateKey} />
+  }
+
+  const isContact =
+    (typeLower.includes("contact") ||
+      typeLower.includes("lien-he") ||
+      typeLower.includes("lien_he")) &&
+    !isMap
+
+  if (isContact) {
+    return (
+      <ContactSectionPropsEditor
+        value={value}
+        updateKey={updateKey}
+        onChange={onChange}
+      />
+    )
+  }
 
   // Detection flags for component categories
   const isGzversGrid = typeLower === "gzvers_grid" || typeLower.includes("gzvers") || typeLower.includes("gzver")

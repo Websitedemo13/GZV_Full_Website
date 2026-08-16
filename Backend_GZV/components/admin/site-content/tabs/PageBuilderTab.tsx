@@ -146,38 +146,38 @@ export function PageBuilderTab({
                     {(templates.length ? templates : fallbackTemplates)
                       .filter((t) => t.component_type !== "page_banner" && t.template_key !== "banner-basic")
                       .map((template) => (
-                      <button
-                        key={template.template_key}
-                        type="button"
-                        onClick={() => {
-                          const newBlockKey = `${template.template_key}-${Date.now()}`
-                          setPageBlocks((rows) => [
-                            ...rows,
-                            {
-                              page_slug: builderSlug,
-                              block_key: newBlockKey,
-                              component_type: template.component_type,
-                              title: template.name,
-                              props: template.default_props || {},
-                              content_html: "",
-                              sort_order: rows.filter((r) => r.page_slug === builderSlug).length * 10 + 10,
-                              is_visible: true,
-                              responsive: {},
-                              seo: {},
-                            },
-                          ])
-                          setSelectedBlockKey(newBlockKey)
-                          setIsTemplateSelectorOpen(false)
-                        }}
-                        className="w-full text-left p-2 border border-slate-200 bg-white hover:border-[#ed1c24] hover:bg-red-50/30 dark:border-white/10 dark:bg-slate-900 transition flex items-center justify-between group"
-                      >
-                        <div className="min-w-0 flex-1 pr-2">
-                          <div className="text-[11px] font-bold uppercase truncate group-hover:text-[#ed1c24]">{template.name}</div>
-                          <div className="text-[9px] font-mono text-slate-400 truncate">{template.component_type}</div>
-                        </div>
-                        <Plus className="h-3.5 w-3.5 text-slate-400 group-hover:text-[#ed1c24] shrink-0" />
-                      </button>
-                    ))}
+                        <button
+                          key={template.template_key}
+                          type="button"
+                          onClick={() => {
+                            const newBlockKey = `${template.template_key}-${Date.now()}`
+                            setPageBlocks((rows) => [
+                              ...rows,
+                              {
+                                page_slug: builderSlug,
+                                block_key: newBlockKey,
+                                component_type: template.component_type,
+                                title: template.name,
+                                props: template.default_props || {},
+                                content_html: "",
+                                sort_order: rows.filter((r) => r.page_slug === builderSlug).length * 10 + 10,
+                                is_visible: true,
+                                responsive: {},
+                                seo: {},
+                              },
+                            ])
+                            setSelectedBlockKey(newBlockKey)
+                            setIsTemplateSelectorOpen(false)
+                          }}
+                          className="w-full text-left p-2 border border-slate-200 bg-white hover:border-[#ed1c24] hover:bg-red-50/30 dark:border-white/10 dark:bg-slate-900 transition flex items-center justify-between group"
+                        >
+                          <div className="min-w-0 flex-1 pr-2">
+                            <div className="text-[11px] font-bold uppercase truncate group-hover:text-[#ed1c24]">{template.name}</div>
+                            <div className="text-[9px] font-mono text-slate-400 truncate">{template.component_type}</div>
+                          </div>
+                          <Plus className="h-3.5 w-3.5 text-slate-400 group-hover:text-[#ed1c24] shrink-0" />
+                        </button>
+                      ))}
                   </div>
                 </div>
               )}
@@ -266,35 +266,6 @@ export function PageBuilderTab({
               </CardHeader>
 
               <CardContent className="space-y-5 pt-5">
-                {!activeBlockItem.block.component_type?.includes("stat") && !activeBlockItem.block.block_key?.includes("stat") && (
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <Field label="Tên tiêu đề Section">
-                      <Input
-                        value={activeBlockItem.block.title || activeBlockItem.block.props?.title || ""}
-                        onChange={(e) => {
-                          const newTitle = e.target.value
-                          updateBlock(activeBlockItem.index, {
-                            title: newTitle,
-                            props: { ...(activeBlockItem.block.props || {}), title: newTitle },
-                          })
-                        }}
-                        className="rounded-none font-bold text-xs"
-                        placeholder="Ví dụ: CÂU CHUYỆN GZV"
-                      />
-                    </Field>
-                    <Field label="Phụ đề (Subtitle)">
-                      <Input
-                        value={activeBlockItem.block.props?.subtitle || ""}
-                        onChange={(e) => updateBlock(activeBlockItem.index, {
-                          props: { ...(activeBlockItem.block.props || {}), subtitle: e.target.value }
-                        })}
-                        className="rounded-none text-xs"
-                        placeholder="Ví dụ: Từ một cộng đồng học hỏi đến hệ sinh thái..."
-                      />
-                    </Field>
-                  </div>
-                )}
-
                 {/* Specialized / Props Block Editor */}
                 <BlockPropsEditor
                   block={activeBlockItem.block}

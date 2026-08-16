@@ -403,7 +403,7 @@ function SiteContentManager() {
         sort_order: (idx + 1) * 10,
         props: {
           ...(block.props || {}),
-          title: block.title,
+          title: block.props?.title ?? block.title,
         },
       }))
       await supabase.from("site_page_blocks").delete().eq("page_slug", builderSlug)
@@ -411,6 +411,44 @@ function SiteContentManager() {
         const { error: blockErr } = await supabase.from("site_page_blocks").upsert(targetBlocks)
         if (blockErr) throw blockErr
       }
+
+      // Sync site_contact_settings if editing lien-he
+      if (builderSlug === "lien-he") {
+        const contactBlock = targetBlocks.find(
+          (b) => b.component_type === "contact_form" || b.block_key === "contact_block"
+        )
+        if (contactBlock && contactBlock.props) {
+          const bp = contactBlock.props
+          const contactPayload: any = {
+            id: 1,
+            info_title: bp.info_title || "THÔNG TIN LIÊN HỆ",
+            hero_subtitle: bp.info_subtitle || "Phản hồi nhanh trong vòng 24 giờ làm việc.",
+            form_title: bp.form_title || "GỬI TIN NHẮN",
+            form_description: bp.form_description || "Chúng tôi sẽ phản hồi qua email bạn cung cấp.",
+            submit_label: bp.submit_label || "GỬI TIN NHẮN",
+            success_message: bp.success_message || "Cảm ơn bạn! Tin nhắn đã được gửi thành công. Chúng tôi sẽ phản hồi sớm nhất.",
+            map_title: bp.map_title || "Tìm chúng tôi trên bản đồ",
+            map_embed_url: bp.map_embed_url || null,
+            map_enabled: bp.map_enabled !== false,
+          }
+          if (bp.email || bp.phone || bp.address || bp.working_hours) {
+            const items: any[] = []
+            if (bp.email) items.push({ icon: "mail", title: "EMAIL", lines: [bp.email], href: `mailto:${bp.email}` })
+            if (bp.phone) items.push({ icon: "phone", title: "HOTLINE", lines: [bp.phone], href: `tel:${bp.phone}` })
+            if (bp.address) items.push({ icon: "map", title: "ĐỊA CHỈ", lines: [bp.address] })
+            if (bp.working_hours) items.push({ icon: "clock", title: "GIỜ LÀM VIỆC", lines: [bp.working_hours] })
+            contactPayload.contact_items = items
+          }
+          if (bp.social_facebook || bp.social_youtube) {
+            const sLinks: any[] = []
+            if (bp.social_facebook) sLinks.push({ icon: "facebook", label: "Facebook", href: bp.social_facebook, visible: true })
+            if (bp.social_youtube) sLinks.push({ icon: "youtube", label: "YouTube", href: bp.social_youtube, visible: true })
+            contactPayload.social_links = sLinks
+          }
+          await supabase.from("site_contact_settings").upsert(contactPayload, { onConflict: "id" })
+        }
+      }
+
       const { error: pageErr } = await supabase.from("site_pages").upsert(pageRows, { onConflict: "slug" })
       if (pageErr) throw pageErr
       setSlugRenames({})

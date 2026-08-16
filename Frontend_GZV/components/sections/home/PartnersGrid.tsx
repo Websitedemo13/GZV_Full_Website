@@ -1,23 +1,155 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import Link from "next/link"
+import { useRef, useState, useEffect } from "react"
 import { supabase } from "@/lib/api-supabase"
+
+interface InfiniteMarqueeRowProps {
+  items: any[]
+  direction: string
+  sizeClass: string
+  logoClass: string
+  maxVisible: number
+}
+
+const InfiniteMarqueeRow = ({
+  items,
+  direction,
+  sizeClass,
+  logoClass,
+  maxVisible,
+}: InfiniteMarqueeRowProps) => {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
+  const [isOverflowing, setIsOverflowing] = useState(false)
+
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (containerRef.current && contentRef.current) {
+        const containerWidth = containerRef.current.clientWidth
+        const contentWidth = contentRef.current.scrollWidth
+
+        // Kiểm tra xem logo có thực sự tràn màn hình hay không
+        setIsOverflowing(items.length > maxVisible || contentWidth > containerWidth + 5)
+      }
+    }
+
+    checkOverflow()
+    window.addEventListener("resize", checkOverflow)
+    const timer = setTimeout(checkOverflow, 500)
+
+    return () => {
+      window.removeEventListener("resize", checkOverflow)
+      clearTimeout(timer)
+    }
+  }, [items, maxVisible])
+
+  if (!items.length) return null
+
+  const renderLogo = (partner: any) => {
+    const imgNode = (
+      <img
+        src={partner.logo_url || partner.image || "/placeholder.jpg"}
+        alt={partner.name || partner.title || "GZV Partner"}
+        className={`object-contain ${logoClass}`}
+        loading="lazy"
+      />
+    )
+
+    return partner.website_url ? (
+      <a
+        href={partner.website_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="w-full h-full flex items-center justify-center outline-none"
+      >
+        {imgNode}
+      </a>
+    ) : (
+      <div className="w-full h-full flex items-center justify-center">{imgNode}</div>
+    )
+  }
+
+  // ĐÃ XÓA HOVER: Không nổi viền shadow, không nổi z-index khi rê chuột
+  const logoBoxClass = `flex items-center justify-center shrink-0 relative border border-slate-200/80 bg-white -ml-px -mt-px dark:border-white/10 dark:bg-slate-900 ${sizeClass}`
+
+  // LOGIC: Sẽ kích hoạt trượt nếu Vượt quá số ô HOẶC Admin cố tình cài đặt hướng trượt (khác "still")
+  const shouldScroll = isOverflowing || direction !== "still"
+
+  // TRẠNG THÁI 1: ÍT Ô & ADMIN CHỌN "ĐỨNG YÊN" (Không trượt)
+  if (!shouldScroll) {
+    return (
+      <div className="w-full flex justify-start items-center overflow-hidden">
+        <div ref={containerRef} className="absolute inset-0 pointer-events-none opacity-0" />
+        <div ref={contentRef} className="flex flex-nowrap justify-start items-stretch">
+          {items.map((partner, idx) => (
+            <div key={partner.id || `${partner.name}-${idx}`} className={logoBoxClass}>
+              {renderLogo(partner)}
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // TRẠNG THÁI 2: CHẠY MARQUEE
+  // Nếu Admin quên set nhưng bị tràn, tự động ép chạy sang trái để giữ an toàn layout
+  const effectiveDirection = direction === "still" ? "left" : direction
+
+  // TÍNH TOÁN NHÂN BẢN: Nếu số lượng item quá ít mà ép chạy, phải nhân bản cho đến khi vượt màn hình
+  let baseItems = [...items]
+  while (baseItems.length < maxVisible + 2) {
+    baseItems = [...baseItems, ...items]
+  }
+  const repeatedItems = [...baseItems, ...baseItems, ...baseItems]
+
+  const animationClass = effectiveDirection === "left" ? "animate-marquee-left" : "animate-marquee-right"
+
+  return (
+    <div
+      ref={containerRef}
+      className="w-full overflow-hidden relative"
+      style={{
+        maskImage: "linear-gradient(to right, transparent, black 5%, black 95%, transparent)",
+        WebkitMaskImage: "linear-gradient(to right, transparent, black 5%, black 95%, transparent)",
+      }}
+    >
+      <div className="absolute top-[-9999px] left-[-9999px]">
+        <div ref={contentRef} className="flex flex-nowrap items-center">
+          {items.map((partner, idx) => (
+            <div key={`measure-${partner.id || idx}`} className={logoBoxClass}>
+              <img src={partner.logo_url || partner.image || ""} alt="" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ĐÃ XÓA HOVER: Bỏ group-hover:[animation-play-state:paused] - Trượt liên tục không dừng */}
+      <div className={`flex items-stretch w-max ${animationClass}`}>
+        {repeatedItems.map((partner, idx) => (
+          <div key={`${partner.id || partner.name}-${idx}`} className={logoBoxClass}>
+            {renderLogo(partner)}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 export interface PartnersGridProps {
   title?: string
   subtitle?: string
   limit?: number
   background?: string
+  hp?: any
 }
 
 export default function PartnersGrid({
   title: propTitle,
   subtitle: propSubtitle,
-  limit = 40,
+  hp,
 }: PartnersGridProps) {
-  const [items, setItems] = useState<any[]>([])
-  const [dbProps, setDbProps] = useState<any>(null)
+  const [allPartners, setAllPartners] = useState<any[]>([])
+  const [sectionConfig, setSectionConfig] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -29,7 +161,10 @@ export default function PartnersGrid({
         const [homeRes, blockRes, partnersRes] = await Promise.all([
           supabase.from("site_home_sections").select("*").eq("section_key", "partners").maybeSingle(),
           supabase.from("site_page_blocks").select("props").eq("component_type", "partners_grid").limit(1).maybeSingle(),
-          supabase.from("partners").select("*").order("sort_order", { ascending: true }).limit(Number(limit) || 40),
+          supabase
+            .from("partners")
+            .select("*")
+            .order("sort_order", { ascending: true }),
         ])
 
         if (!active) return
@@ -37,14 +172,14 @@ export default function PartnersGrid({
         const homeData = homeRes.data
         const blockProps = blockRes.data?.props
         const combined = { ...(blockProps || {}), ...(homeData || {}), ...(homeData?.settings || {}) }
-        setDbProps(combined)
+        setSectionConfig(combined)
 
         if (partnersRes.data && partnersRes.data.length > 0) {
           const activeOnly = partnersRes.data.filter((p: any) => p.is_active !== false)
-          setItems(activeOnly.length > 0 ? activeOnly : partnersRes.data)
+          setAllPartners(activeOnly.length > 0 ? activeOnly : partnersRes.data)
         }
       } catch (err: any) {
-        console.error("Lỗi tải dữ liệu đối tác:", err?.message || err)
+        console.error("Lỗi tải đối tác:", err)
       } finally {
         if (active) setLoading(false)
       }
@@ -55,56 +190,139 @@ export default function PartnersGrid({
     return () => {
       active = false
     }
-  }, [limit, propTitle, propSubtitle])
+  }, [])
 
-  if (dbProps?.is_visible === false && !propTitle) {
+  if (sectionConfig?.is_visible === false && !propTitle) {
     return null
   }
 
-  const title = propTitle || dbProps?.title || "ĐỐI TÁC"
-  const subtitle = propSubtitle || dbProps?.subtitle || "ĐỐI TÁC ĐỒNG HÀNH KHẮP CẢ NƯỚC"
+  const meta = hp?.partners_section || sectionConfig || {}
+  const title = propTitle || meta.title || meta.name || ""
+  const subtitle = propSubtitle || meta.subtitle || meta.description || ""
+
+  const displayTitle = title || subtitle || "ĐỐI TÁC"
+
+  const row1Dir = meta.row1_dir || "still"
+  const row2Dir = meta.row2_dir || "left"
+  const row3Dir = meta.row3_dir || "right"
+
+  if (loading && !allPartners.length) {
+    return (
+      <section className="py-20 relative bg-white dark:bg-slate-950 text-center">
+        <div className="mx-auto h-10 w-10 animate-spin border-2 border-[#ed1c24] border-t-transparent" />
+      </section>
+    )
+  }
+
+  if (!allPartners.length) return null
+
+  // Categorize partners into 3 rows
+  const row1Groups: string[] = meta.row1_groups || (meta.row1_group ? [meta.row1_group] : [])
+  const row2Groups: string[] = meta.row2_groups || (meta.row2_group ? [meta.row2_group] : [])
+  const row3Groups: string[] = meta.row3_groups || (meta.row3_group ? [meta.row3_group] : [])
+
+  let row1Partners = allPartners.filter((p) => {
+    const grp = p.group_name || p.category
+    return grp && row1Groups.includes(grp)
+  })
+
+  let row2Partners = allPartners.filter((p) => {
+    const grp = p.group_name || p.category
+    return grp && row2Groups.includes(grp)
+  })
+
+  let row3Partners = allPartners.filter((p) => {
+    const grp = p.group_name || p.category
+    return grp && row3Groups.includes(grp)
+  })
+
+  // If no group filtering is configured or results are empty, automatically distribute all partners across rows
+  if (row1Partners.length === 0 && row2Partners.length === 0 && row3Partners.length === 0) {
+    const total = allPartners.length
+    if (total <= 6) {
+      row1Partners = allPartners
+    } else if (total <= 14) {
+      row1Partners = allPartners.slice(0, 6)
+      row2Partners = allPartners.slice(6)
+    } else {
+      const perRow = Math.ceil(total / 3)
+      row1Partners = allPartners.slice(0, Math.min(6, perRow))
+      row2Partners = allPartners.slice(Math.min(6, perRow), Math.min(6, perRow) + perRow)
+      row3Partners = allPartners.slice(Math.min(6, perRow) + perRow)
+    }
+  }
 
   return (
-    <section className="bg-white py-16 dark:bg-slate-950 lg:py-24">
-      <div className="container px-4">
-        {(title || subtitle) && (
-          <div className="mb-12 max-w-4xl text-left">
-            {title && <h2 className="text-3xl font-black uppercase text-slate-950 dark:text-white sm:text-5xl">{title}</h2>}
-            {subtitle && <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">{subtitle}</p>}
-          </div>
+    <section className="py-20 relative border-t border-slate-200/60 bg-white dark:bg-slate-950 dark:border-white/10">
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+        @keyframes scrollLeft { 0% { transform: translateX(0); } 100% { transform: translateX(-33.3333%); } }
+        @keyframes scrollRight { 0% { transform: translateX(-33.3333%); } 100% { transform: translateX(0); } }
+        .animate-marquee-left { animation: scrollLeft 40s linear infinite; }
+        .animate-marquee-right { animation: scrollRight 40s linear infinite; }
+      `,
+        }}
+      />
+
+      <div className="container mx-auto px-4 text-left mb-12 relative z-10 max-w-7xl">
+        <h2 className="text-3xl md:text-5xl font-black tracking-tight text-slate-950 dark:text-white uppercase leading-tight">
+          {displayTitle.includes("VƯỢT TRỘI") ? (
+            <>
+              {displayTitle.split("VƯỢT TRỘI")[0]}
+              <span className="text-[#ed1c24]">VƯỢT TRỘI</span>
+              {displayTitle.split("VƯỢT TRỘI")[1]}
+            </>
+          ) : (
+            displayTitle
+          )}
+        </h2>
+        {subtitle && subtitle !== displayTitle && (
+          <p className="mt-3 text-sm md:text-base font-semibold text-slate-600 dark:text-slate-400 max-w-2xl uppercase tracking-wider">
+            {subtitle.includes("VƯỢT TRỘI") ? (
+              <>
+                {subtitle.split("VƯỢT TRỘI")[0]}
+                <span className="text-[#ed1c24]">VƯỢT TRỘI</span>
+                {subtitle.split("VƯỢT TRỘI")[1]}
+              </>
+            ) : (
+              subtitle
+            )}
+          </p>
+        )}
+      </div>
+
+      <div className="w-full max-w-[1184px] mx-auto relative z-0 flex flex-col">
+        {row1Partners.length > 0 && (
+          <InfiniteMarqueeRow
+            items={row1Partners}
+            direction={row1Dir}
+            sizeClass="w-[197.33px] h-[210px]"
+            logoClass="max-w-[150px] max-h-[110px]"
+            maxVisible={6}
+          />
         )}
 
-        {loading ? (
-          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-[#ed1c24]" />
-        ) : items.length > 0 ? (
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
-            {items.map((item, index) => <PartnerLogoItem key={item.id || item.slug || index} item={item} />)}
-          </div>
-        ) : (
-          <div className="py-12 text-center text-sm font-semibold text-slate-500 dark:text-slate-400">
-            Chưa có đối tác nào trong hệ thống.
-          </div>
+        {row2Partners.length > 0 && (
+          <InfiniteMarqueeRow
+            items={row2Partners}
+            direction={row2Dir}
+            sizeClass="w-[148px] h-[158px]"
+            logoClass="max-w-[110px] max-h-[80px]"
+            maxVisible={8}
+          />
+        )}
+
+        {row3Partners.length > 0 && (
+          <InfiniteMarqueeRow
+            items={row3Partners}
+            direction={row3Dir}
+            sizeClass="w-[148px] h-[158px]"
+            logoClass="max-w-[110px] max-h-[80px]"
+            maxVisible={8}
+          />
         )}
       </div>
     </section>
   )
-}
-
-function PartnerLogoItem({ item }: { item: any }) {
-  const title = item.name || item.title || "Đối tác"
-  const image = item.logo_url || item.image || "/placeholder.jpg"
-  const href = item.website_url || ""
-
-  const logo = (
-    <div className="flex h-28 flex-col justify-between overflow-hidden border border-slate-200 bg-white transition hover:border-[#ed1c24] dark:border-white/10">
-      <div className="flex h-20 items-center justify-center p-4">
-        <img src={image} alt={title} className="max-h-14 w-auto max-w-full object-contain" />
-      </div>
-      <div className="border-t border-slate-200 px-3 py-2 text-center dark:border-white/10">
-        <p className="truncate text-xs font-black text-slate-950">{title}</p>
-      </div>
-    </div>
-  )
-
-  return href ? <Link href={href} target="_blank" rel="noreferrer">{logo}</Link> : logo
 }
