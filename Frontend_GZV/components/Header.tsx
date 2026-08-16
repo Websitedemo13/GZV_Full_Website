@@ -167,12 +167,13 @@ const Header = () => {
                 </>
               )
 
-              const linkClass = `group relative flex items-center gap-1 px-3 py-7 text-[12px] font-black transition-colors xl:px-4 ${isActive ? "text-[#ed1c24]" : "text-white hover:text-[#ed1c24]"}`
+              const linkClass = `group relative flex items-center gap-1 px-3 py-7 text-[12px] font-black transition-colors xl:px-4 ${isActive ? "text-[#ed1c24]" : headerTextColor ? "" : "text-white hover:text-[#ed1c24]"}`
+              const linkStyle = !isActive && headerTextColor ? { color: headerTextColor } : undefined
 
               return (
                 <div key={item.href || labelText} className="group/menu relative">
                   {isShop ? (
-                    <span className={`${linkClass} cursor-pointer`}>
+                    <span className={`${linkClass} cursor-pointer`} style={linkStyle}>
                       {linkContent}
                     </span>
                   ) : (
@@ -180,6 +181,7 @@ const Header = () => {
                       href={item.href || "#"}
                       target={item.is_external ? "_blank" : undefined}
                       className={linkClass}
+                      style={linkStyle}
                     >
                       {linkContent}
                     </Link>
@@ -225,7 +227,8 @@ const Header = () => {
             <Button
               variant="outline"
               size="icon"
-              className="hidden h-11 w-11 rounded-none border-white/15 bg-[#101010] text-white hover:border-[#ed1c24] hover:text-[#ed1c24] lg:inline-flex"
+              style={headerTextColor ? { color: headerTextColor, borderColor: `${headerTextColor}40` } : undefined}
+              className={`hidden h-11 w-11 rounded-none border-white/15 bg-[#101010] hover:border-[#ed1c24] hover:text-[#ed1c24] lg:inline-flex ${headerTextColor ? "" : "text-white"}`}
               aria-label={t("common.search")}
             >
               <Search className="h-4 w-4" />
@@ -233,7 +236,8 @@ const Header = () => {
             <button
               type="button"
               onClick={toggleTheme}
-              className="hidden h-11 w-11 items-center justify-center border border-white/15 bg-[#101010] text-white transition hover:border-[#ed1c24] hover:text-[#ed1c24] lg:inline-flex"
+              style={headerTextColor ? { color: headerTextColor, borderColor: `${headerTextColor}40` } : undefined}
+              className={`hidden h-11 w-11 items-center justify-center border border-white/15 bg-[#101010] transition hover:border-[#ed1c24] hover:text-[#ed1c24] lg:inline-flex ${headerTextColor ? "" : "text-white"}`}
               aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
             >
               {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -241,7 +245,8 @@ const Header = () => {
             <button
               type="button"
               onClick={toggleLanguage}
-              className="hidden h-11 border border-white/15 bg-[#101010] px-3 text-xs font-black uppercase text-white transition hover:border-[#ed1c24] hover:text-[#ed1c24] lg:inline-flex lg:items-center"
+              style={headerTextColor ? { color: headerTextColor, borderColor: `${headerTextColor}40` } : undefined}
+              className={`hidden h-11 border border-white/15 bg-[#101010] px-3 text-xs font-black uppercase transition hover:border-[#ed1c24] hover:text-[#ed1c24] lg:inline-flex lg:items-center ${headerTextColor ? "" : "text-white"}`}
               aria-label="Switch language"
             >
               {language === "vi" ? "EN" : "VI"}
@@ -249,7 +254,8 @@ const Header = () => {
             <Button
               variant="outline"
               size="icon"
-              className="h-11 w-11 rounded-none border-white/15 bg-[#101010] text-white hover:border-[#ed1c24] hover:text-[#ed1c24] lg:hidden"
+              style={headerTextColor ? { color: headerTextColor, borderColor: `${headerTextColor}40` } : undefined}
+              className={`h-11 w-11 rounded-none border-white/15 bg-[#101010] hover:border-[#ed1c24] hover:text-[#ed1c24] lg:hidden ${headerTextColor ? "" : "text-white"}`}
               onClick={() => setIsMobileMenuOpen(true)}
               aria-label={t("nav.openMenu")}
             >

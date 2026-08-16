@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import PageBanner from "@/components/sections/common/PageBanner"
 import { supabase } from "@/lib/api-supabase"
 
 type FieldType = "text" | "email" | "tel" | "number" | "url" | "textarea" | "select" | "radio" | "checkbox" | "date"
@@ -238,8 +237,6 @@ export default function ContactForm() {
 
   return (
     <div className="bg-white text-slate-950">
-      <PageBanner badge={settings.hero_badge} title={settings.hero_title} subtitle={settings.hero_subtitle} stats={settings.stats} />
-
       <section className="bg-white py-20">
         <div className="container">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">

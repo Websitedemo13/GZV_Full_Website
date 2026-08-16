@@ -1,19 +1,37 @@
 import React, { useState } from "react"
-import { Filter, Link2, Palette, Plus, Trash2, GripVertical, ArrowUp, ArrowDown, Image as ImageIcon } from "lucide-react"
+import {
+  Filter,
+  Link2,
+  Palette,
+  Plus,
+  Trash2,
+  GripVertical,
+  ArrowUp,
+  ArrowDown,
+  Image as ImageIcon,
+  Users,
+  LayoutGrid,
+  Sparkles,
+  Milestone,
+  CheckCircle2,
+  BarChart3,
+  Layers,
+} from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { PageBlock } from "../types"
 import { Field } from "./BasicHelpers"
 import { ImagePositionAndZoomEditor } from "./ImagePositionAndZoomEditor"
 
 export function PropsEditor({
-  value,
+  value = {},
   onChange,
   onPickSingleImage,
-  componentType,
+  componentType = "",
 }: {
   value: Record<string, any>
   onChange: (value: Record<string, any>) => void
@@ -25,31 +43,33 @@ export function PropsEditor({
   }
 
   const typeLower = (componentType || "").toLowerCase().trim()
-  const isCta = typeLower.includes("cta") || typeLower.includes("band") || value?.buttonLabel !== undefined || value?.button_label !== undefined || value?.buttonUrl !== undefined || value?.button_url !== undefined || value?.button_text !== undefined
-  const isBgConfigurable = isCta || typeLower.includes("banner") || value?.backgroundFrom !== undefined || value?.background_from !== undefined || value?.backgroundTo !== undefined || value?.background_to !== undefined || value?.backgroundColor !== undefined || value?.background_color !== undefined
-  const isProjects = typeLower.includes("project") || typeLower.includes("du-an") || typeLower.includes("du_an") || value?.show_search !== undefined || value?.show_categories !== undefined
-  const hasBody = (value?.body !== undefined || value?.description !== undefined || isCta) && !isProjects
-  const hasStats = Array.isArray(value?.stats)
-  const hasItems = Array.isArray(value?.items) && !hasStats
-  const hasImage = value?.image_url !== undefined || value?.image !== undefined || value?.position_x !== undefined
 
-  // If section has no editable fields, show note
-  if (!hasBody && !hasStats && !hasItems && !hasImage && !isCta && !isBgConfigurable && !isProjects) {
-    return (
-      <div className="rounded-none border border-dashed border-slate-200 bg-slate-50/50 p-4 text-center dark:border-white/10 dark:bg-slate-950">
-        <p className="text-xs font-bold text-slate-600 dark:text-slate-400">
-          Section này hiển thị dữ liệu mặc định từ hệ thống.
-        </p>
-        <p className="text-[11px] text-slate-400 mt-1">
-          Bạn có thể bấm &quot;Mở Cấu hình JSON & HTML nâng cao&quot; bên dưới để tùy biến chuyên sâu nếu cần.
-        </p>
-      </div>
-    )
-  }
+  // Detection flags for component categories
+  const isGzversGrid = typeLower === "gzvers_grid" || typeLower.includes("gzvers")
+  const isMentoring = typeLower.includes("mentor") || typeLower.includes("step")
+  const isTimeline = typeLower.includes("timeline") || typeLower.includes("roadmap")
+  const isPeople = (typeLower.includes("people") || typeLower.includes("director") || typeLower.includes("team")) && !isGzversGrid
+  const isCore = typeLower.includes("core")
+  const isFeatureGrid = (typeLower.includes("feature") || (typeLower.includes("grid") && !isPeople && !isGzversGrid && !typeLower.includes("project") && !typeLower.includes("partner") && !typeLower.includes("news") && !typeLower.includes("mentor")))
+  const isStats = typeLower.includes("stat")
+  const isProjects = typeLower.includes("project") || typeLower.includes("du-an") || typeLower.includes("du_an")
+  const isPartners = typeLower.includes("partner") || typeLower.includes("doi-tac")
+  const isNews = typeLower.includes("news") || typeLower.includes("tin-tuc")
+  const isAboutBoxes = typeLower.includes("about_box") || typeLower.includes("about-box")
+  const isWhyColumns = typeLower.includes("why")
+  const isServices = typeLower.includes("service")
+  const isCta = typeLower.includes("cta") || typeLower.includes("band") || value?.buttonLabel !== undefined || value?.button_label !== undefined || value?.buttonUrl !== undefined || value?.button_url !== undefined
+  const isBgConfigurable = !isStats && (isCta || value?.backgroundFrom !== undefined || value?.background_from !== undefined || value?.backgroundColor !== undefined || value?.background_color !== undefined)
+
+  // Content flags
+  const hasBody = value?.body !== undefined || value?.description !== undefined || typeLower.includes("story") || typeLower.includes("about_gzv")
+  const hasImage = value?.image_url !== undefined || value?.image !== undefined || value?.position_x !== undefined || typeLower.includes("story") || typeLower.includes("about_gzv")
+  const hasStatsArray = Array.isArray(value?.stats) || isStats || typeLower.includes("story")
 
   return (
-    <div className="space-y-5 rounded-none border border-slate-200 bg-slate-50/70 p-5 dark:border-white/10 dark:bg-slate-950">
-      {/* Projects Grid Search & Filter Controls */}
+    <div className="space-y-6 rounded-none border border-slate-200 bg-slate-50/70 p-5 dark:border-white/10 dark:bg-slate-950">
+
+      {/* 1. Projects Grid Config */}
       {isProjects && (
         <div className="space-y-4 border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-slate-900">
           <div className="flex items-center gap-2 border-b border-slate-200 dark:border-white/10 pb-2">
@@ -92,7 +112,7 @@ export function PropsEditor({
           <Field label="Số lượng dự án hiển thị tối đa (Limit)">
             <Input
               type="number"
-              value={value.limit || 6}
+              value={value.limit ?? 6}
               onChange={(e) => updateKey("limit", Number(e.target.value))}
               placeholder="6"
               className="rounded-none text-xs w-full sm:w-48"
@@ -101,15 +121,581 @@ export function PropsEditor({
         </div>
       )}
 
-      {/* 1. Body / Description Field */}
-      {hasBody && (
-        <div className="space-y-2">
+      {/* 2. People Grid Config (Ban điều hành / GZVers) */}
+      {isPeople && (
+        <div className="space-y-4 border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-slate-900">
+          <div className="flex items-center gap-2 border-b border-slate-200 dark:border-white/10 pb-2">
+            <Users className="h-4 w-4 text-[#ed1c24]" />
+            <div>
+              <p className="text-xs font-black uppercase text-slate-950 dark:text-white">Cấu hình Hiển thị Nhân sự (People Grid)</p>
+              <p className="text-[11px] text-slate-500">Chọn nhóm nhân sự và số lượng hiển thị từ hệ thống GZVers.</p>
+            </div>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label="Nhóm nhân sự hiển thị">
+              <Select
+                value={value.type || "directors"}
+                onValueChange={(val) => updateKey("type", val)}
+              >
+                <SelectTrigger className="rounded-none text-xs">
+                  <SelectValue placeholder="Chọn nhóm" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="directors">Ban điều hành (Directors)</SelectItem>
+                  <SelectItem value="all">Toàn bộ GZVers</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+
+            <Field label="Số lượng nhân sự tối đa (Limit)">
+              <Input
+                type="number"
+                value={value.limit ?? 6}
+                onChange={(e) => updateKey("limit", Number(e.target.value))}
+                placeholder="6"
+                className="rounded-none text-xs"
+              />
+            </Field>
+          </div>
+        </div>
+      )}
+
+      {/* 3. Mentoring Model / Steps Editor */}
+      {isMentoring && (
+        <div className="space-y-3 border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-slate-900">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-2">
+            <div className="flex items-center gap-2">
+              <Milestone className="h-4 w-4 text-[#ed1c24]" />
+              <div>
+                <p className="text-xs font-black uppercase text-slate-950 dark:text-white">Các bước Mô hình Mentoring</p>
+                <p className="text-[11px] text-slate-500">Chỉnh sửa nội dung các giai đoạn hoặc bước hướng dẫn.</p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-none text-[11px] font-black uppercase h-7 border-[#ed1c24] text-[#ed1c24] hover:bg-[#ed1c24] hover:text-white"
+              onClick={() => {
+                const current = Array.isArray(value.steps) ? [...value.steps] : []
+                updateKey("steps", [...current, { title: "Bước mới", description: "Mô tả chi tiết bước này..." }])
+              }}
+            >
+              <Plus className="mr-1 h-3.5 w-3.5" /> Thêm bước
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            {(Array.isArray(value.steps) ? value.steps : []).map((step: any, idx: number) => (
+              <div key={idx} className="border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-slate-950 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] font-black uppercase text-[#ed1c24]">Bước {idx + 1}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-red-500 hover:bg-red-50"
+                    onClick={() => {
+                      const current = Array.isArray(value.steps) ? [...value.steps] : []
+                      updateKey("steps", current.filter((_: any, i: number) => i !== idx))
+                    }}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+                <Field label="Tiêu đề bước">
+                  <Input
+                    value={step.title || ""}
+                    onChange={(e) => {
+                      const current = Array.isArray(value.steps) ? [...value.steps] : []
+                      current[idx] = { ...(current[idx] || {}), title: e.target.value }
+                      updateKey("steps", current)
+                    }}
+                    placeholder="Ví dụ: Đánh giá năng lực"
+                    className="rounded-none text-xs font-bold bg-white dark:bg-slate-900"
+                  />
+                </Field>
+                <Field label="Mô tả bước">
+                  <Textarea
+                    rows={2}
+                    value={step.description || ""}
+                    onChange={(e) => {
+                      const current = Array.isArray(value.steps) ? [...value.steps] : []
+                      current[idx] = { ...(current[idx] || {}), description: e.target.value }
+                      updateKey("steps", current)
+                    }}
+                    placeholder="Mô tả nội dung chi tiết bước này..."
+                    className="rounded-none text-xs bg-white dark:bg-slate-900"
+                  />
+                </Field>
+              </div>
+            ))}
+            {(!Array.isArray(value.steps) || value.steps.length === 0) && (
+              <p className="text-center text-xs text-slate-400 py-3">Chưa có bước nào. Bấm &quot;Thêm bước&quot; để tạo.</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 4. Timeline / Roadmap Editor */}
+      {isTimeline && (
+        <div className="space-y-3 border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-slate-900">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-2">
+            <div className="flex items-center gap-2">
+              <Milestone className="h-4 w-4 text-[#ed1c24]" />
+              <div>
+                <p className="text-xs font-black uppercase text-slate-950 dark:text-white">Lộ trình Phát triển (Timeline)</p>
+                <p className="text-[11px] text-slate-500">Chỉnh sửa các mốc thời gian hoặc giai đoạn phát triển.</p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-none text-[11px] font-black uppercase h-7 border-[#ed1c24] text-[#ed1c24] hover:bg-[#ed1c24] hover:text-white"
+              onClick={() => {
+                const current = Array.isArray(value.items) ? [...value.items] : []
+                updateKey("items", [...current, { year: `Giai đoạn ${current.length + 1}`, title: "Mốc mới", description: "Mô tả mốc này..." }])
+              }}
+            >
+              <Plus className="mr-1 h-3.5 w-3.5" /> Thêm mốc
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            {(Array.isArray(value.items) ? value.items : []).map((item: any, idx: number) => (
+              <div key={idx} className="border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-slate-950 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] font-black uppercase text-[#ed1c24]">Mốc #{idx + 1}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-red-500 hover:bg-red-50"
+                    onClick={() => {
+                      const current = Array.isArray(value.items) ? [...value.items] : []
+                      updateKey("items", current.filter((_: any, i: number) => i !== idx))
+                    }}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <Field label="Giai đoạn / Thời gian">
+                    <Input
+                      value={item.year || item.label || ""}
+                      onChange={(e) => {
+                        const current = Array.isArray(value.items) ? [...value.items] : []
+                        current[idx] = { ...(current[idx] || {}), year: e.target.value }
+                        updateKey("items", current)
+                      }}
+                      placeholder="Ví dụ: Giai đoạn 1, 2024..."
+                      className="rounded-none text-xs font-black text-[#ed1c24] bg-white dark:bg-slate-900"
+                    />
+                  </Field>
+                  <Field label="Tiêu đề mốc">
+                    <Input
+                      value={item.title || ""}
+                      onChange={(e) => {
+                        const current = Array.isArray(value.items) ? [...value.items] : []
+                        current[idx] = { ...(current[idx] || {}), title: e.target.value }
+                        updateKey("items", current)
+                      }}
+                      placeholder="Ví dụ: Xây nền cộng đồng"
+                      className="rounded-none text-xs font-bold bg-white dark:bg-slate-900"
+                    />
+                  </Field>
+                </div>
+                <Field label="Mô tả chi tiết">
+                  <Textarea
+                    rows={2}
+                    value={item.description || ""}
+                    onChange={(e) => {
+                      const current = Array.isArray(value.items) ? [...value.items] : []
+                      current[idx] = { ...(current[idx] || {}), description: e.target.value }
+                      updateKey("items", current)
+                    }}
+                    placeholder="Mô tả nội dung mốc thời gian này..."
+                    className="rounded-none text-xs bg-white dark:bg-slate-900"
+                  />
+                </Field>
+              </div>
+            ))}
+            {(!Array.isArray(value.items) || value.items.length === 0) && (
+              <p className="text-center text-xs text-slate-400 py-3">Chưa có mốc thời gian nào. Bấm &quot;Thêm mốc&quot; để tạo.</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 5. Core Showcase (Sứ mệnh, Tầm nhìn, Giá trị cốt lõi) */}
+      {isCore && (
+        <div className="space-y-4 border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-slate-900">
+          <div className="flex items-center gap-2 border-b border-slate-200 dark:border-white/10 pb-2">
+            <Sparkles className="h-4 w-4 text-[#ed1c24]" />
+            <div>
+              <p className="text-xs font-black uppercase text-slate-950 dark:text-white">Cấu hình Sứ mệnh, Tầm nhìn, Giá trị cốt lõi</p>
+              <p className="text-[11px] text-slate-500">Chỉnh sửa các điểm nhấn và các mục nội dung chi tiết.</p>
+            </div>
+          </div>
+
+          {/* Highlights */}
+          <div className="space-y-2">
+            <Label className="text-xs font-black uppercase tracking-wide text-slate-800 dark:text-slate-200">
+              3 Điểm nhấn nổi bật (Highlights)
+            </Label>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {[0, 1, 2].map((idx) => {
+                const highlights = Array.isArray(value.highlights) ? [...value.highlights] : ["Thực chiến", "Minh bạch", "Học hỏi liên tục"]
+                return (
+                  <Input
+                    key={idx}
+                    value={highlights[idx] || ""}
+                    onChange={(e) => {
+                      const next = [...highlights]
+                      next[idx] = e.target.value
+                      updateKey("highlights", next)
+                    }}
+                    placeholder={`Điểm nhấn ${idx + 1}`}
+                    className="rounded-none text-xs font-bold"
+                  />
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Items */}
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-1">
+              <Label className="text-xs font-black uppercase tracking-wide text-slate-800 dark:text-slate-200">
+                Các khối nội dung (Sứ mệnh / Tầm nhìn / Giá trị)
+              </Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="rounded-none text-[11px] font-black uppercase h-7 border-[#ed1c24] text-[#ed1c24] hover:bg-[#ed1c24] hover:text-white"
+                onClick={() => {
+                  const current = Array.isArray(value.items) ? [...value.items] : []
+                  updateKey("items", [...current, { label: `0${current.length + 1}`, title: "Tiêu đề mới", description: "Mô tả..." }])
+                }}
+              >
+                <Plus className="mr-1 h-3.5 w-3.5" /> Thêm mục
+              </Button>
+            </div>
+
+            <div className="space-y-3">
+              {(Array.isArray(value.items) ? value.items : []).map((item: any, idx: number) => (
+                <div key={idx} className="border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-slate-950 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-black uppercase text-[#ed1c24]">Mục #{idx + 1}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-red-500 hover:bg-red-50"
+                      onClick={() => {
+                        const current = Array.isArray(value.items) ? [...value.items] : []
+                        updateKey("items", current.filter((_: any, i: number) => i !== idx))
+                      }}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-[80px_1fr]">
+                    <Field label="Số thứ tự">
+                      <Input
+                        value={item.label || `0${idx + 1}`}
+                        onChange={(e) => {
+                          const current = Array.isArray(value.items) ? [...value.items] : []
+                          current[idx] = { ...(current[idx] || {}), label: e.target.value }
+                          updateKey("items", current)
+                        }}
+                        placeholder="01"
+                        className="rounded-none text-xs font-black text-center bg-white dark:bg-slate-900"
+                      />
+                    </Field>
+                    <Field label="Tiêu đề">
+                      <Input
+                        value={item.title || ""}
+                        onChange={(e) => {
+                          const current = Array.isArray(value.items) ? [...value.items] : []
+                          current[idx] = { ...(current[idx] || {}), title: e.target.value }
+                          updateKey("items", current)
+                        }}
+                        placeholder="Ví dụ: Sứ mệnh"
+                        className="rounded-none text-xs font-bold bg-white dark:bg-slate-900"
+                      />
+                    </Field>
+                  </div>
+                  <Field label="Mô tả">
+                    <Textarea
+                      rows={2}
+                      value={item.description || item.text || ""}
+                      onChange={(e) => {
+                        const current = Array.isArray(value.items) ? [...value.items] : []
+                        current[idx] = { ...(current[idx] || {}), description: e.target.value }
+                        updateKey("items", current)
+                      }}
+                      placeholder="Mô tả chi tiết..."
+                      className="rounded-none text-xs bg-white dark:bg-slate-900"
+                    />
+                  </Field>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 6. Feature Grid Editor (Sứ mệnh, Tầm nhìn, Giá trị cốt lõi đơn lẻ) */}
+      {isFeatureGrid && !isCore && (
+        <div className="space-y-4 border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-slate-900">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-2">
+            <div className="flex items-center gap-2">
+              <LayoutGrid className="h-4 w-4 text-[#ed1c24]" />
+              <div>
+                <p className="text-xs font-black uppercase text-slate-950 dark:text-white">Cấu hình Danh sách Tính năng / Thẻ (Feature Grid)</p>
+                <p className="text-[11px] text-slate-500">Chỉnh sửa số cột hiển thị và danh sách các thẻ nội dung kèm icon.</p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-none text-[11px] font-black uppercase h-7 border-[#ed1c24] text-[#ed1c24] hover:bg-[#ed1c24] hover:text-white"
+              onClick={() => {
+                const current = Array.isArray(value.items) ? [...value.items] : []
+                updateKey("items", [...current, { title: "Tiêu đề thẻ", description: "Mô tả nội dung thẻ...", icon: "target", color: "#ed1c24" }])
+              }}
+            >
+              <Plus className="mr-1 h-3.5 w-3.5" /> Thêm thẻ
+            </Button>
+          </div>
+
+          <Field label="Số cột hiển thị trên Desktop">
+            <Select
+              value={String(value.columns ?? 3)}
+              onValueChange={(val) => updateKey("columns", Number(val))}
+            >
+              <SelectTrigger className="rounded-none text-xs w-full sm:w-48">
+                <SelectValue placeholder="Số cột" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">1 Cột (Rộng tràn viền)</SelectItem>
+                <SelectItem value="2">2 Cột</SelectItem>
+                <SelectItem value="3">3 Cột</SelectItem>
+                <SelectItem value="4">4 Cột</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+
+          <div className="space-y-3">
+            {(Array.isArray(value.items) ? value.items : []).map((item: any, idx: number) => (
+              <div key={idx} className="border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-slate-950 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] font-black uppercase text-[#ed1c24]">Thẻ #{idx + 1}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-red-500 hover:bg-red-50"
+                    onClick={() => {
+                      const current = Array.isArray(value.items) ? [...value.items] : []
+                      updateKey("items", current.filter((_: any, i: number) => i !== idx))
+                    }}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+
+                <div className="grid gap-2 sm:grid-cols-[1fr_140px_140px]">
+                  <Field label="Tiêu đề">
+                    <Input
+                      value={item.title || ""}
+                      onChange={(e) => {
+                        const current = Array.isArray(value.items) ? [...value.items] : []
+                        current[idx] = { ...(current[idx] || {}), title: e.target.value }
+                        updateKey("items", current)
+                      }}
+                      placeholder="Ví dụ: Thực chiến"
+                      className="rounded-none text-xs font-bold bg-white dark:bg-slate-900"
+                    />
+                  </Field>
+                  <Field label="Icon biểu tượng">
+                    <Select
+                      value={item.icon || "target"}
+                      onValueChange={(val) => {
+                        const current = Array.isArray(value.items) ? [...value.items] : []
+                        current[idx] = { ...(current[idx] || {}), icon: val }
+                        updateKey("items", current)
+                      }}
+                    >
+                      <SelectTrigger className="rounded-none text-xs bg-white dark:bg-slate-900">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="target">Target (Mục tiêu)</SelectItem>
+                        <SelectItem value="compass">Compass (Định hướng)</SelectItem>
+                        <SelectItem value="rocket">Rocket (Bứt phá)</SelectItem>
+                        <SelectItem value="shield">Shield (Bảo vệ)</SelectItem>
+                        <SelectItem value="book">Book (Tri thức)</SelectItem>
+                        <SelectItem value="award">Award (Giải thưởng)</SelectItem>
+                        <SelectItem value="users">Users (Đội ngũ)</SelectItem>
+                        <SelectItem value="cpu">CPU (Công nghệ)</SelectItem>
+                        <SelectItem value="trend">Trend (Tăng trưởng)</SelectItem>
+                        <SelectItem value="megaphone">Megaphone (Truyền thông)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <Field label="Màu sắc icon">
+                    <div className="flex gap-1">
+                      <Input
+                        type="color"
+                        value={item.color || "#ed1c24"}
+                        onChange={(e) => {
+                          const current = Array.isArray(value.items) ? [...value.items] : []
+                          current[idx] = { ...(current[idx] || {}), color: e.target.value }
+                          updateKey("items", current)
+                        }}
+                        className="w-10 h-8 p-1 rounded-none cursor-pointer shrink-0"
+                      />
+                      <Input
+                        value={item.color || "#ed1c24"}
+                        onChange={(e) => {
+                          const current = Array.isArray(value.items) ? [...value.items] : []
+                          current[idx] = { ...(current[idx] || {}), color: e.target.value }
+                          updateKey("items", current)
+                        }}
+                        className="rounded-none font-mono text-[11px] h-8 bg-white dark:bg-slate-900"
+                      />
+                    </div>
+                  </Field>
+                </div>
+
+                <Field label="Mô tả nội dung thẻ">
+                  <Textarea
+                    rows={2}
+                    value={item.description || ""}
+                    onChange={(e) => {
+                      const current = Array.isArray(value.items) ? [...value.items] : []
+                      current[idx] = { ...(current[idx] || {}), description: e.target.value }
+                      updateKey("items", current)
+                    }}
+                    placeholder="Mô tả nội dung chi tiết..."
+                    className="rounded-none text-xs bg-white dark:bg-slate-900"
+                  />
+                </Field>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 7. Services / Why Columns / About Boxes Editor */}
+      {(isServices || isWhyColumns || isAboutBoxes) && (
+        <div className="space-y-4 border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-slate-900">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-2">
+            <div className="flex items-center gap-2">
+              <Layers className="h-4 w-4 text-[#ed1c24]" />
+              <div>
+                <p className="text-xs font-black uppercase text-slate-950 dark:text-white">Danh sách Khối / Cột nội dung</p>
+                <p className="text-[11px] text-slate-500">Tùy chỉnh các mục hiển thị trong section.</p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-none text-[11px] font-black uppercase h-7 border-[#ed1c24] text-[#ed1c24] hover:bg-[#ed1c24] hover:text-white"
+              onClick={() => {
+                const arrayKey = isAboutBoxes ? "boxes" : isWhyColumns ? "columns" : "items"
+                const current = Array.isArray(value[arrayKey]) ? [...value[arrayKey]] : []
+                updateKey(arrayKey, [...current, { title: "Tiêu đề mới", description: "Mô tả nội dung...", href: "/" }])
+              }}
+            >
+              <Plus className="mr-1 h-3.5 w-3.5" /> Thêm mục
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            {(() => {
+              const arrayKey = isAboutBoxes ? "boxes" : isWhyColumns ? "columns" : "items"
+              const itemsList = Array.isArray(value[arrayKey]) ? value[arrayKey] : []
+              return itemsList.map((item: any, idx: number) => (
+                <div key={idx} className="border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-slate-950 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-black uppercase text-[#ed1c24]">Mục #{idx + 1}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-red-500 hover:bg-red-50"
+                      onClick={() => {
+                        const current = Array.isArray(value[arrayKey]) ? [...value[arrayKey]] : []
+                        updateKey(arrayKey, current.filter((_: any, i: number) => i !== idx))
+                      }}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <Field label="Tiêu đề mục">
+                      <Input
+                        value={item.title || ""}
+                        onChange={(e) => {
+                          const current = Array.isArray(value[arrayKey]) ? [...value[arrayKey]] : []
+                          current[idx] = { ...(current[idx] || {}), title: e.target.value }
+                          updateKey(arrayKey, current)
+                        }}
+                        placeholder="Tiêu đề..."
+                        className="rounded-none text-xs font-bold bg-white dark:bg-slate-900"
+                      />
+                    </Field>
+                    {item.href !== undefined && (
+                      <Field label="Đường dẫn liên kết (Link)">
+                        <Input
+                          value={item.href || ""}
+                          onChange={(e) => {
+                            const current = Array.isArray(value[arrayKey]) ? [...value[arrayKey]] : []
+                            current[idx] = { ...(current[idx] || {}), href: e.target.value }
+                            updateKey(arrayKey, current)
+                          }}
+                          placeholder="/dich-vu, /du-an..."
+                          className="rounded-none text-xs font-mono bg-white dark:bg-slate-900"
+                        />
+                      </Field>
+                    )}
+                  </div>
+                  <Field label="Mô tả nội dung">
+                    <Textarea
+                      rows={2}
+                      value={item.description || ""}
+                      onChange={(e) => {
+                        const current = Array.isArray(value[arrayKey]) ? [...value[arrayKey]] : []
+                        current[idx] = { ...(current[idx] || {}), description: e.target.value }
+                        updateKey(arrayKey, current)
+                      }}
+                      placeholder="Mô tả nội dung..."
+                      className="rounded-none text-xs bg-white dark:bg-slate-900"
+                    />
+                  </Field>
+                </div>
+              ))
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* 8. Body / Description Field (StorySplit / AboutGzv / v.v.) */}
+      {hasBody && !isProjects && (
+        <div className="space-y-2 border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-slate-900">
           <Label className="text-xs font-black uppercase tracking-wide text-slate-800 dark:text-slate-200">
-            Nội dung chi tiết / Mô tả
+            Nội dung chi tiết / Đoạn văn bản (Body / Description)
           </Label>
           <Textarea
             rows={4}
-            value={value.body || value.description || ""}
+            value={value.body ?? value.description ?? ""}
             onChange={(e) => {
               if (value.description !== undefined) {
                 updateKey("description", e.target.value)
@@ -118,12 +704,141 @@ export function PropsEditor({
               }
             }}
             className="rounded-none text-xs leading-relaxed border-slate-300 bg-white dark:bg-slate-900 dark:border-white/10"
-            placeholder="Nhập nội dung mô tả..."
+            placeholder="Nhập nội dung mô tả chi tiết của section..."
           />
         </div>
       )}
 
-      {/* 2. CTA Button & Link Config */}
+      {/* 9. Image Editor with Drag-to-align & Zoom */}
+      {hasImage && (
+        <ImagePositionAndZoomEditor
+          imageUrl={value.image_url || value.image || ""}
+          positionX={value.position_x ?? 50}
+          positionY={value.position_y ?? 50}
+          imageSize={value.image_size ?? 100}
+          onChange={(patch) => onChange({ ...(value || {}), ...patch })}
+          onPickImage={onPickSingleImage}
+          title="Ảnh minh họa Section"
+        />
+      )}
+
+      {/* 10. Stats Field (Số liệu thống kê) */}
+      {hasStatsArray && (
+        <div className="space-y-3 border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-slate-900">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-white/10">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4 text-[#ed1c24]" />
+              <div>
+                <Label className="text-xs font-black uppercase tracking-wide text-slate-800 dark:text-slate-200">
+                  Chỉ số thống kê (Stats)
+                </Label>
+                <p className="text-[11px] text-slate-500">Các khối số liệu nổi bật hiển thị kèm theo section.</p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-none text-[11px] font-black uppercase h-7 border-[#ed1c24] text-[#ed1c24] hover:bg-[#ed1c24] hover:text-white transition"
+              onClick={() => {
+                const current = Array.isArray(value.stats) ? [...value.stats] : []
+                updateKey("stats", [...current, { label: "Nhãn mới", value: "10+", description: "Mô tả ngắn" }])
+              }}
+            >
+              <Plus className="mr-1 h-3.5 w-3.5" /> Thêm chỉ số
+            </Button>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {(value.stats || []).map((st: any, idx: number) => (
+              <div
+                key={idx}
+                className="border border-slate-200 bg-slate-50 p-3 shadow-2xs dark:border-white/10 dark:bg-slate-950 space-y-2 relative"
+              >
+                <div className="flex justify-between items-center pb-1 border-b border-slate-100 dark:border-white/5">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-[#ed1c24]">
+                    Chỉ số #{idx + 1}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+                    onClick={() => {
+                      const current = Array.isArray(value.stats) ? [...value.stats] : []
+                      updateKey("stats", current.filter((_, i) => i !== idx))
+                    }}
+                    title="Xóa chỉ số"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+
+                <Field label="Số liệu hiển thị">
+                  <Input
+                    value={st.value || ""}
+                    onChange={(e) => {
+                      const current = Array.isArray(value.stats) ? [...value.stats] : []
+                      current[idx] = { ...(current[idx] || {}), value: e.target.value }
+                      updateKey("stats", current)
+                    }}
+                    placeholder="Ví dụ: 50+, 5000+, 95%..."
+                    className="h-8 text-xs font-black rounded-none font-mono bg-white dark:bg-slate-900"
+                  />
+                </Field>
+
+                <Field label="Nhãn mô tả chính">
+                  <Input
+                    value={st.label || ""}
+                    onChange={(e) => {
+                      const current = Array.isArray(value.stats) ? [...value.stats] : []
+                      current[idx] = { ...(current[idx] || {}), label: e.target.value }
+                      updateKey("stats", current)
+                    }}
+                    placeholder="Ví dụ: Doanh nghiệp, Học viên..."
+                    className="h-8 text-xs font-bold rounded-none bg-white dark:bg-slate-900"
+                  />
+                </Field>
+
+                <div className="flex items-center justify-between border-t border-slate-100 dark:border-white/5 pt-2">
+                  <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                    Bật mô tả phụ
+                  </span>
+                  <Switch
+                    checked={Boolean(st.description !== undefined && st.description !== "" && st.show_description !== false)}
+                    onCheckedChange={(checked) => {
+                      const current = Array.isArray(value.stats) ? [...value.stats] : []
+                      current[idx] = {
+                        ...(current[idx] || {}),
+                        show_description: checked,
+                        description: checked ? (st.description || "Mô tả ngắn...") : "",
+                      }
+                      updateKey("stats", current)
+                    }}
+                  />
+                </div>
+
+                {Boolean(st.description !== undefined && st.description !== "" && st.show_description !== false) && (
+                  <Field label="Nội dung mô tả phụ">
+                    <Input
+                      value={st.description || ""}
+                      onChange={(e) => {
+                        const current = Array.isArray(value.stats) ? [...value.stats] : []
+                        current[idx] = { ...(current[idx] || {}), description: e.target.value }
+                        updateKey("stats", current)
+                      }}
+                      placeholder="Ví dụ: Đối tác chiến lược..."
+                      className="h-8 text-xs rounded-none bg-white dark:bg-slate-900"
+                    />
+                  </Field>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 11. CTA Button & Link Config */}
       {isCta && (
         <div className="space-y-3 border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-slate-900">
           <div className="flex items-center gap-2 border-b border-slate-200 dark:border-white/10 pb-2">
@@ -136,7 +851,7 @@ export function PropsEditor({
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Tên nút bấm (CTA Label)">
               <Input
-                value={value.buttonLabel || value.button_label || value.button_text || ""}
+                value={value.buttonLabel ?? value.button_label ?? value.button_text ?? ""}
                 onChange={(e) => {
                   if (value.button_label !== undefined) {
                     updateKey("button_label", e.target.value)
@@ -144,13 +859,13 @@ export function PropsEditor({
                     updateKey("buttonLabel", e.target.value)
                   }
                 }}
-                placeholder="Ví dụ: Đăng ký tư vấn miễn phí"
+                placeholder="Ví dụ: Liên hệ ngay"
                 className="rounded-none text-xs font-bold"
               />
             </Field>
             <Field label="Đường dẫn nút bấm (CTA URL)">
               <Input
-                value={value.buttonUrl || value.button_url || value.button_link || ""}
+                value={value.buttonUrl ?? value.button_url ?? value.button_link ?? ""}
                 onChange={(e) => {
                   if (value.button_url !== undefined) {
                     updateKey("button_url", e.target.value)
@@ -166,7 +881,7 @@ export function PropsEditor({
         </div>
       )}
 
-      {/* 3. Background Color / Gradient Config */}
+      {/* 12. Background Color / Gradient Config */}
       {isBgConfigurable && (
         <div className="space-y-3 border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-slate-900">
           <div className="flex items-center gap-2 border-b border-slate-200 dark:border-white/10 pb-2">
@@ -181,7 +896,7 @@ export function PropsEditor({
               <div className="flex gap-2">
                 <Input
                   type="color"
-                  value={value.backgroundFrom || value.background_from || value.backgroundColor || value.background_color || "#ed1c24"}
+                  value={value.backgroundFrom || value.background_from || value.backgroundColor || value.background_color || "#050505"}
                   onChange={(e) => {
                     if (value.background_from !== undefined) {
                       updateKey("background_from", e.target.value)
@@ -192,7 +907,7 @@ export function PropsEditor({
                   className="w-14 h-9 p-1 rounded-none cursor-pointer shrink-0 border-slate-300"
                 />
                 <Input
-                  value={value.backgroundFrom || value.background_from || value.backgroundColor || value.background_color || "#ed1c24"}
+                  value={value.backgroundFrom || value.background_from || value.backgroundColor || value.background_color || "#050505"}
                   onChange={(e) => {
                     if (value.background_from !== undefined) {
                       updateKey("background_from", e.target.value)
@@ -201,7 +916,7 @@ export function PropsEditor({
                     }
                   }}
                   className="rounded-none font-mono text-xs"
-                  placeholder="#ed1c24"
+                  placeholder="#050505"
                 />
               </div>
             </Field>
@@ -240,7 +955,7 @@ export function PropsEditor({
           <div
             className="h-10 w-full flex items-center justify-center text-xs font-bold text-white rounded-none shadow-inner select-none transition-all"
             style={{
-              background: `linear-gradient(90deg, ${value.backgroundFrom || value.background_from || value.backgroundColor || value.background_color || "#ed1c24"}, ${value.backgroundTo || value.background_to || value.backgroundColor || value.background_color || "#ed1c24"})`,
+              background: `linear-gradient(90deg, ${value.backgroundFrom || value.background_from || value.backgroundColor || value.background_color || "#050505"}, ${value.backgroundTo || value.background_to || value.backgroundColor || value.background_color || "#ed1c24"})`,
             }}
           >
             Xem trước màu nền Section
@@ -248,164 +963,6 @@ export function PropsEditor({
         </div>
       )}
 
-      {/* 4. Image Editor with Drag-to-align & Zoom */}
-      {hasImage && (
-        <ImagePositionAndZoomEditor
-          imageUrl={value.image_url || value.image || ""}
-          positionX={value.position_x ?? 50}
-          positionY={value.position_y ?? 50}
-          imageSize={value.image_size ?? 100}
-          onChange={(patch) => onChange({ ...(value || {}), ...patch })}
-          onPickImage={onPickSingleImage}
-          title="Ảnh minh họa Section"
-        />
-      )}
-
-      {/* 5. Stats Field */}
-      {hasStats && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-white/10">
-            <div>
-              <Label className="text-xs font-black uppercase tracking-wide text-slate-800 dark:text-slate-200">
-                Chỉ số thống kê (Stats)
-              </Label>
-              <p className="text-[11px] text-slate-500">Các khối số liệu nổi bật hiển thị kèm theo section.</p>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="rounded-none text-[11px] font-black uppercase h-7 border-[#ed1c24] text-[#ed1c24] hover:bg-[#ed1c24] hover:text-white transition"
-              onClick={() => {
-                const current = Array.isArray(value.stats) ? [...value.stats] : []
-                updateKey("stats", [...current, { label: "Nhãn mới", value: "10+" }])
-              }}
-            >
-              <Plus className="mr-1 h-3.5 w-3.5" /> Thêm chỉ số
-            </Button>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {(value.stats || []).map((st: any, idx: number) => (
-              <div
-                key={idx}
-                className="border border-slate-200 bg-white p-3 shadow-2xs dark:border-white/10 dark:bg-slate-900 space-y-2 relative"
-              >
-                <div className="flex justify-between items-center pb-1 border-b border-slate-100 dark:border-white/5">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-[#ed1c24]">
-                    Chỉ số #{idx + 1}
-                  </span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
-                    onClick={() => {
-                      const current = Array.isArray(value.stats) ? [...value.stats] : []
-                      updateKey("stats", current.filter((_, i) => i !== idx))
-                    }}
-                    title="Xóa chỉ số"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-
-                <Field label="Số liệu hiển thị">
-                  <Input
-                    value={st.value || ""}
-                    onChange={(e) => {
-                      const current = Array.isArray(value.stats) ? [...value.stats] : []
-                      current[idx] = { ...(current[idx] || {}), value: e.target.value }
-                      updateKey("stats", current)
-                    }}
-                    placeholder="Ví dụ: 50+, 5000+, 10..."
-                    className="h-8 text-xs font-black rounded-none font-mono"
-                  />
-                </Field>
-
-                <Field label="Nhãn mô tả">
-                  <Input
-                    value={st.label || ""}
-                    onChange={(e) => {
-                      const current = Array.isArray(value.stats) ? [...value.stats] : []
-                      current[idx] = { ...(current[idx] || {}), label: e.target.value }
-                      updateKey("stats", current)
-                    }}
-                    placeholder="Ví dụ: Doanh nghiệp, Học viên..."
-                    className="h-8 text-xs rounded-none"
-                  />
-                </Field>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* 6. Items Field (if component has items instead of stats) */}
-      {hasItems && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-white/10">
-            <Label className="text-xs font-black uppercase tracking-wide text-slate-800 dark:text-slate-200">
-              Danh sách mục (Items)
-            </Label>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="rounded-none text-[11px] font-black uppercase h-7 border-[#ed1c24] text-[#ed1c24] hover:bg-[#ed1c24] hover:text-white"
-              onClick={() => {
-                const current = Array.isArray(value.items) ? [...value.items] : []
-                updateKey("items", [...current, { title: "Mục mới", description: "" }])
-              }}
-            >
-              <Plus className="mr-1 h-3.5 w-3.5" /> Thêm mục
-            </Button>
-          </div>
-
-          <div className="space-y-2">
-            {(value.items || []).map((it: any, idx: number) => (
-              <div key={idx} className="border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-slate-900 space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-black uppercase text-[#ed1c24]">Mục #{idx + 1}</span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 text-red-500 hover:bg-red-50"
-                    onClick={() => {
-                      const current = Array.isArray(value.items) ? [...value.items] : []
-                      updateKey("items", current.filter((_, i) => i !== idx))
-                    }}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-                <Input
-                  value={it.title || ""}
-                  onChange={(e) => {
-                    const current = Array.isArray(value.items) ? [...value.items] : []
-                    current[idx] = { ...(current[idx] || {}), title: e.target.value }
-                    updateKey("items", current)
-                  }}
-                  placeholder="Tiêu đề mục..."
-                  className="h-8 text-xs font-bold rounded-none"
-                />
-                <Textarea
-                  rows={2}
-                  value={it.description || ""}
-                  onChange={(e) => {
-                    const current = Array.isArray(value.items) ? [...value.items] : []
-                    current[idx] = { ...(current[idx] || {}), description: e.target.value }
-                    updateKey("items", current)
-                  }}
-                  placeholder="Mô tả mục..."
-                  className="text-xs rounded-none"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   )
 }

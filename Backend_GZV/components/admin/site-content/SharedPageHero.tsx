@@ -78,7 +78,7 @@ export function SharedPageHero({
   return (
     <section
       ref={containerRef}
-      className="relative overflow-hidden py-24 text-white min-h-[480px] flex items-center justify-center transition-all duration-300"
+      className="relative overflow-hidden min-h-[420px] md:min-h-[460px] flex items-center justify-center py-20 lg:py-24 text-white transition-all duration-300"
       style={{
         background: useImage
           ? "#050505"
@@ -120,7 +120,7 @@ export function SharedPageHero({
       />
 
       <div className="container relative z-10 px-6">
-        <div className={`mx-auto max-w-4xl flex flex-col ${alignClass}`}>
+        <div className={`mx-auto w-full max-w-[70%] flex flex-col ${alignClass}`}>
           {showBadge && badge && (
             <motion.div
               onClick={onBadgeClick}

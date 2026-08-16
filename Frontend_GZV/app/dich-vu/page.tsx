@@ -15,7 +15,11 @@ export const metadata: Metadata = {
 export default function ServicesPage() {
   return (
     <>
-      <PageBanner />
+      <PageBanner
+        badge="Giải pháp thực chiến"
+        title="Dịch vụ"
+        subtitle="Marketing, Sales và Digital Transformation theo mô hình triển khai thực chiến của GZV."
+      />
       <BuilderPageGate slug="dich-vu">
         <StatsBar
           stats={[

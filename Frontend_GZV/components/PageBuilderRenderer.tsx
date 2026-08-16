@@ -59,18 +59,19 @@ export default function PageBuilderRenderer({ slug, fallback }: { slug: string; 
 
 function RenderBlock({ block, language }: { block: PageBlock; language: "vi" | "en" }) {
   if (block.is_visible === false) return null
-  const props = localizeRecord(block.props || {}, language)
+  const localizedProps = localizeRecord(block.props || {}, language)
+  const blockTitle = language === "en"
+    ? ((block as any).title_en || localizedProps.title_en || block.title || localizedProps.title || "")
+    : (block.title || localizedProps.title || "")
+  const blockSubtitle = language === "en"
+    ? ((block as any).subtitle_en || localizedProps.subtitle_en || localizedProps.subtitle || "")
+    : (localizedProps.subtitle || "")
+  const props: any = { ...localizedProps, title: blockTitle, subtitle: blockSubtitle }
   const contentHtml = language === "en" ? ((block as any).content_html_en || props.content_html_en || block.content_html || "") : (block.content_html || "")
   switch (block.component_type) {
     case "stats_bar":
     case "hero_stats":
-      return (
-        <StatsBar
-          {...props}
-          title={props.title === "DỊCH VỤ GZV" ? undefined : props.title}
-          subtitle={props.subtitle?.includes("Marketing | Sales") ? undefined : props.subtitle}
-        />
-      )
+      return <StatsBar {...props} />
     case "msc_words":
       return <MscWords {...props} />
     case "about_gzv":

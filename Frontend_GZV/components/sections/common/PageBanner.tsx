@@ -69,7 +69,7 @@ export default function PageBanner({
             setSyncAll(meta.sync_all_banners)
           }
         }
-      } catch (e) {}
+      } catch (e) { }
     })
 
     return () => {
@@ -122,7 +122,7 @@ export default function PageBanner({
 
   return (
     <section
-      className={`relative overflow-hidden py-20 text-white transition-all duration-300 ${className}`}
+      className={`relative overflow-hidden min-h-[420px] md:min-h-[460px] flex items-center justify-center py-20 lg:py-24 text-white transition-all duration-300 ${className}`}
       style={{
         background: isUseImage
           ? '#050505'
@@ -157,14 +157,8 @@ export default function PageBanner({
       {/* Top Red Line */}
       <div className="absolute inset-x-0 top-0 h-1 bg-[#ed1c24]" aria-hidden="true" />
 
-      {/* Bottom Pattern */}
-      <div
-        className="absolute bottom-0 left-0 h-20 w-full border-t border-white/10 bg-[repeating-linear-gradient(135deg,rgba(255,255,255,0.06)_0,rgba(255,255,255,0.06)_1px,transparent_1px,transparent_14px)]"
-        aria-hidden="true"
-      />
-
       <div className="container relative z-10">
-        <div className={`mx-auto max-w-4xl flex flex-col ${alignClass}`}>
+        <div className={`mx-auto w-full max-w-[70%] flex flex-col ${alignClass}`}>
           {showBadge && displayBadge && (
             <motion.div
               className="mb-6 inline-flex items-center gap-2 border-l-4 border-[#ed1c24] bg-white/10 px-4 py-2 backdrop-blur-sm"

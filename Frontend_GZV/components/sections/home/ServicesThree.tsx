@@ -18,7 +18,6 @@ const iconMap: Record<string, any> = {
 }
 
 export interface ServicesThreeProps {
-  eyebrow?: string
   title?: string
   subtitle?: string
   items?: any[]

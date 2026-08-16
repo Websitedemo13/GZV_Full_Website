@@ -147,7 +147,6 @@ function SiteContentManager() {
           brandingResult,
           templatesResult,
           blocksResult,
-          settingsResult,
         ] = await Promise.all([
           supabase.from("site_navigation").select("*").order("sort_order", { ascending: true }),
           supabase.from("site_pages").select("*").order("title", { ascending: true }),
@@ -158,13 +157,6 @@ function SiteContentManager() {
           supabase.from("site_branding_settings").select("*").eq("id", 1).maybeSingle(),
           supabase.from("site_section_templates").select("*").order("sort_order", { ascending: true }),
           supabase.from("site_page_blocks").select("*").order("page_slug", { ascending: true }).order("sort_order", { ascending: true }),
-          (async () => {
-            try {
-              return await supabase.from("site_settings").select("*").limit(1).maybeSingle()
-            } catch (e) {
-              return { data: null, error: null } as any
-            }
-          })(),
         ])
 
         let nextNav: NavItem[] = defaultNav
@@ -268,14 +260,10 @@ function SiteContentManager() {
 
         if (headerMeta.global_banner) {
           setGlobalBannerConfig({ ...defaultBannerConfig, ...headerMeta.global_banner })
-        } else if (settingsResult.data?.page_heroes?.global_banner) {
-          setGlobalBannerConfig({ ...defaultBannerConfig, ...settingsResult.data.page_heroes.global_banner })
         }
 
         if (typeof headerMeta.sync_all_banners === "boolean") {
           setSyncAllBanners(headerMeta.sync_all_banners)
-        } else if (typeof settingsResult.data?.page_heroes?.sync_all_banners === "boolean") {
-          setSyncAllBanners(settingsResult.data.page_heroes.sync_all_banners)
         }
       } catch (error: any) {
         toast.error(error.message || "Không tải được cấu hình website.")
@@ -413,6 +401,10 @@ function SiteContentManager() {
         ...block,
         page_slug: builderSlug,
         sort_order: (idx + 1) * 10,
+        props: {
+          ...(block.props || {}),
+          title: block.title,
+        },
       }))
       await supabase.from("site_page_blocks").delete().eq("page_slug", builderSlug)
       if (targetBlocks.length > 0) {
@@ -437,14 +429,20 @@ function SiteContentManager() {
       // 1. Lưu nội dung các trang (tiêu đề, phụ đề, badge, cover) vào site_pages
       if (pages.length > 0) {
         const pagesPayload = pages.map((p) => ({
-          ...p,
+          id: p.id,
+          slug: p.slug,
+          title: p.title || p.slug,
+          menu_title: p.menu_title || p.title || p.slug,
           banner_badge: p.banner_badge || null,
           banner_title: p.banner_title || p.title || null,
           banner_subtitle: p.banner_subtitle || p.banner_description || null,
+          banner_description: p.banner_description || p.banner_subtitle || null,
           banner_image_url: p.banner_image_url || null,
-          show_badge: p.show_badge !== undefined ? p.show_badge : true,
-          show_title: p.show_title !== undefined ? p.show_title : true,
-          show_subtitle: p.show_subtitle !== undefined ? p.show_subtitle : true,
+          is_visible: p.is_visible !== false,
+          content_html: p.content_html || null,
+          content_blocks: (p as any).content_blocks || [],
+          seo_title: p.seo_title || null,
+          seo_description: p.seo_description || null,
         }))
         const { error: pagesErr } = await supabase.from("site_pages").upsert(pagesPayload, { onConflict: "slug" })
         if (pagesErr) console.warn("Lỗi khi cập nhật site_pages:", pagesErr)
@@ -463,10 +461,22 @@ function SiteContentManager() {
         headerMeta = {}
       }
 
+      const pageBannersMap: Record<string, any> = headerMeta.page_banners || {}
+      pages.forEach((p) => {
+        if (p.slug) {
+          pageBannersMap[p.slug] = {
+            show_badge: p.show_badge !== undefined ? p.show_badge : true,
+            show_title: p.show_title !== undefined ? p.show_title : true,
+            show_subtitle: p.show_subtitle !== undefined ? p.show_subtitle : true,
+          }
+        }
+      })
+
       const updatedHeaderMeta = {
         ...headerMeta,
         global_banner: globalBannerConfig,
         sync_all_banners: syncAllBanners,
+        page_banners: pageBannersMap,
       }
 
       const brandingPayload = {
@@ -788,15 +798,9 @@ function SiteContentManager() {
   }
 
   const previewBannerData = {
-    badge: syncAllBanners
-      ? globalBannerConfig.badge
-      : selectedPageObj?.banner_badge || globalBannerConfig.badge,
-    title: syncAllBanners
-      ? globalBannerConfig.title
-      : selectedPageObj?.banner_title || selectedPageObj?.title || globalBannerConfig.title,
-    description: syncAllBanners
-      ? globalBannerConfig.subtitle
-      : selectedPageObj?.banner_subtitle || selectedPageObj?.banner_description || globalBannerConfig.subtitle,
+    badge: selectedPageObj?.banner_badge || globalBannerConfig.badge || "",
+    title: selectedPageObj?.banner_title || selectedPageObj?.title || globalBannerConfig.title || "",
+    description: selectedPageObj?.banner_subtitle || selectedPageObj?.banner_description || globalBannerConfig.subtitle || "",
     badgeColor: globalBannerConfig.badge_color || "#ffffff",
     titleColor: globalBannerConfig.title_color || "#ffffff",
     descriptionColor: globalBannerConfig.subtitle_color || "rgba(255,255,255,0.85)",

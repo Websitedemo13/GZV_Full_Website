@@ -45,12 +45,10 @@ export function BannerHeroTab({
           <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-[#ed1c24] animate-pulse" />
             Xem trước trực tiếp (Live Preview)
-            {syncAllBanners ? (
-              <> — <strong className="text-[#ed1c24] uppercase">Banner Chung (Global Banner)</strong></>
+            {selectedPageObj ? (
+              <> — Đang xem trang: <strong className="text-[#ed1c24] uppercase font-black">{selectedPageObj.title || selectedPageObj.slug}</strong> (/{selectedPageObj.slug})</>
             ) : (
-              selectedPageObj && (
-                <> — <strong className="text-white uppercase">{selectedPageObj.title || selectedPageObj.slug}</strong></>
-              )
+              <> — <strong className="text-[#ed1c24] uppercase">Banner Chung</strong></>
             )}
           </span>
         </div>

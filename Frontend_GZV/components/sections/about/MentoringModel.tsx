@@ -3,7 +3,6 @@
 import SectionIntro from "@/components/sections/common/SectionIntro"
 
 export interface MentoringModelProps {
-  eyebrow?: string
   title?: string
   subtitle?: string
   steps?: any[]

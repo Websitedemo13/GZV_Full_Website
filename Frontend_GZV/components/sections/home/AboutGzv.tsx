@@ -8,7 +8,6 @@ import SectionIntro from "@/components/sections/common/SectionIntro"
 import { supabase } from "@/lib/api-supabase"
 
 export interface AboutGzvProps {
-  eyebrow?: string
   title?: string
   subtitle?: string
   body?: string
@@ -24,7 +23,6 @@ export interface AboutGzvProps {
 }
 
 export default function AboutGzv({
-  eyebrow: propEyebrow,
   title: propTitle,
   subtitle: propSubtitle,
   body: propBody,

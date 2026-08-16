@@ -413,7 +413,7 @@
       try {
         const { data, error } = await supabase
           .from('gzvers')
-          .select('*, gzver_departments(*)')
+          .select('*')
           .eq('is_active', true)
           .order('order', { ascending: true });
         if (error) throw error;
@@ -552,9 +552,9 @@
       try {
         const { data, error } = await supabase
           .from('gzvers')
-          .select('*, gzver_departments(*)')
+          .select('*')
           .eq('slug', slug)
-          .single();
+          .maybeSingle();
 
         if (error || !data) return null;
 

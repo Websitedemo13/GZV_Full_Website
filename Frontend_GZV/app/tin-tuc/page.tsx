@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
 import { api, BlogPost } from '@/lib/api-supabase'
 import PageBanner from '@/components/sections/common/PageBanner'
+import StatsBar from '@/components/sections/common/StatsBar'
 import BuilderPageGate from '@/components/BuilderPageGate'
 
 export default function BlogPage() {
@@ -65,9 +66,21 @@ export default function BlogPage() {
 
   return (
     <>
-      <PageBanner />
+      <PageBanner
+        badge="Knowledge Hub"
+        title="Chia sẻ & Tri thức"
+        subtitle="Nơi hội tụ kiến thức thực tiễn từ chuyên gia GZV Center, chia sẻ kinh nghiệm và phát triển chuyên môn."
+      />
       <BuilderPageGate slug="tin-tuc">
-        <div className="bg-white dark:bg-gray-900">
+        <StatsBar
+          stats={[
+            { value: "100+", label: "Bài viết chuyên sâu", description: "Cập nhật liên tục" },
+            { value: "10+", label: "Chuyên mục", description: "Marketing, Sales, Tech, v.v." },
+            { value: "50K+", label: "Lượt đọc", description: "Độc giả theo dõi hàng tháng" },
+            { value: "24/7", label: "Cập nhật", description: "Xu hướng thị trường mới nhất" },
+          ]}
+        />
+      <div className="bg-white dark:bg-gray-900">
 
         {/* FEATURED - Cinematic Article (Show only when no filter applied) */}
         {!selectedCategory && featuredPost && (

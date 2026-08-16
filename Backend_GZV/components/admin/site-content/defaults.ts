@@ -233,13 +233,7 @@ export const fallbackTemplates: SectionTemplate[] = [
     category: "content",
     component_type: "stats_bar",
     default_props: {
-      badge: "KẾT QUẢ ẤN TƯỢNG",
-      title: "NHỮNG CON SỐ BIẾT NÓI",
-      subtitle: "Thành tựu và kết quả đo lường được trong suốt quá trình đồng hành và phát triển.",
       columns: 4,
-      backgroundFrom: "#050505",
-      backgroundTo: "#111111",
-      accentColor: "#ed1c24",
       stats: [
         { value: "10+", label: "Năm kinh nghiệm", description: "Đồng hành và phát triển" },
         { value: "5000+", label: "Học viên", description: "Tham gia đào tạo" },
@@ -248,6 +242,89 @@ export const fallbackTemplates: SectionTemplate[] = [
       ],
     },
     sort_order: 8,
+    is_active: true,
+  },
+  {
+    template_key: "story-split",
+    name: "Câu Chuyện & Hình Ảnh (StorySplit)",
+    category: "about",
+    component_type: "story_split",
+    default_props: {
+      title: "CÂU CHUYỆN GZV",
+      subtitle: "Hành trình kiến tạo hệ sinh thái Mentoring & Coaching thực chiến",
+      body: "GZV Center được thành lập với sứ mệnh kết nối tri thức và phát triển nguồn nhân lực chất lượng cao.",
+      image_url: "/gioi-thieu/19.webp",
+      button_label: "Khám phá các dự án",
+      button_url: "/du-an",
+    },
+    sort_order: 9,
+    is_active: true,
+  },
+  {
+    template_key: "core-showcase",
+    name: "Sứ Mệnh & Giá Trị Cốt Lõi (CoreShowcase)",
+    category: "about",
+    component_type: "core_showcase",
+    default_props: {
+      title: "SỨ MỆNH. TẦM NHÌN. GIÁ TRỊ CỐT LÕI.",
+      subtitle: "GZV định hình một hệ sinh thái triển khai thực chiến.",
+      highlights: ["Thực chiến", "Minh bạch", "Tăng trưởng"],
+      items: [
+        { label: "01", title: "Sứ mệnh", description: "Kết nối tri thức, chuyên gia và doanh nghiệp." },
+        { label: "02", title: "Tầm nhìn", description: "Trở thành hệ sinh thái mentoring và coaching hàng đầu." },
+        { label: "03", title: "Giá trị cốt lõi", description: "Thực chiến, minh bạch và tạo tác động thật." },
+      ],
+    },
+    sort_order: 10,
+    is_active: true,
+  },
+  {
+    template_key: "timeline-block",
+    name: "Hành Trình Phát Triển (TimelineBlock)",
+    category: "about",
+    component_type: "timeline",
+    default_props: {
+      title: "HÀNH TRÌNH PHÁT TRIỂN",
+      subtitle: "Những cột mốc quan trọng của GZV Center qua từng năm",
+      items: [
+        { year: "2018", title: "Khởi đầu sứ mệnh", description: "Thành lập cộng đồng chia sẻ tri thức đầu tiên." },
+        { year: "2020", title: "Mở rộng hệ sinh thái", description: "Chuẩn hóa mô hình Mentoring & Coaching 1:1." },
+        { year: "2022", title: "Đột phá chuyển đổi số", description: "Tư vấn chiến lược cho doanh nghiệp SMEs." },
+        { year: "2024+", title: "Vươn tầm phát triển", description: "Đạt mốc 10.000+ học viên và 100+ đối tác." },
+      ],
+    },
+    sort_order: 11,
+    is_active: true,
+  },
+  {
+    template_key: "mentoring-model",
+    name: "Mô Hình Triển Khai 70-20-10 (MentoringModel)",
+    category: "about",
+    component_type: "mentoring_model",
+    default_props: {
+      title: "MÔ HÌNH TRIỂN KHAI",
+      subtitle: "Phương pháp đào tạo và đồng hành thực chiến chuẩn quốc tế",
+      steps: [
+        { title: "70% Thực hành thực tế", description: "Trực tiếp tham gia giải quyết các bài toán thực tế." },
+        { title: "20% Học hỏi từ Mentor", description: "Được hướng dẫn kèm cặp 1:1 từ chuyên gia." },
+        { title: "10% Kiến thức nền tảng", description: "Hệ thống hóa kiến thức chuyên sâu chuẩn xác." },
+      ],
+    },
+    sort_order: 12,
+    is_active: true,
+  },
+  {
+    template_key: "people-grid",
+    name: "Ban Điều Hành & Cố Vấn (PeopleGrid)",
+    category: "about",
+    component_type: "people_grid",
+    default_props: {
+      title: "BAN ĐIỀU HÀNH & CỐ VẤN",
+      subtitle: "Đội ngũ lãnh đạo tâm huyết dẫn dắt tổ chức",
+      type: "directors",
+      limit: 6,
+    },
+    sort_order: 13,
     is_active: true,
   },
   {
@@ -340,7 +417,7 @@ export const quickBuilderPages = [
   { slug: "lien-he", label: "Liên hệ", hint: "Form, map, thông tin liên hệ" },
 ]
 
-export const defaultLoading: LoadingSettings = { id: 1, logo_url: "/logo.webp", title: "GZV", subtitle: "Đang tải dữ liệu...", effect: "orbit", background_from: "#050505", background_to: "#ed1c24", accent_color: "#ed1c24", enabled: true, minimum_duration_ms: 900 }
+export const defaultLoading: LoadingSettings = { id: 1, logo_url: "/logo.webp", title: "GZV", subtitle: "Đang tải dữ liệu...", effect: "orbit", background_from: "#050505", background_to: "#ed1c24", accent_color: "#ed1c24", enabled: false, minimum_duration_ms: 900 }
 export const defaultBranding: BrandingSettings = { id: 1, site_name: "GZV", header_logo_url: "/logo.webp", footer_logo_url: "/logo.webp", favicon_url: "/logo/favicon.ico", default_title: "GZV - The Voice of Genzers", title_template: "%s | GZV", default_description: "GZV Center", default_keywords: "GZV, đào tạo, mentoring, coaching", og_image_url: "/og-image.jpg", topbar_email_label: "gzv.one@gmail.com", topbar_phone_label: "(+84) 329 381 489", topbar_badge_label: "GZV" }
 export const defaultFooter: FooterSettings = {
   id: 1,
@@ -393,18 +470,13 @@ export const defaultPageBlocks: PageBlock[] = [
     component_type: "stats_bar",
     title: "CON SỐ THỐNG KÊ DỊCH VỤ",
     props: {
-      badge: "KẾT QUẢ ĐO LƯỜNG",
-      title: "NĂNG LỰC THỰC CHIẾN GZV",
-      subtitle: "Marketing | Sales | Digital Transformation",
+      columns: 4,
       stats: [
         { value: "3", label: "Mũi triển khai", description: "Marketing, Sales, Chuyển đổi số" },
         { value: "50+", label: "Đối tác", description: "Doanh nghiệp đồng hành" },
         { value: "10+", label: "Lĩnh vực", description: "Kinh nghiệm thực tiễn" },
         { value: "100%", label: "Thực chiến", description: "Tập trung vào kết quả" },
       ],
-      backgroundFrom: "#050505",
-      backgroundTo: "#111111",
-      accentColor: "#ed1c24",
     },
     sort_order: 10,
     is_visible: true,
@@ -467,25 +539,212 @@ export const defaultPageBlocks: PageBlock[] = [
     is_visible: true,
   },
 
-  // 2. Dự án (/du-an)
+  // 2. Giới thiệu (/gioi-thieu)
+  {
+    page_slug: "gioi-thieu",
+    block_key: "stats",
+    component_type: "stats_bar",
+    title: "CON SỐ ẤN TƯỢNG GZV",
+    props: {
+      columns: 4,
+      stats: [
+        { value: "50+", label: "Doanh nghiệp", description: "Đối tác chiến lược" },
+        { value: "5000+", label: "Học viên", description: "Tham gia các khóa đào tạo" },
+        { value: "100+", label: "Mentor & Chuyên gia", description: "Mạng lưới cố vấn thực chiến" },
+        { value: "95%", label: "Tỷ lệ hài lòng", description: "Đánh giá chất lượng đào tạo" },
+      ],
+    },
+    sort_order: 10,
+    is_visible: true,
+  },
+  {
+    page_slug: "gioi-thieu",
+    block_key: "story",
+    component_type: "story_split",
+    title: "Câu chuyện GZV",
+    props: {
+      eyebrow: "Câu chuyện GZV",
+      title: "CÂU CHUYỆN GZV",
+      subtitle: "Từ một cộng đồng học hỏi đến hệ sinh thái triển khai thực chiến.",
+      body: "GZV được xây dựng để kết nối thế hệ trẻ, chuyên gia và doanh nghiệp trong cùng một môi trường học tập - làm thật - tạo tác động thật. Chúng tôi tin rằng năng lực chỉ bền vững khi được rèn trong dự án thực tế, dưới sự đồng hành của những người có kinh nghiệm.",
+      image_url: "/gioi-thieu/19.webp",
+      image_alt: "Câu chuyện GZV",
+      position_x: 50,
+      position_y: 50,
+      image_size: 100,
+      stats: [
+        { value: "50+", label: "Doanh nghiệp" },
+        { value: "5000+", label: "Học viên" },
+        { value: "10+", label: "Lĩnh vực" },
+      ],
+    },
+    sort_order: 20,
+    is_visible: true,
+  },
+  {
+    page_slug: "gioi-thieu",
+    block_key: "mission",
+    component_type: "feature_grid",
+    title: "Sứ mệnh",
+    props: {
+      title: "SỨ MỆNH",
+      subtitle: "Kết nối tri thức, chuyên gia và doanh nghiệp để tạo năng lực tăng trưởng có thể đo lường.",
+      columns: 1,
+      items: [
+        {
+          title: "Tạo năng lực thực chiến",
+          description: "GZV giúp người trẻ và doanh nghiệp phát triển thông qua mentoring, coaching và dự án thực tế.",
+          icon: "target",
+          color: "#ed1c24",
+        },
+      ],
+    },
+    sort_order: 30,
+    is_visible: true,
+  },
+  {
+    page_slug: "gioi-thieu",
+    block_key: "vision",
+    component_type: "feature_grid",
+    title: "Tầm nhìn",
+    props: {
+      title: "TẦM NHÌN",
+      subtitle: "Trở thành hệ sinh thái mentoring, coaching và triển khai dự án thế hệ mới tại Việt Nam.",
+      columns: 1,
+      items: [
+        {
+          title: "Hệ sinh thái Next-Gen",
+          description: "Xây dựng mạng lưới chuyên gia, GZVers và đối tác cùng tạo giá trị bền vững.",
+          icon: "compass",
+          color: "#050505",
+        },
+      ],
+    },
+    sort_order: 40,
+    is_visible: true,
+  },
+  {
+    page_slug: "gioi-thieu",
+    block_key: "core-values",
+    component_type: "feature_grid",
+    title: "Giá trị cốt lõi",
+    props: {
+      title: "GIÁ TRỊ CỐT LÕI",
+      subtitle: "Những nguyên tắc giúp GZV vận hành sắc cạnh và đáng tin cậy.",
+      columns: 4,
+      items: [
+        {
+          title: "Thực chiến",
+          description: "Tập trung vào kết quả và bài toán thật.",
+          icon: "rocket",
+          color: "#ed1c24",
+        },
+        {
+          title: "Minh bạch",
+          description: "Rõ mục tiêu, rõ dữ liệu, rõ trách nhiệm.",
+          icon: "shield",
+          color: "#050505",
+        },
+        {
+          title: "Học hỏi liên tục",
+          description: "Luôn cải tiến từ phản hồi và thực nghiệm.",
+          icon: "book",
+          color: "#ed1c24",
+        },
+        {
+          title: "Tạo tác động",
+          description: "Ưu tiên giá trị đo lường được cho cộng đồng và đối tác.",
+          icon: "award",
+          color: "#050505",
+        },
+      ],
+    },
+    sort_order: 50,
+    is_visible: true,
+  },
+  {
+    page_slug: "gioi-thieu",
+    block_key: "directors",
+    component_type: "people_grid",
+    title: "Ban điều hành",
+    props: {
+      eyebrow: "Leadership",
+      title: "BAN ĐIỀU HÀNH",
+      subtitle: "Lấy dữ liệu tự động từ GZVers đã đánh dấu ban điều hành.",
+      type: "directors",
+      limit: 6,
+    },
+    sort_order: 60,
+    is_visible: true,
+  },
+  {
+    page_slug: "gioi-thieu",
+    block_key: "timeline",
+    component_type: "timeline",
+    title: "Lộ trình phát triển của GZV",
+    props: {
+      eyebrow: "Growth Roadmap",
+      title: "LỘ TRÌNH PHÁT TRIỂN CỦA GZV",
+      subtitle: "Các chặng phát triển được thiết kế để mở rộng năng lực cộng đồng và năng lực triển khai.",
+      items: [
+        { year: "Giai đoạn 1", title: "Xây nền cộng đồng", description: "Kết nối GZVers, mentor và doanh nghiệp đối tác." },
+        { year: "Giai đoạn 2", title: "Chuẩn hóa mô hình", description: "Hoàn thiện mentoring, coaching và project-based learning." },
+        { year: "Giai đoạn 3", title: "Triển khai dự án", description: "Đưa đội ngũ vào các bài toán Marketing, Sales, Digital Transformation." },
+        { year: "Giai đoạn 4", title: "Mở rộng hệ sinh thái", description: "Phát triển mạng lưới đối tác, chuyên gia và dự án liên ngành." },
+      ],
+    },
+    sort_order: 70,
+    is_visible: true,
+  },
+  {
+    page_slug: "gioi-thieu",
+    block_key: "mentoring-model",
+    component_type: "mentoring_model",
+    title: "Mô hình Mentoring",
+    props: {
+      eyebrow: "Mentoring Model",
+      title: "MÔ HÌNH MENTORING",
+      subtitle: "GZV kết hợp định hướng cá nhân, huấn luyện kỹ năng và triển khai dự án thật.",
+      steps: [
+        { title: "Đánh giá năng lực", description: "Xác định điểm mạnh, mục tiêu và khoảng trống kỹ năng." },
+        { title: "Mentoring cá nhân hóa", description: "Kết nối mentor phù hợp để định hướng lộ trình phát triển." },
+        { title: "Dự án thực chiến", description: "Thực hành trên bài toán thật để tạo năng lực có thể đo lường." },
+      ],
+    },
+    sort_order: 80,
+    is_visible: true,
+  },
+  {
+    page_slug: "gioi-thieu",
+    block_key: "cta",
+    component_type: "cta_band",
+    title: "KẾT NỐI VỚI GZV",
+    props: {
+      title: "ĐỒNG HÀNH CÙNG GZV",
+      subtitle: "Hãy cùng chúng tôi kiến tạo những giá trị mới cho doanh nghiệp và sự nghiệp của bạn.",
+      button_label: "Liên hệ ngay",
+      button_url: "/lien-he",
+      background_from: "#050505",
+      background_to: "#ed1c24",
+    },
+    sort_order: 90,
+    is_visible: true,
+  },
+
+  // 3. Dự án (/du-an)
   {
     page_slug: "du-an",
     block_key: "stats",
     component_type: "stats_bar",
     title: "THỐNG KÊ DỰ ÁN",
     props: {
-      badge: "DẤU ẤN TRIỂN KHAI",
-      title: "TỔNG QUAN DỰ ÁN",
-      subtitle: "Các dự án Mentoring & Coaching thực tế mà GZV Center đã triển khai.",
+      columns: 4,
       stats: [
-        { value: "10+", label: "Dự án tiêu biểu" },
-        { value: "50+", label: "Doanh nghiệp" },
-        { value: "5000+", label: "Học viên" },
-        { value: "10+", label: "Lĩnh vực" },
+        { value: "10+", label: "Dự án tiêu biểu", description: "Quy mô thực tế" },
+        { value: "50+", label: "Doanh nghiệp", description: "Đồng hành phát triển" },
+        { value: "5000+", label: "Học viên", description: "Tham gia đào tạo" },
+        { value: "10+", label: "Lĩnh vực", description: "Kinh nghiệm đa ngành" },
       ],
-      backgroundFrom: "#050505",
-      backgroundTo: "#111111",
-      accentColor: "#ed1c24",
     },
     sort_order: 10,
     is_visible: true,
@@ -522,25 +781,20 @@ export const defaultPageBlocks: PageBlock[] = [
     is_visible: true,
   },
 
-  // 3. GZVers (/gzver)
+  // 4. GZVers (/gzver)
   {
     page_slug: "gzver",
     block_key: "stats",
     component_type: "stats_bar",
     title: "QUY MÔ NHÂN SỰ",
     props: {
-      badge: "HỆ SINH THÁI GZV",
-      title: "QUY MÔ ĐỘI NGŨ",
-      subtitle: "Hệ sinh thái con người tạo nên giá trị và sự khác biệt tại GZV Center.",
+      columns: 4,
       stats: [
-        { value: "50+", label: "GZVers" },
-        { value: "10+", label: "Cố vấn & Mentor" },
-        { value: "5+", label: "Ban chuyên môn" },
-        { value: "100%", label: "Thực chiến" },
+        { value: "50+", label: "GZVers", description: "Nhân sự trẻ trung, nhiệt huyết" },
+        { value: "10+", label: "Cố vấn & Mentor", description: "Chuyên gia đầu ngành" },
+        { value: "5+", label: "Ban chuyên môn", description: "Vận hành chuyên nghiệp" },
+        { value: "100%", label: "Thực chiến", description: "Cam kết đồng hành" },
       ],
-      backgroundFrom: "#050505",
-      backgroundTo: "#111111",
-      accentColor: "#ed1c24",
     },
     sort_order: 10,
     is_visible: true,
@@ -549,12 +803,10 @@ export const defaultPageBlocks: PageBlock[] = [
     page_slug: "gzver",
     block_key: "gzvers_list",
     component_type: "gzvers_grid",
-    title: "DANH SÁCH GZVERS",
+    title: "ĐỘI NGŨ NHÂN SỰ GZV",
     props: {
-      title: "DANH SÁCH GZVERS",
+      title: "ĐỘI NGŨ NHÂN SỰ GZV",
       subtitle: "Đội ngũ nhân sự, cố vấn và chuyên gia đồng hành",
-      show_filter: true,
-      limit: 20,
     },
     sort_order: 20,
     is_visible: true,
@@ -576,7 +828,24 @@ export const defaultPageBlocks: PageBlock[] = [
     is_visible: true,
   },
 
-  // 4. Tin tức (/tin-tuc)
+  // 5. Tin tức (/tin-tuc)
+  {
+    page_slug: "tin-tuc",
+    block_key: "stats",
+    component_type: "stats_bar",
+    title: "THỐNG KÊ TRI THỨC",
+    props: {
+      columns: 4,
+      stats: [
+        { value: "100+", label: "Bài viết chuyên sâu", description: "Cập nhật liên tục" },
+        { value: "10+", label: "Chuyên mục", description: "Marketing, Sales, Tech, v.v." },
+        { value: "50K+", label: "Lượt đọc", description: "Độc giả theo dõi hàng tháng" },
+        { value: "24/7", label: "Cập nhật", description: "Xu hướng thị trường mới nhất" },
+      ],
+    },
+    sort_order: 10,
+    is_visible: true,
+  },
   {
     page_slug: "tin-tuc",
     block_key: "news_list",
@@ -588,7 +857,7 @@ export const defaultPageBlocks: PageBlock[] = [
       limit: 9,
       show_categories: true,
     },
-    sort_order: 10,
+    sort_order: 20,
     is_visible: true,
   },
   {
@@ -604,11 +873,76 @@ export const defaultPageBlocks: PageBlock[] = [
       background_from: "#050505",
       background_to: "#ed1c24",
     },
-    sort_order: 20,
+    sort_order: 30,
     is_visible: true,
   },
 
-  // 5. Liên hệ (/lien-he)
+  // 6. Mentors (/mentors)
+  {
+    page_slug: "mentors",
+    block_key: "stats",
+    component_type: "stats_bar",
+    title: "THỐNG KÊ BAN GIẢNG HUẤN",
+    props: {
+      columns: 4,
+      stats: [
+        { value: "50+", label: "Chuyên gia & Mentor", description: "Đầu ngành thực chiến" },
+        { value: "15+", label: "Năm kinh nghiệm TB", description: "Thực tế tại doanh nghiệp" },
+        { value: "30+", label: "Lĩnh vực chuyên môn", description: "Đa ngành đa lĩnh vực" },
+        { value: "100%", label: "Tâm huyết", description: "Đồng hành sát cánh" },
+      ],
+    },
+    sort_order: 10,
+    is_visible: true,
+  },
+  {
+    page_slug: "mentors",
+    block_key: "mentors_list",
+    component_type: "mentors_grid",
+    title: "DANH SÁCH MENTORS",
+    props: {
+      title: "BAN GIẢNG HUẤN & CỐ VẤN",
+      subtitle: "Gặp gỡ đội ngũ giảng huấn giàu kinh nghiệm thực chiến",
+      limit: 12,
+    },
+    sort_order: 20,
+    is_visible: true,
+  },
+  {
+    page_slug: "mentors",
+    block_key: "cta",
+    component_type: "cta_band",
+    title: "KẾT NỐI MENTOR",
+    props: {
+      title: "Đồng hành cùng Mentor GZV",
+      subtitle: "Đăng ký để được kết nối và tham gia các chương trình đào tạo chuyên sâu.",
+      button_label: "Nhận tư vấn ngay",
+      button_url: "/lien-he",
+      background_from: "#050505",
+      background_to: "#ed1c24",
+    },
+    sort_order: 30,
+    is_visible: true,
+  },
+
+  // 7. Liên hệ (/lien-he)
+  {
+    page_slug: "lien-he",
+    block_key: "stats",
+    component_type: "stats_bar",
+    title: "KÊNH KẾT NỐI",
+    props: {
+      columns: 4,
+      stats: [
+        { value: "24h", label: "Phản hồi tối đa", description: "Tiếp nhận thông tin nhanh" },
+        { value: "100%", label: "Tận tâm", description: "Tư vấn đúng bài toán" },
+        { value: "Free", label: "Tư vấn ban đầu", description: "Đánh giá nhu cầu miễn phí" },
+        { value: "1:1", label: "Chuyên gia", description: "Đồng hành trực tiếp" },
+      ],
+    },
+    sort_order: 10,
+    is_visible: true,
+  },
   {
     page_slug: "lien-he",
     block_key: "contact_block",
@@ -620,7 +954,7 @@ export const defaultPageBlocks: PageBlock[] = [
       email: "one.gzv@gmail.com",
       phone: "(+84) 329 381 489",
     },
-    sort_order: 10,
+    sort_order: 20,
     is_visible: true,
   },
   {
@@ -636,7 +970,7 @@ export const defaultPageBlocks: PageBlock[] = [
       background_from: "#050505",
       background_to: "#ed1c24",
     },
-    sort_order: 20,
+    sort_order: 30,
     is_visible: true,
   },
 ]

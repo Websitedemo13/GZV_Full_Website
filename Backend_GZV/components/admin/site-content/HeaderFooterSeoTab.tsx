@@ -217,46 +217,6 @@ export function HeaderFooterSeoTab({
 
   return (
     <div className="space-y-6">
-      {/* 1. Header Banner */}
-      <div className="relative overflow-hidden border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-slate-900">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-[#ed1c24] pointer-events-none" />
-        <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 z-10">
-          <div className="space-y-1.5 flex items-center gap-3.5">
-            <div className="w-12 h-12 bg-[#ed1c24] text-white flex items-center justify-center font-black shrink-0 shadow-xs">
-              <Layout className="h-6 w-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <Badge className="bg-red-50 text-[#ed1c24] border border-red-200 font-black uppercase tracking-wider px-2.5 py-0.5 text-[9px] rounded-none dark:bg-red-950/40 dark:border-red-900">
-                  LAYOUT & SEO SETTINGS
-                </Badge>
-              </div>
-              <h2 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 dark:text-white uppercase mt-1">
-                HEADER, FOOTER & SEO
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
-                Quản lý thương hiệu Navbar, tiêu đề trình duyệt, chân trang (Footer) và thẻ SEO Social.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 shrink-0">
-            <Button
-              size="sm"
-              onClick={onSave}
-              disabled={saving}
-              className="rounded-none text-xs font-black uppercase tracking-wider px-6 h-10 bg-[#ed1c24] hover:bg-[#c91218] text-white shadow-xs"
-            >
-              {saving ? (
-                <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-              ) : (
-                <Save className="h-3.5 w-3.5 mr-1.5" />
-              )}
-              Lưu thay đổi
-            </Button>
-          </div>
-        </div>
-      </div>
-
       {/* 2. Sub-Tabs Bar: HEADER | FOOTER | SEO WEBSITE */}
       <Tabs value={subTab} onValueChange={(val) => setSubTab(val as "header" | "footer" | "seo")} className="space-y-6">
         <TabsList className="bg-slate-100 p-1 rounded-none border border-slate-200 flex h-11 gap-1 max-w-md dark:border-white/10 dark:bg-slate-900">
@@ -337,12 +297,12 @@ export function HeaderFooterSeoTab({
                 <Palette className="h-4 w-4 text-[#ed1c24]" /> Tùy chỉnh màu sắc Header
               </CardTitle>
               <CardDescription className="text-xs font-semibold">
-                Tùy chỉnh màu nền và màu chữ riêng cho thanh Header Navbar. Mặc định: Nền trắng (#FFFFFF), Chữ đen (#000000).
+                Tùy chỉnh màu nền và màu chữ cho thanh Header Navbar. Mặc định: Nền đen (#050505), Chữ trắng (#FFFFFF).
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-              <div className="grid sm:grid-cols-2 gap-4">
-                {/* Màu nền Header */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* 1. Màu nền Header */}
                 <div className="space-y-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-none dark:border-white/10 dark:bg-slate-950/40">
                   <div className="flex items-center justify-between">
                     <Label className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">Màu nền Header</Label>
@@ -352,7 +312,7 @@ export function HeaderFooterSeoTab({
                         variant="ghost"
                         size="sm"
                         onClick={() => setHeaderBgColor("")}
-                        title="Reset về màu nền mặc định (#FFFFFF)"
+                        title="Reset về màu nền mặc định"
                         className="h-6 px-2 text-[10px] font-bold text-slate-500 hover:text-red-600 rounded-none transition-colors"
                       >
                         <RotateCcw className="h-3 w-3 mr-1" /> Reset
@@ -362,7 +322,7 @@ export function HeaderFooterSeoTab({
                   <div className="flex gap-2 items-center pt-1">
                     <input
                       type="color"
-                      value={headerBgColor || "#ffffff"}
+                      value={headerBgColor || "#050505"}
                       onChange={(e) => setHeaderBgColor(e.target.value)}
                       className="w-9 h-9 rounded-none cursor-pointer border border-slate-200 shrink-0"
                       style={{ padding: 1 }}
@@ -370,13 +330,13 @@ export function HeaderFooterSeoTab({
                     <Input
                       value={headerBgColor}
                       onChange={(e) => setHeaderBgColor(e.target.value)}
-                      placeholder="#FFFFFF (Mặc định)"
+                      placeholder="#050505 (Mặc định)"
                       className="flex-1 font-mono text-xs uppercase rounded-none border-slate-200 h-9 bg-white dark:border-white/10 dark:bg-slate-900"
                     />
                   </div>
                 </div>
 
-                {/* Màu chữ Header */}
+                {/* 2. Màu chữ Header */}
                 <div className="space-y-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-none dark:border-white/10 dark:bg-slate-950/40">
                   <div className="flex items-center justify-between">
                     <Label className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">Màu chữ Header</Label>
@@ -386,7 +346,7 @@ export function HeaderFooterSeoTab({
                         variant="ghost"
                         size="sm"
                         onClick={() => setHeaderTextColor("")}
-                        title="Reset về màu chữ mặc định (#000000)"
+                        title="Reset về màu chữ mặc định"
                         className="h-6 px-2 text-[10px] font-bold text-slate-500 hover:text-red-600 rounded-none transition-colors"
                       >
                         <RotateCcw className="h-3 w-3 mr-1" /> Reset
@@ -396,7 +356,7 @@ export function HeaderFooterSeoTab({
                   <div className="flex gap-2 items-center pt-1">
                     <input
                       type="color"
-                      value={headerTextColor || "#000000"}
+                      value={headerTextColor || "#ffffff"}
                       onChange={(e) => setHeaderTextColor(e.target.value)}
                       className="w-9 h-9 rounded-none cursor-pointer border border-slate-200 shrink-0"
                       style={{ padding: 1 }}
@@ -404,7 +364,7 @@ export function HeaderFooterSeoTab({
                     <Input
                       value={headerTextColor}
                       onChange={(e) => setHeaderTextColor(e.target.value)}
-                      placeholder="#000000 (Mặc định)"
+                      placeholder="#FFFFFF (Mặc định)"
                       className="flex-1 font-mono text-xs uppercase rounded-none border-slate-200 h-9 bg-white dark:border-white/10 dark:bg-slate-900"
                     />
                   </div>
@@ -776,11 +736,11 @@ export function HeaderFooterSeoTab({
                 <Palette className="h-4 w-4 text-[#ed1c24]" /> Màu sắc Footer (Mặc định: Nền đen, Chữ trắng)
               </CardTitle>
               <CardDescription className="text-xs font-semibold">
-                Tùy chỉnh màu nền, màu chữ và màu liên kết riêng cho chân trang (Footer).
+                Tùy chỉnh màu nền và màu liên kết riêng cho chân trang (Footer).
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-              <div className="grid sm:grid-cols-3 gap-4">
+              <div className="grid sm:grid-cols-2 gap-4">
                 {/* Màu nền */}
                 <div className="space-y-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-none dark:border-white/10 dark:bg-slate-950/40">
                   <div className="flex items-center justify-between">
@@ -810,40 +770,6 @@ export function HeaderFooterSeoTab({
                       value={footerBgColor}
                       onChange={(e) => setFooterBgColor(e.target.value)}
                       placeholder="#050505"
-                      className="flex-1 font-mono text-xs uppercase rounded-none border-slate-200 h-9 bg-white dark:border-white/10 dark:bg-slate-900"
-                    />
-                  </div>
-                </div>
-
-                {/* Màu chữ */}
-                <div className="space-y-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-none dark:border-white/10 dark:bg-slate-950/40">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">Màu chữ Footer</Label>
-                    {footerTextColor && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setFooterTextColor("")}
-                        title="Reset về màu chữ mặc định (#FFFFFF)"
-                        className="h-6 px-2 text-[10px] font-bold text-slate-500 hover:text-red-600 rounded-none transition-colors"
-                      >
-                        <RotateCcw className="h-3 w-3 mr-1" /> Reset
-                      </Button>
-                    )}
-                  </div>
-                  <div className="flex gap-2 items-center pt-1">
-                    <input
-                      type="color"
-                      value={footerTextColor || "#ffffff"}
-                      onChange={(e) => setFooterTextColor(e.target.value)}
-                      className="w-9 h-9 rounded-none cursor-pointer border border-slate-200 shrink-0"
-                      style={{ padding: 1 }}
-                    />
-                    <Input
-                      value={footerTextColor}
-                      onChange={(e) => setFooterTextColor(e.target.value)}
-                      placeholder="#FFFFFF"
                       className="flex-1 font-mono text-xs uppercase rounded-none border-slate-200 h-9 bg-white dark:border-white/10 dark:bg-slate-900"
                     />
                   </div>

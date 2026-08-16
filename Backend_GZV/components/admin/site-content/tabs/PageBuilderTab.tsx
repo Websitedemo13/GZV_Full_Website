@@ -266,26 +266,34 @@ export function PageBuilderTab({
               </CardHeader>
 
               <CardContent className="space-y-5 pt-5">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <Field label="Tên tiêu đề Section">
-                    <Input
-                      value={activeBlockItem.block.title || ""}
-                      onChange={(e) => updateBlock(activeBlockItem.index, { title: e.target.value })}
-                      className="rounded-none font-bold text-xs"
-                      placeholder="Ví dụ: CÂU CHUYỆN GZV"
-                    />
-                  </Field>
-                  <Field label="Phụ đề (Subtitle)">
-                    <Input
-                      value={activeBlockItem.block.props?.subtitle || ""}
-                      onChange={(e) => updateBlock(activeBlockItem.index, {
-                        props: { ...(activeBlockItem.block.props || {}), subtitle: e.target.value }
-                      })}
-                      className="rounded-none text-xs"
-                      placeholder="Ví dụ: Từ một cộng đồng học hỏi đến hệ sinh thái..."
-                    />
-                  </Field>
-                </div>
+                {!activeBlockItem.block.component_type?.includes("stat") && !activeBlockItem.block.block_key?.includes("stat") && (
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="Tên tiêu đề Section">
+                      <Input
+                        value={activeBlockItem.block.title || activeBlockItem.block.props?.title || ""}
+                        onChange={(e) => {
+                          const newTitle = e.target.value
+                          updateBlock(activeBlockItem.index, {
+                            title: newTitle,
+                            props: { ...(activeBlockItem.block.props || {}), title: newTitle },
+                          })
+                        }}
+                        className="rounded-none font-bold text-xs"
+                        placeholder="Ví dụ: CÂU CHUYỆN GZV"
+                      />
+                    </Field>
+                    <Field label="Phụ đề (Subtitle)">
+                      <Input
+                        value={activeBlockItem.block.props?.subtitle || ""}
+                        onChange={(e) => updateBlock(activeBlockItem.index, {
+                          props: { ...(activeBlockItem.block.props || {}), subtitle: e.target.value }
+                        })}
+                        className="rounded-none text-xs"
+                        placeholder="Ví dụ: Từ một cộng đồng học hỏi đến hệ sinh thái..."
+                      />
+                    </Field>
+                  </div>
+                )}
 
                 {/* Specialized / Props Block Editor */}
                 <BlockPropsEditor

@@ -146,7 +146,7 @@ export const defaultLoadingSettings: SiteLoadingSettings = {
   background_from: '#050505',
   background_to: '#161616',
   accent_color: '#ed1c24',
-  enabled: true,
+  enabled: false,
   minimum_duration_ms: 900,
 }
 

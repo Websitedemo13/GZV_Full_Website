@@ -3,14 +3,13 @@
 import SectionIntro from "@/components/sections/common/SectionIntro"
 
 export interface WhyColumnsProps {
-  eyebrow?: string
   title?: string
   subtitle?: string
   columns?: any[]
   language?: "vi" | "en"
 }
 
-export default function WhyColumns({ eyebrow, title, subtitle, columns = [], language = "vi" }: WhyColumnsProps) {
+export default function WhyColumns({ title, subtitle, columns = [], language = "vi" }: WhyColumnsProps) {
   return (
     <section className="bg-white py-16 dark:bg-slate-950 lg:py-24">
       <div className="container px-4">
