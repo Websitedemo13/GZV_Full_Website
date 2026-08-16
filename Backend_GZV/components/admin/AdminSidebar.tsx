@@ -35,9 +35,7 @@ interface AdminSidebarProps {
 const adminMenuItems = [
   { title: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard, roles: ["admin", "collab"] },
   { title: "Website Control", href: "/admin/site-content", icon: Blocks, roles: ["admin", "collab"] },
-  // { title: "Trang đăng nhập", href: "/admin/auth-pages", icon: KeyRound, roles: ["admin", "collab"] },
   { title: "GZVers", href: "/admin/gzvers", icon: UserCircle2, roles: ["admin", "collab"] },
-  { title: "Mentors", href: "/admin/mentors", icon: GraduationCap, roles: ["admin", "collab"] },
   { title: "Đối tác", href: "/admin/partners", icon: Handshake, roles: ["admin", "collab"] },
   { title: "Tác giả", href: "/admin/authors", icon: PenTool, roles: ["admin", "collab"] },
   { title: "Tin liên hệ", href: "/admin/contacts", icon: Mail, roles: ["admin", "collab"] },

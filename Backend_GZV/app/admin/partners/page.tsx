@@ -130,90 +130,143 @@ export default function PartnersAdminPage() {
   }
 
   return (
-    <div className="p-6 md:p-10 space-y-8 min-h-screen bg-[#020202] text-white">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-lg shadow-emerald-500/30">
-            <Handshake className="text-white" size={28} />
-          </div>
-          <div>
-            <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tighter leading-none">
-              Đối tác & Đồng hành
-            </h1>
-            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em] mt-2">
-              Quản lý logo và vị trí đối tác trên trang /dong-hanh
-            </p>
-          </div>
-        </div>
-        <Button
-          onClick={openAdd}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-6 h-12 font-black shadow-2xl shadow-emerald-600/30 transition-all active:scale-95"
-        >
-          <Plus className="mr-2" size={18} /> Thêm đối tác
-        </Button>
-      </div>
+    <div className="mx-auto max-w-6xl space-y-6 select-none p-1.5 md:p-0">
+      {/* Top Header Card */}
+      <div className="relative overflow-hidden border border-slate-200 bg-white p-5 md:p-6 shadow-sm dark:border-white/10 dark:bg-slate-900">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-[#ed1c24] pointer-events-none" />
 
-      {/* Stat tiles */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatTile label="Tổng đối tác" value={stats.total} icon={Handshake} accent="from-slate-700 to-slate-900" />
-        <StatTile label="Doanh nghiệp" value={stats.corporate} icon={Building2} accent="from-emerald-600 to-teal-700" />
-        <StatTile label="Giáo dục" value={stats.education} icon={GraduationCap} accent="from-[#050505] to-[#050505]" />
-        <StatTile label="Đang hiển thị" value={stats.active} icon={Eye} accent="from-amber-500 to-orange-600" />
-      </div>
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex items-center gap-3.5">
+            <div className="h-11 w-11 shrink-0 bg-[#ed1c24] text-white flex items-center justify-center font-black shadow-xs">
+              <Handshake className="h-5 w-5" />
+            </div>
+            <div>
+              <span className="text-[9px] font-black uppercase tracking-widest text-[#ed1c24] block leading-tight">
+                PARTNERS & SPONSORS
+              </span>
+              <h2 className="text-xl md:text-2xl font-black uppercase tracking-tight text-slate-900 dark:text-white mt-0.5">
+                Đối Tác & Doanh Nghiệp Đồng Hành
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
+                Quản lý logo, danh mục và thứ tự hiển thị của các đối tác trên trang /dong-hanh.
+              </p>
+            </div>
+          </div>
 
-      {/* Toolbar */}
-      <Card className="bg-zinc-950 border-zinc-800 p-4 flex flex-col md:flex-row gap-3 md:items-center justify-between">
-        <div className="flex gap-2">
-          {(["all", "corporate", "education"] as const).map(t => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`px-4 h-10 rounded-full text-xs font-bold uppercase tracking-wider transition ${
-                tab === t
-                  ? "bg-white text-black"
-                  : "bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
-              }`}
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchPartners}
+              disabled={loading}
+              className="h-9 rounded-none border-slate-200 text-xs font-black uppercase text-slate-700 hover:bg-slate-100 dark:border-white/10 dark:text-slate-200"
             >
-              {t === "all" ? "Tất cả" : CATEGORY_LABEL[t]}
-            </button>
-          ))}
-        </div>
-        <div className="flex gap-2 items-center">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={16} />
-            <Input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Tìm theo tên đối tác..."
-              className="pl-9 bg-zinc-900 border-zinc-800 text-white w-64"
-            />
-          </div>
-          <Button variant="outline" size="icon" onClick={fetchPartners}
-            className="border-zinc-800 bg-zinc-900 text-white hover:bg-zinc-800">
-            <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
-          </Button>
-        </div>
-      </Card>
+              <RefreshCw className={`mr-1.5 h-3.5 w-3.5 text-[#ed1c24] ${loading ? "animate-spin" : ""}`} />
+              Làm mới
+            </Button>
 
-      {/* Grid of logos */}
+            <Button
+              size="sm"
+              onClick={openAdd}
+              className="h-9 px-4 rounded-none bg-[#ed1c24] text-xs font-black uppercase text-white hover:bg-[#c91218]"
+            >
+              <Plus className="mr-1.5 h-4 w-4" />
+              Thêm đối tác mới
+            </Button>
+          </div>
+        </div>
+
+        {/* 4 Control Stats */}
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <p className="text-[10px] font-black uppercase tracking-wide text-slate-500">Tổng Đối Tác</p>
+            <p className="mt-2 text-2xl font-black text-slate-950 dark:text-white">{stats.total}</p>
+          </div>
+          <div className="border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <p className="text-[10px] font-black uppercase tracking-wide text-slate-500">Doanh Nghiệp</p>
+            <p className="mt-2 text-2xl font-black text-blue-600 dark:text-blue-400">{stats.corporate}</p>
+          </div>
+          <div className="border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <p className="text-[10px] font-black uppercase tracking-wide text-slate-500">Giáo Dục & Hiệp Hội</p>
+            <p className="mt-2 text-2xl font-black text-purple-600 dark:text-purple-400">{stats.education}</p>
+          </div>
+          <div className="border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <p className="text-[10px] font-black uppercase tracking-wide text-slate-500">Đang Hiển Thị</p>
+            <p className="mt-2 text-2xl font-black text-emerald-600 dark:text-emerald-400">{stats.active}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Filter Toolbar Card */}
+      <div className="border border-slate-200 bg-white p-4 shadow-xs dark:border-white/10 dark:bg-slate-900 space-y-3">
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Input
+            className="h-11 rounded-none border-slate-200 bg-slate-50 pl-10 pr-12 text-sm font-medium text-slate-900 placeholder:text-slate-400 dark:border-white/10 dark:bg-slate-950 dark:text-white"
+            placeholder="Tìm kiếm theo tên đối tác, doanh nghiệp..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          {search && (
+            <button
+              type="button"
+              onClick={() => setSearch("")}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-black uppercase text-slate-400 hover:text-slate-700 dark:hover:text-white"
+            >
+              Xóa
+            </button>
+          )}
+        </div>
+
+        {/* Category Pills */}
+        <div className="pt-3 border-t border-slate-100 dark:border-white/5 flex flex-wrap items-center gap-2">
+          <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 mr-1">
+            Phân Loại:
+          </span>
+          {(["all", "corporate", "education"] as const).map((t) => {
+            const isSelected = tab === t
+            const count = t === "all" ? stats.total : t === "corporate" ? stats.corporate : stats.education
+            return (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className={`h-9.5 px-4 text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 border ${
+                  isSelected
+                    ? "border-[#ed1c24] bg-[#ed1c24] text-white shadow-sm"
+                    : "border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-400 hover:bg-slate-100 dark:border-white/10 dark:bg-slate-950 dark:text-slate-300"
+                }`}
+              >
+                <span>{t === "all" ? "Tất Cả" : CATEGORY_LABEL[t]}</span>
+                <span className={`px-1.5 py-0.5 text-[10px] font-bold ${
+                  isSelected ? "bg-white/20 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
+                }`}>
+                  {count}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Partners Grid */}
       {loading && partners.length === 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} className="h-56 rounded-2xl bg-zinc-900 animate-pulse" />
+            <div key={i} className="h-56 rounded-none bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-white/10 animate-pulse" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <Card className="bg-zinc-950 border-zinc-800 p-16 text-center">
-          <Handshake className="mx-auto text-zinc-700 mb-4" size={48} />
-          <p className="text-zinc-400 font-semibold">Không có đối tác nào phù hợp.</p>
-          <Button onClick={openAdd} className="mt-4 bg-emerald-600 hover:bg-emerald-700">
+        <Card className="rounded-none border-slate-200 bg-white p-16 text-center dark:border-white/10 dark:bg-slate-900">
+          <Handshake className="mx-auto text-slate-300 dark:text-slate-700 mb-4" size={48} />
+          <p className="text-slate-500 font-semibold text-xs uppercase tracking-wider">Không có đối tác nào phù hợp với bộ lọc.</p>
+          <Button onClick={openAdd} className="mt-4 rounded-none bg-[#ed1c24] text-white hover:bg-[#c91218] text-xs font-black uppercase">
             <Plus className="mr-2" size={16} /> Thêm đối tác mới
           </Button>
         </Card>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {filtered.map(p => (
+          {filtered.map((p) => (
             <PartnerCard
               key={p.id}
               partner={p}
@@ -244,22 +297,6 @@ export default function PartnersAdminPage() {
   )
 }
 
-function StatTile({ label, value, icon: Icon, accent }: {
-  label: string; value: number; icon: any; accent: string
-}) {
-  return (
-    <Card className={`relative overflow-hidden border-zinc-800 bg-gradient-to-br ${accent} p-5`}>
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/70">{label}</p>
-          <p className="text-3xl font-black text-white mt-1">{value}</p>
-        </div>
-        <Icon className="text-white/30" size={36} />
-      </div>
-    </Card>
-  )
-}
-
 function PartnerCard({ partner, onEdit, onDelete, onToggle, onUp, onDown }: {
   partner: Partner
   onEdit: () => void
@@ -268,10 +305,10 @@ function PartnerCard({ partner, onEdit, onDelete, onToggle, onUp, onDown }: {
   onUp: () => void
   onDown: () => void
 }) {
-  const isUrl = partner.logo_url.startsWith("http")
+  const isUrl = partner.logo_url?.startsWith("http")
   return (
-    <Card className="group relative overflow-hidden bg-zinc-950 border-zinc-800 rounded-2xl">
-      <div className="relative h-32 bg-white flex items-center justify-center p-4">
+    <div className="group relative overflow-hidden border border-slate-200 bg-white shadow-xs dark:border-white/10 dark:bg-slate-900 transition-all hover:border-[#ed1c24]">
+      <div className="relative h-32 bg-white flex items-center justify-center p-4 border-b border-slate-100 dark:border-white/5">
         {isUrl ? (
           <Image
             src={partner.logo_url}
@@ -282,46 +319,49 @@ function PartnerCard({ partner, onEdit, onDelete, onToggle, onUp, onDown }: {
             unoptimized
           />
         ) : (
-          // local public assets in Frontend project — preview directly
           /* eslint-disable-next-line @next/next/no-img-element */
-          <img src={partner.logo_url} alt={partner.name} className="max-h-full w-auto object-contain" />
+          <img src={partner.logo_url || "/placeholder.svg"} alt={partner.name} className="max-h-full w-auto object-contain" />
         )}
         {!partner.is_active && (
-          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-            <Badge className="bg-red-600">Đang ẩn</Badge>
+          <div className="absolute inset-0 bg-slate-950/70 flex items-center justify-center">
+            <span className="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider bg-red-600 text-white">
+              Đang ẩn
+            </span>
           </div>
         )}
       </div>
-      <div className="p-3 space-y-2">
+
+      <div className="p-3 space-y-2.5">
         <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <p className="font-bold text-white truncate text-sm">{partner.name}</p>
-            <p className="text-[10px] uppercase tracking-wider text-zinc-500">
+          <div className="min-w-0 flex-1">
+            <p className="font-black text-slate-900 dark:text-white truncate text-xs uppercase">{partner.name}</p>
+            <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mt-0.5">
               {CATEGORY_LABEL[partner.category]} · #{partner.sort_order}
             </p>
           </div>
           <Switch checked={partner.is_active} onCheckedChange={onToggle} />
         </div>
-        <div className="flex items-center gap-1">
+
+        <div className="flex items-center gap-1 pt-1 border-t border-slate-100 dark:border-white/5">
           <Button size="icon" variant="ghost" onClick={onUp}
-            className="h-8 w-8 text-zinc-400 hover:text-white hover:bg-zinc-800">
-            <ArrowUp size={14} />
+            className="h-7 w-7 rounded-none text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:hover:text-white dark:hover:bg-slate-800">
+            <ArrowUp size={13} />
           </Button>
           <Button size="icon" variant="ghost" onClick={onDown}
-            className="h-8 w-8 text-zinc-400 hover:text-white hover:bg-zinc-800">
-            <ArrowDown size={14} />
+            className="h-7 w-7 rounded-none text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:hover:text-white dark:hover:bg-slate-800">
+            <ArrowDown size={13} />
           </Button>
           <div className="flex-1" />
           <Button size="icon" variant="ghost" onClick={onEdit}
-            className="h-8 w-8 text-[#ed1c24] hover:text-red-200 hover:bg-red-950">
-            <Pencil size={14} />
+            className="h-7 w-7 rounded-none text-slate-700 hover:text-[#ed1c24] hover:bg-red-50 dark:text-slate-300 dark:hover:bg-red-950/40">
+            <Pencil size={13} />
           </Button>
           <Button size="icon" variant="ghost" onClick={onDelete}
-            className="h-8 w-8 text-red-400 hover:text-red-300 hover:bg-red-950">
-            <Trash2 size={14} />
+            className="h-7 w-7 rounded-none text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40">
+            <Trash2 size={13} />
           </Button>
         </div>
       </div>
-    </Card>
+    </div>
   )
 }

@@ -37,9 +37,6 @@ export function MenuNavigationTab({
           <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
             Cấu trúc Menu Điều Hướng
           </h3>
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 hidden sm:inline">
-            — Kéo thả sắp xếp, bấm nút &quot;Sửa&quot; để sửa chi tiết menu hoặc nút &quot;Section&quot; để mở trang sửa section.
-          </span>
         </div>
 
         <div className="flex items-center gap-2">

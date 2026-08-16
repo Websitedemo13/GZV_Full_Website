@@ -1,4 +1,5 @@
-import React, { useState } from "react"
+import React, { useState, useEffect, useMemo } from "react"
+import { supabase } from "@/lib/supabase"
 import {
   Filter,
   Link2,
@@ -27,6 +28,242 @@ import type { PageBlock } from "../types"
 import { Field } from "./BasicHelpers"
 import { ImagePositionAndZoomEditor } from "./ImagePositionAndZoomEditor"
 
+function GzversGridPropsEditor({
+  value = {},
+  updateKey,
+}: {
+  value: Record<string, any>
+  updateKey: (key: string, nextValue: any) => void
+}) {
+  const [activeDepts, setActiveDepts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let active = true
+    setLoading(true)
+    supabase
+      .from("gzver_departments")
+      .select("id, name, slug, description, is_active, sort_order")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true })
+      .then(({ data, error }) => {
+        if (!active) return
+        if (error) console.error("Error fetching active departments:", error)
+        setActiveDepts(data || [])
+        setLoading(false)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  const orderedDepts = useMemo(() => {
+    const configuredOrder: string[] = Array.isArray(value.department_order)
+      ? value.department_order
+      : []
+
+    const deptMap = new Map(activeDepts.map((d) => [d.slug || d.id, d]))
+    const result: any[] = []
+    const visited = new Set<string>()
+
+    configuredOrder.forEach((key) => {
+      const d = deptMap.get(key) || activeDepts.find((item) => item.slug === key || item.id === key)
+      if (d && !visited.has(d.slug || d.id)) {
+        result.push(d)
+        visited.add(d.slug || d.id)
+      }
+    })
+
+    activeDepts.forEach((d) => {
+      const key = d.slug || d.id
+      if (!visited.has(key)) {
+        result.push(d)
+        visited.add(key)
+      }
+    })
+
+    return result
+  }, [activeDepts, value.department_order])
+
+  const selectedKeys = useMemo(() => {
+    if (Array.isArray(value.selected_departments)) {
+      return new Set(value.selected_departments)
+    }
+    // Default: all active departments are selected
+    return new Set(activeDepts.map((d) => d.slug || d.id))
+  }, [activeDepts, value.selected_departments])
+
+  const [dragDeptIndex, setDragDeptIndex] = useState<number | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
+
+  const handleToggleDept = (deptKey: string, checked: boolean) => {
+    const nextSet = new Set(selectedKeys)
+    if (checked) {
+      nextSet.add(deptKey)
+    } else {
+      nextSet.delete(deptKey)
+    }
+    updateKey("selected_departments", Array.from(nextSet))
+  }
+
+  const handleDropDept = (targetIndex: number) => {
+    if (dragDeptIndex === null || dragDeptIndex === targetIndex) {
+      setDragDeptIndex(null)
+      setDragOverIndex(null)
+      return
+    }
+    const nextList = [...orderedDepts]
+    const [moved] = nextList.splice(dragDeptIndex, 1)
+    nextList.splice(targetIndex, 0, moved)
+    const nextOrder = nextList.map((d) => d.slug || d.id)
+    updateKey("department_order", nextOrder)
+    setDragDeptIndex(null)
+    setDragOverIndex(null)
+  }
+
+  return (
+    <div className="space-y-4 border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-slate-900">
+      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-white/10 pb-2">
+        <Layers className="h-4 w-4 text-[#ed1c24]" />
+        <div>
+          <p className="text-xs font-black uppercase text-slate-950 dark:text-white">
+            Cấu hình Cơ cấu Ban & Thứ tự Bộ lọc (GZVers Grid)
+          </p>
+        </div>
+      </div>
+
+      {loading ? (
+        <p className="text-xs text-slate-400 py-3">Đang tải danh sách phòng ban hoạt động...</p>
+      ) : activeDepts.length === 0 ? (
+        <div className="p-4 border border-dashed border-red-200 bg-red-50/50 text-center text-xs text-red-600 dark:border-red-900/30 dark:bg-red-950/20">
+          Chưa có phòng ban nào đang bật trong module GZVers. Vui lòng vào <strong>GZVers &gt; Cơ cấu ban</strong> để bật ít nhất một ban.
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            <span>Danh sách Ban ({orderedDepts.length} ban đang bật — Kéo thả sắp xếp)</span>
+            <span>Trạng thái</span>
+          </div>
+
+          <div className="space-y-1.5">
+            {orderedDepts.map((dept, index) => {
+              const deptKey = dept.slug || dept.id
+              const isSelected = selectedKeys.has(deptKey)
+              const isDragging = dragDeptIndex === index
+              const isDragOver = dragOverIndex === index
+
+              return (
+                <div
+                  key={deptKey}
+                  draggable
+                  onDragStart={(e) => {
+                    setDragDeptIndex(index)
+                    e.dataTransfer.effectAllowed = "move"
+                    e.dataTransfer.setData("text/plain", String(index))
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault()
+                    e.dataTransfer.dropEffect = "move"
+                    if (dragOverIndex !== index) {
+                      setDragOverIndex(index)
+                    }
+                  }}
+                  onDragLeave={() => {
+                    if (dragOverIndex === index) {
+                      setDragOverIndex(null)
+                    }
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault()
+                    handleDropDept(index)
+                  }}
+                  onDragEnd={() => {
+                    setDragDeptIndex(null)
+                    setDragOverIndex(null)
+                  }}
+                  className={`flex items-center justify-between p-2.5 border transition-all select-none ${isDragging
+                    ? "opacity-40 border-[#ed1c24] bg-red-50/20"
+                    : isDragOver
+                      ? "border-t-2 border-t-[#ed1c24] bg-slate-100 dark:bg-slate-800"
+                      : isSelected
+                        ? "border-slate-200 bg-slate-50/80 hover:border-slate-300 dark:border-white/10 dark:bg-slate-950 dark:hover:border-white/20"
+                        : "border-slate-200/50 bg-slate-100/40 opacity-60 dark:border-white/5 dark:bg-slate-950/30"
+                    }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div
+                      className="cursor-grab active:cursor-grabbing p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 shrink-0"
+                      title="Kéo thả để đổi thứ tự"
+                    >
+                      <GripVertical className="h-4 w-4" />
+                    </div>
+
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center bg-slate-200 text-[10px] font-black text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                      {index + 1}
+                    </span>
+
+                    <Switch
+                      checked={isSelected}
+                      onCheckedChange={(checked) => handleToggleDept(deptKey, checked)}
+                    />
+
+                    <div className="min-w-0">
+                      <span className="text-xs font-bold text-slate-900 dark:text-white uppercase truncate block">
+                        {dept.name}
+                      </span>
+                      {dept.description && (
+                        <p className="text-[10px] text-slate-400 line-clamp-1 truncate">
+                          {dept.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="text-[10px] font-bold uppercase tracking-wider shrink-0 pl-2">
+                    <span
+                      className={`px-2 py-0.5 text-[9px] font-bold uppercase ${isSelected
+                        ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                        : "bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500"
+                        }`}
+                    >
+                      {isSelected ? "Hiển thị" : "Ẩn"}
+                    </span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Additional options */}
+      <div className="grid gap-3 sm:grid-cols-2 pt-2 border-t border-slate-200 dark:border-white/10">
+        <div className="flex items-center justify-between border border-slate-100 p-3 bg-slate-50/50 dark:border-white/5 dark:bg-slate-950">
+          <div>
+            <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Hiện tab &quot;Tất cả&quot;</p>
+            <p className="text-[10px] text-slate-400">Xem toàn thể nhân sự</p>
+          </div>
+          <Switch
+            checked={value?.show_all_tab !== false}
+            onCheckedChange={(checked) => updateKey("show_all_tab", checked)}
+          />
+        </div>
+
+        <Field label="Số lượng nhân sự tối đa (Limit)">
+          <Input
+            type="number"
+            value={value.limit ?? 50}
+            onChange={(e) => updateKey("limit", Number(e.target.value) || 50)}
+            placeholder="50"
+            className="rounded-none text-xs"
+          />
+        </Field>
+      </div>
+    </div>
+  )
+}
+
 export function PropsEditor({
   value = {},
   onChange,
@@ -45,7 +282,7 @@ export function PropsEditor({
   const typeLower = (componentType || "").toLowerCase().trim()
 
   // Detection flags for component categories
-  const isGzversGrid = typeLower === "gzvers_grid" || typeLower.includes("gzvers")
+  const isGzversGrid = typeLower === "gzvers_grid" || typeLower.includes("gzvers") || typeLower.includes("gzver")
   const isMentoring = typeLower.includes("mentor") || typeLower.includes("step")
   const isTimeline = typeLower.includes("timeline") || typeLower.includes("roadmap")
   const isPeople = (typeLower.includes("people") || typeLower.includes("director") || typeLower.includes("team")) && !isGzversGrid
@@ -68,6 +305,11 @@ export function PropsEditor({
 
   return (
     <div className="space-y-6 rounded-none border border-slate-200 bg-slate-50/70 p-5 dark:border-white/10 dark:bg-slate-950">
+
+      {/* 0. GZVers Grid Department Order & Selection Config */}
+      {isGzversGrid && (
+        <GzversGridPropsEditor value={value} updateKey={updateKey} />
+      )}
 
       {/* 1. Projects Grid Config */}
       {isProjects && (

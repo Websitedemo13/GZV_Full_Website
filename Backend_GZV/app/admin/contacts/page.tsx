@@ -169,21 +169,51 @@ const DEFAULT_CONTACT_SETTINGS: ContactSettings = {
 export default function AdminContactsPage() {
   const [tab, setTab] = useState("messages")
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-          <Mail className="h-7 w-7 text-[#ed1c24]" /> Tin nhắn liên hệ
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Quản lý tin nhắn người dùng gửi từ trang <span className="font-mono">/lien-he</span> và cấu hình các trường biểu mẫu.
-        </p>
+    <div className="mx-auto max-w-6xl space-y-6 select-none p-1.5 md:p-0">
+      {/* Top Header Card */}
+      <div className="relative overflow-hidden border border-slate-200 bg-white p-5 md:p-6 shadow-sm dark:border-white/10 dark:bg-slate-900">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-[#ed1c24] pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex items-center gap-3.5">
+            <div className="h-11 w-11 shrink-0 bg-[#ed1c24] text-white flex items-center justify-center font-black shadow-xs">
+              <Mail className="h-5 w-5" />
+            </div>
+            <div>
+              <span className="text-[9px] font-black uppercase tracking-widest text-[#ed1c24] block leading-tight">
+                CONTACTS & INBOX
+              </span>
+              <h2 className="text-xl md:text-2xl font-black uppercase tracking-tight text-slate-900 dark:text-white mt-0.5">
+                Hộp Thư Liên Hệ & Cấu Hình Biểu Mẫu
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
+                Quản lý tin nhắn khách hàng gửi từ /lien-he, cấu hình trường nhập và thông tin hiển thị.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <Tabs value={tab} onValueChange={setTab} className="space-y-6">
-        <TabsList className="grid w-full max-w-2xl grid-cols-3 rounded-none">
-          <TabsTrigger value="messages" className="gap-2"><Inbox className="h-4 w-4" /> Hộp thư đến</TabsTrigger>
-          <TabsTrigger value="fields" className="gap-2"><Settings2 className="h-4 w-4" /> Cấu hình biểu mẫu</TabsTrigger>
-          <TabsTrigger value="page" className="gap-2"><Pencil className="h-4 w-4" /> Trang liên hệ</TabsTrigger>
+        <TabsList className="grid h-auto w-full grid-cols-3 gap-1 border border-slate-200 bg-slate-100 p-1.5 rounded-none shadow-xs dark:border-white/10 dark:bg-slate-900">
+          <TabsTrigger
+            value="messages"
+            className="rounded-none py-2.5 px-2 text-[11px] font-black uppercase tracking-wider transition-all data-[state=active]:bg-[#ed1c24] data-[state=active]:text-white data-[state=active]:shadow-xs flex items-center justify-center gap-1.5"
+          >
+            <Inbox className="h-3.5 w-3.5 shrink-0" /> Hộp Thư Đến
+          </TabsTrigger>
+          <TabsTrigger
+            value="fields"
+            className="rounded-none py-2.5 px-2 text-[11px] font-black uppercase tracking-wider transition-all data-[state=active]:bg-[#ed1c24] data-[state=active]:text-white data-[state=active]:shadow-xs flex items-center justify-center gap-1.5"
+          >
+            <Settings2 className="h-3.5 w-3.5 shrink-0" /> Cấu Hình Biểu Mẫu
+          </TabsTrigger>
+          <TabsTrigger
+            value="page"
+            className="rounded-none py-2.5 px-2 text-[11px] font-black uppercase tracking-wider transition-all data-[state=active]:bg-[#ed1c24] data-[state=active]:text-white data-[state=active]:shadow-xs flex items-center justify-center gap-1.5"
+          >
+            <Pencil className="h-3.5 w-3.5 shrink-0" /> Trang Liên Hệ
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="messages"><MessagesPanel /></TabsContent>

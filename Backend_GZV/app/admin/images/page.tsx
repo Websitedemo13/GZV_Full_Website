@@ -322,53 +322,109 @@ export default function AdminImagesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f4f5f7] font-montserrat text-slate-950">
-      <div className="sticky top-0 z-20 border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-[1680px] flex-col gap-5 px-5 py-5 xl:px-8">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="bg-[#050505] p-4 text-white"><HardDrive size={24} /></div>
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#ed1c24]">GZV Media Control</p>
-                <h1 className="text-3xl font-black uppercase tracking-tight">Thư viện ảnh & media</h1>
-                <p className="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
-                  Bucket <span className="text-[#ed1c24]">{BUCKET}</span> · {stats.count} file · {formatBytes(stats.size)}
-                </p>
-              </div>
-            </div>
+    <div className="mx-auto max-w-6xl space-y-6 select-none p-1.5 md:p-0">
+      {/* Top Header Card */}
+      <div className="relative overflow-hidden border border-slate-200 bg-white p-5 md:p-6 shadow-sm dark:border-white/10 dark:bg-slate-900">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-[#ed1c24] pointer-events-none" />
 
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                <Input placeholder="Tìm file, path, tên ảnh..." value={search} onChange={(event) => setSearch(event.target.value)} className="h-11 w-full rounded-none border-slate-300 pl-9 font-semibold lg:w-80" />
-              </div>
-              <Button onClick={() => loadFolder(currentFolder)} variant="outline" className="h-11 rounded-none border-slate-300">
-                <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
-              </Button>
-              <Button onClick={() => fileRef.current?.click()} disabled={uploading} className="h-11 rounded-none bg-[#ed1c24] px-5 text-xs font-black uppercase text-white hover:bg-[#c91218]">
-                {uploading ? <Loader2 className="mr-2 animate-spin" size={16} /> : <Upload size={16} className="mr-2" />}
-                Upload media
-              </Button>
-              <input ref={fileRef} type="file" multiple accept="image/*,video/*,.pdf,.doc,.docx" className="hidden" onChange={(event) => { handleUpload(event.target.files); event.target.value = "" }} />
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex items-center gap-3.5">
+            <div className="h-11 w-11 shrink-0 bg-[#ed1c24] text-white flex items-center justify-center font-black shadow-xs">
+              <HardDrive className="h-5 w-5" />
+            </div>
+            <div>
+              <span className="text-[9px] font-black uppercase tracking-widest text-[#ed1c24] block leading-tight">
+                GZV MEDIA STORAGE
+              </span>
+              <h2 className="text-xl md:text-2xl font-black uppercase tracking-tight text-slate-900 dark:text-white mt-0.5">
+                Thư Viện Ảnh & Media Website
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
+                Quản lý kho ảnh, video và tệp đa phương tiện cho toàn bộ hệ thống website GZV.
+              </p>
             </div>
           </div>
 
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
-            {QUICK_TARGETS.map((target) => (
-              <button
-                key={target.folder}
-                onClick={() => selectFolder(target.folder)}
-                className={`border p-4 text-left transition ${currentFolder === target.folder ? "border-[#ed1c24] bg-[#ed1c24] text-white" : "border-slate-200 bg-slate-50 text-slate-900 hover:border-[#ed1c24]"}`}
-              >
-                <p className="text-[10px] font-black uppercase tracking-widest">{target.label}</p>
-                <p className={`mt-2 text-xs font-semibold leading-5 ${currentFolder === target.folder ? "text-white/80" : "text-slate-500"}`}>{target.hint}</p>
-              </button>
-            ))}
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => loadFolder(currentFolder)}
+              disabled={loading}
+              className="h-9 rounded-none border-slate-200 text-xs font-black uppercase text-slate-700 hover:bg-slate-100 dark:border-white/10 dark:text-slate-200"
+            >
+              <RefreshCw className={`mr-1.5 h-3.5 w-3.5 text-[#ed1c24] ${loading ? "animate-spin" : ""}`} />
+              Làm mới
+            </Button>
+
+            <Button
+              size="sm"
+              onClick={() => fileRef.current?.click()}
+              disabled={uploading}
+              className="h-9 px-4 rounded-none bg-[#ed1c24] text-xs font-black uppercase text-white hover:bg-[#c91218]"
+            >
+              {uploading ? <Loader2 className="mr-2 animate-spin h-3.5 w-3.5" /> : <Upload className="mr-2 h-3.5 w-3.5" />}
+              Upload media
+            </Button>
+            <input ref={fileRef} type="file" multiple accept="image/*,video/*,.pdf,.doc,.docx" className="hidden" onChange={(event) => { handleUpload(event.target.files); event.target.value = "" }} />
+          </div>
+        </div>
+
+        {/* 4 Control Stats */}
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <p className="text-[10px] font-black uppercase tracking-wide text-slate-500">Tổng File</p>
+            <p className="mt-2 text-2xl font-black text-slate-950 dark:text-white">{stats.count}</p>
+          </div>
+          <div className="border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <p className="text-[10px] font-black uppercase tracking-wide text-slate-500">Dung Lượng</p>
+            <p className="mt-2 text-2xl font-black text-emerald-600 dark:text-emerald-400">{formatBytes(stats.size)}</p>
+          </div>
+          <div className="border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <p className="text-[10px] font-black uppercase tracking-wide text-slate-500">Thư Mục Hiện Tại</p>
+            <p className="mt-2 text-base font-black text-blue-600 dark:text-blue-400 truncate font-mono">/{currentFolder}</p>
+          </div>
+          <div className="border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
+            <p className="text-[10px] font-black uppercase tracking-wide text-slate-500">Đang Chọn</p>
+            <p className="mt-2 text-2xl font-black text-purple-600 dark:text-purple-400">{selected.size}</p>
           </div>
         </div>
       </div>
 
-      <div className="mx-auto grid max-w-[1680px] grid-cols-1 gap-6 px-5 py-6 xl:grid-cols-[280px_1fr_360px] xl:px-8">
+      {/* Quick Targets Bar */}
+      <div className="border border-slate-200 bg-white p-4 shadow-xs dark:border-white/10 dark:bg-slate-900 space-y-3">
+        <div className="relative">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+          <Input placeholder="Tìm file, path, tên ảnh..." value={search} onChange={(event) => setSearch(event.target.value)} className="h-11 w-full rounded-none border-slate-200 bg-slate-50 pl-10 pr-12 text-sm font-medium dark:border-white/10 dark:bg-slate-950 text-slate-900 dark:text-white" />
+          {search && (
+            <button
+              type="button"
+              onClick={() => setSearch("")}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-black uppercase text-slate-400 hover:text-slate-700 dark:hover:text-white"
+            >
+              Xóa
+            </button>
+          )}
+        </div>
+
+        <div className="pt-2 border-t border-slate-100 dark:border-white/5 flex flex-wrap gap-2">
+          {QUICK_TARGETS.map((target) => (
+            <button
+              key={target.folder}
+              onClick={() => selectFolder(target.folder)}
+              className={`h-9 px-3 text-xs font-black uppercase tracking-wider transition border ${
+                currentFolder === target.folder
+                  ? "border-[#ed1c24] bg-[#ed1c24] text-white shadow-sm"
+                  : "border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-400 hover:bg-slate-100 dark:border-white/10 dark:bg-slate-950 dark:text-slate-300"
+              }`}
+            >
+              {target.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[260px_1fr]">
         <aside className="space-y-4">
           <div className="border border-slate-200 bg-white p-4">
             <div className="mb-4 flex items-center justify-between">

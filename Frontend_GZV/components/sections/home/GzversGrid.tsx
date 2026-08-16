@@ -11,22 +11,23 @@ export interface GzversGridProps {
   subtitle?: string
   limit?: number
   background?: string
+  show_all_tab?: boolean
+  department_order?: string[]
+  selected_departments?: string[]
+  [key: string]: any
 }
-
-const FILTER_TABS = [
-  { id: "all", label: "Tất cả" },
-  { id: "directors", label: "Ban điều hành" },
-  { id: "advisors", label: "Ban cố vấn" },
-  { id: "gzvers", label: "GZVers" },
-]
 
 export default function GzversGrid({
   title: propTitle,
   subtitle: propSubtitle,
   limit = 50,
   background,
+  show_all_tab = true,
+  department_order,
+  selected_departments,
 }: GzversGridProps) {
   const [items, setItems] = useState<any[]>([])
+  const [departments, setDepartments] = useState<any[]>([])
   const [dbData, setDbData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [activeFilter, setActiveFilter] = useState("all")
@@ -39,16 +40,22 @@ export default function GzversGrid({
     Promise.all([
       supabase.from("site_home_sections").select("*").eq("section_key", "gzvers").maybeSingle(),
       api.getGzvers(),
+      supabase
+        .from("gzver_departments")
+        .select("id, name, slug, description, is_active, sort_order")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true }),
     ])
-      .then(([homeRes, data]) => {
+      .then(([homeRes, data, deptsRes]) => {
         if (!active) return
         if (homeRes.data) {
           setDbData(homeRes.data)
         }
         setItems(data || [])
+        setDepartments(deptsRes.data || [])
       })
       .catch((err) => {
-        console.error("Lỗi tải danh sách GZVers:", err)
+        console.error("Lỗi tải dữ liệu GZVers:", err)
         if (!active) return
         setItems([])
       })
@@ -61,35 +68,144 @@ export default function GzversGrid({
     }
   }, [])
 
-  const filteredItems = useMemo(() => {
-    let list = items
-    if (activeFilter === "directors") {
-      list = items.filter(
-        (m: any) =>
-          m.is_director ||
-          m.department_name?.toLowerCase().includes("điều hành") ||
-          m.position?.toLowerCase().includes("ceo") ||
-          m.position?.toLowerCase().includes("director")
-      )
-    } else if (activeFilter === "advisors") {
-      list = items.filter(
-        (m: any) =>
-          m.is_advisor ||
-          m.is_mentor ||
-          m.department_name?.toLowerCase().includes("cố vấn") ||
-          m.position?.toLowerCase().includes("advisor") ||
-          m.position?.toLowerCase().includes("cố vấn")
-      )
-    } else if (activeFilter === "gzvers") {
-      list = items.filter(
-        (m: any) =>
-          !m.is_director &&
-          !m.is_advisor &&
-          !m.is_mentor
+  // Order active departments based strictly on section configuration
+  const orderedDepts = useMemo(() => {
+    const activeDepts = departments.filter((d) => d.is_active !== false)
+    if (activeDepts.length === 0) return []
+
+    // If selected_departments is provided, filter to only those keys
+    let available = activeDepts
+    if (Array.isArray(selected_departments) && selected_departments.length > 0) {
+      const selectedSet = new Set(selected_departments)
+      available = activeDepts.filter((d) => selectedSet.has(d.slug || d.id) || selectedSet.has(d.id))
+    }
+
+    // If department_order is configured, sort by that order
+    if (Array.isArray(department_order) && department_order.length > 0) {
+      const deptMap = new Map(available.map((d) => [d.slug || d.id, d]))
+      const result: any[] = []
+      const visited = new Set<string>()
+
+      department_order.forEach((key) => {
+        const d = deptMap.get(key) || available.find((item) => item.slug === key || item.id === key)
+        if (d && !visited.has(d.slug || d.id)) {
+          result.push(d)
+          visited.add(d.slug || d.id)
+        }
+      })
+
+      // Append any remaining available departments
+      available.forEach((d) => {
+        const key = d.slug || d.id
+        if (!visited.has(key)) {
+          result.push(d)
+          visited.add(key)
+        }
+      })
+
+      return result
+    }
+
+    return available
+  }, [departments, selected_departments, department_order])
+
+  // Build filter tabs
+  const filterTabs = useMemo(() => {
+    const tabs: Array<{ id: string; label: string; dept?: any }> = []
+    if (show_all_tab !== false) {
+      tabs.push({ id: "all", label: "Tất cả" })
+    }
+
+    orderedDepts.forEach((dept) => {
+      tabs.push({
+        id: dept.slug || dept.id,
+        label: dept.name,
+        dept,
+      })
+    })
+
+    // Fallback if no departments from DB yet
+    if (tabs.length === 0 || (tabs.length === 1 && tabs[0].id === "all" && orderedDepts.length === 0 && !loading)) {
+      return [
+        { id: "all", label: "Tất cả" },
+        { id: "ban-dieu-hanh", label: "Ban điều hành" },
+        { id: "ban-co-van", label: "Ban cố vấn" },
+        { id: "ban-thuc-thi", label: "Ban thực thi" },
+      ]
+    }
+
+    return tabs
+  }, [show_all_tab, orderedDepts, loading])
+
+  // Ensure activeFilter is valid
+  useEffect(() => {
+    if (filterTabs.length > 0 && !filterTabs.some((t) => t.id === activeFilter)) {
+      setActiveFilter(filterTabs[0].id)
+    }
+  }, [filterTabs, activeFilter])
+
+  // Department matching helper
+  const matchDepartment = (m: any, tab: { id: string; label: string; dept?: any }) => {
+    if (tab.id === "all") return true
+    const dept = tab.dept
+    const deptId = dept?.id
+    const deptSlug = (dept?.slug || tab.id).toLowerCase()
+    const deptName = (dept?.name || tab.label).toLowerCase()
+
+    // 1. Direct ID match
+    if (deptId && (m.department_id === deptId || m.gzver_departments?.id === deptId)) {
+      return true
+    }
+
+    // 2. Direct Name / Slug match
+    const mDeptName = (m.department_name || m.gzver_departments?.name || "").toLowerCase()
+    if (mDeptName && (mDeptName === deptName || mDeptName.includes(deptName))) {
+      return true
+    }
+
+    // 3. Fallback for Director / Advisor / Executor flags
+    if (deptSlug.includes("dieu-hanh") || deptName.includes("điều hành") || deptSlug.includes("director")) {
+      return Boolean(
+        m.is_director ||
+        mDeptName.includes("điều hành") ||
+        m.position?.toLowerCase().includes("ceo") ||
+        m.position?.toLowerCase().includes("director")
       )
     }
+
+    if (deptSlug.includes("co-van") || deptName.includes("cố vấn") || deptSlug.includes("advisor") || deptSlug.includes("mentor")) {
+      return Boolean(
+        m.is_advisor ||
+        m.is_mentor ||
+        mDeptName.includes("cố vấn") ||
+        m.position?.toLowerCase().includes("cố vấn") ||
+        m.position?.toLowerCase().includes("advisor") ||
+        m.position?.toLowerCase().includes("mentor")
+      )
+    }
+
+    if (deptSlug.includes("thuc-thi") || deptName.includes("thực thi") || deptSlug.includes("executor") || deptSlug.includes("gzvers")) {
+      return Boolean(
+        !m.is_director &&
+        !m.is_advisor &&
+        !m.is_mentor &&
+        !mDeptName.includes("cố vấn") &&
+        !mDeptName.includes("điều hành")
+      )
+    }
+
+    return false
+  }
+
+  const activeTabObj = useMemo(() => {
+    return filterTabs.find((t) => t.id === activeFilter) || filterTabs[0] || { id: "all", label: "Tất cả" }
+  }, [filterTabs, activeFilter])
+
+  const filteredItems = useMemo(() => {
+    if (!activeTabObj) return items.slice(0, Number(limit) || 50)
+    const list = items.filter((m) => matchDepartment(m, activeTabObj))
     return list.slice(0, Number(limit) || 50)
-  }, [items, activeFilter, limit])
+  }, [items, activeTabObj, limit])
 
   if (dbData?.is_visible === false && !propTitle) {
     return null
@@ -97,6 +213,25 @@ export default function GzversGrid({
 
   const title = propTitle || dbData?.title || "ĐỘI NGŨ NHÂN SỰ GZV"
   const subtitle = propSubtitle || dbData?.subtitle || "Đội ngũ nhân sự, cố vấn và chuyên gia đồng hành"
+
+  // Description for the active department
+  const currentDeptDescription = useMemo(() => {
+    if (activeFilter === "all") return null
+    if (activeTabObj?.dept?.description) return activeTabObj.dept.description
+
+    const slug = (activeTabObj?.dept?.slug || activeFilter).toLowerCase()
+    const name = (activeTabObj?.label || "").toLowerCase()
+    if (slug.includes("dieu-hanh") || name.includes("điều hành")) {
+      return "Chịu trách nhiệm định hướng chiến lược tổng thể, hoạch định phát triển hệ sinh thái và quản trị vận hành tổ chức GZV."
+    }
+    if (slug.includes("co-van") || name.includes("cố vấn")) {
+      return "Hội đồng cố vấn quy tụ các chuyên gia đầu ngành, tiến sĩ, thạc sĩ định hướng nghiên cứu học thuật và cố vấn chuyên môn chuyên sâu."
+    }
+    if (slug.includes("thuc-thi") || name.includes("thực thi")) {
+      return "Đội ngũ nhân sự nòng cốt, tài năng trực tiếp thực thi các dự án công nghệ, sáng tạo nội dung, đào tạo và vận hành chương trình."
+    }
+    return `Bộ phận ${activeTabObj?.label || ""} trực thuộc hệ sinh thái GZV.`
+  }, [activeFilter, activeTabObj])
 
   return (
     <section className="bg-white py-16 dark:bg-gray-900 sm:py-20" style={background ? { background } : undefined}>
@@ -116,22 +251,57 @@ export default function GzversGrid({
           </div>
         )}
 
-        {/* Filter Tabs */}
-        <div className="mb-10 flex flex-wrap items-center gap-2">
-          {FILTER_TABS.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveFilter(tab.id)}
-              className={`h-11 border px-6 text-xs font-black uppercase tracking-wider transition ${
-                activeFilter === tab.id
-                  ? "border-[#ed1c24] bg-[#ed1c24] text-white shadow-md"
-                  : "border-slate-200 bg-white text-slate-900 hover:border-[#ed1c24] dark:border-white/10 dark:bg-slate-900 dark:text-white"
-              }`}
+        {/* Filter Tabs Toolbar */}
+        <div className="mb-6 space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            {filterTabs.map((tab) => {
+              const count = items.filter((m) => matchDepartment(m, tab)).length
+              const isSelected = activeFilter === tab.id
+
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveFilter(tab.id)}
+                  className={`group relative h-11 px-5 text-xs font-black uppercase tracking-wider transition-all duration-200 flex items-center gap-2 border ${isSelected
+                      ? "border-[#ed1c24] bg-[#ed1c24] text-white shadow-md shadow-red-500/20"
+                      : isDark
+                        ? "border-white/10 bg-white/5 text-slate-300 hover:border-[#ed1c24] hover:bg-white/10 hover:text-white"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-[#ed1c24] hover:bg-slate-50 hover:text-slate-950 dark:border-white/10 dark:bg-slate-900 dark:text-slate-300"
+                    }`}
+                >
+                  <span>{tab.label}</span>
+                  <span
+                    className={`px-1.5 py-0.5 text-[10px] font-bold ${isSelected
+                        ? "bg-white/20 text-white"
+                        : isDark
+                          ? "bg-white/10 text-white/70"
+                          : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                      }`}
+                  >
+                    {count}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Department Description Card */}
+          {activeFilter !== "all" && currentDeptDescription && (
+            <div
+              className={`border-l-4 border-l-[#ed1c24] border border-y-slate-200 border-r-slate-200 p-4 transition-all duration-300 ${isDark
+                  ? "border-y-white/10 border-r-white/10 bg-white/5"
+                  : "bg-slate-50/90 dark:border-y-white/10 dark:border-r-white/10 dark:bg-slate-900/90"
+                }`}
             >
-              {tab.label}
-            </button>
-          ))}
+              <p
+                className={`text-sm sm:text-base font-semibold leading-relaxed ${isDark ? "text-white" : "text-slate-900 dark:text-white"
+                  }`}
+              >
+                {currentDeptDescription}
+              </p>
+            </div>
+          )}
         </div>
 
         {loading ? (
