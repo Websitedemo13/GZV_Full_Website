@@ -191,7 +191,7 @@ export default function Footer({ overrideConfig, activeColumn, onSelectColumn }:
 
   const fbPage = fc.facebook_page_url || "https://www.facebook.com/gzv.one"
   const fbEmbedSrc = fbPage
-    ? `https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(fbPage)}&tabs&width=320&height=130&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=false`
+    ? `https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(fbPage)}&tabs=&width=250&height=70&small_header=true&adapt_container_width=true&hide_cover=true&show_facepile=false`
     : null
 
   const [email, setEmail] = useState("")
@@ -341,39 +341,20 @@ export default function Footer({ overrideConfig, activeColumn, onSelectColumn }:
             )}
 
             {fbEmbedSrc && (
-              <div className="mt-4 w-full max-w-[320px] overflow-hidden border border-white/10 bg-white/[0.02] shadow-sm transition-colors hover:border-[#ed1c24]/50">
-                <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-3 py-1.5">
-                  <div className="flex items-center gap-1.5">
-                    <Facebook className="h-3.5 w-3.5 text-[#ed1c24]" />
-                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-300">
-                      Fanpage GZV
-                    </span>
-                  </div>
-                  {fbPage && (
-                    <a
-                      href={fbPage}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[10px] font-bold text-slate-400 hover:text-white transition-colors"
-                    >
-                      Mở trang ↗
-                    </a>
-                  )}
-                </div>
-                <div className="relative min-h-[130px] w-full bg-black/40">
-                  <iframe
-                    src={fbEmbedSrc}
-                    width="100%"
-                    height="130"
-                    style={{ border: "none", overflow: "hidden" }}
-                    scrolling="no"
-                    frameBorder="0"
-                    allow="encrypted-media"
-                    title="Facebook Page"
-                    loading="lazy"
-                    className="block h-[130px] w-full border-0"
-                  />
-                </div>
+              <div className="mt-3 overflow-hidden">
+                <iframe
+                  src={fbEmbedSrc}
+                  width="250"
+                  height="70"
+                  style={{ border: "none", overflow: "hidden" }}
+                  scrolling="no"
+                  frameBorder="0"
+                  allowFullScreen={true}
+                  allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                  title="Facebook Page"
+                  loading="lazy"
+                  className="block h-[70px] w-[250px] max-w-full border-0"
+                />
               </div>
             )}
           </motion.div>
