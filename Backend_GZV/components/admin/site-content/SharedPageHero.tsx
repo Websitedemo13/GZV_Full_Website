@@ -13,9 +13,19 @@ interface SharedPageHeroProps {
   useImage?: boolean
   backgroundImageUrl?: string
   imagePositionY?: string
+  imageOpacity?: number
+  imageGrayscale?: boolean
   bgColor?: string
+  bgFrom?: string
+  bgTo?: string
+  overlayEnabled?: boolean
+  overlayColor?: string
+  overlayOpacity?: number
   textColor?: string
   titleAlignment?: "left" | "center" | "right"
+  showBadge?: boolean
+  showTitle?: boolean
+  showDescription?: boolean
   isPreviewMode?: boolean
   onPositionChange?: (val: string) => void
   onBadgeClick?: () => void
@@ -33,8 +43,18 @@ export function SharedPageHero({
   useImage = true,
   backgroundImageUrl,
   imagePositionY = "50%",
+  imageOpacity = 100,
+  imageGrayscale = false,
   bgColor = "#050505",
+  bgFrom = "#050505",
+  bgTo = "#ed1c24",
+  overlayEnabled = true,
+  overlayColor = "#050505",
+  overlayOpacity = 60,
   titleAlignment = "center",
+  showBadge = true,
+  showTitle = true,
+  showDescription = true,
   isPreviewMode = false,
   onPositionChange,
   onBadgeClick,
@@ -52,41 +72,56 @@ export function SharedPageHero({
 
   const parseHtmlText = (str?: string) => {
     if (!str) return ""
-    // Strip HTML tags for clean banner rendering if needed
     return str.replace(/<[^>]*>?/gm, "")
   }
 
   return (
     <section
       ref={containerRef}
-      className="relative overflow-hidden bg-[#050505] py-24 text-white min-h-[500px] flex items-center justify-center"
-      style={{ backgroundColor: useImage ? "#050505" : bgColor }}
+      className="relative overflow-hidden min-h-[420px] md:min-h-[460px] flex items-center justify-center py-20 lg:py-24 text-white transition-all duration-300"
+      style={{
+        background: useImage
+          ? "#050505"
+          : `linear-gradient(90deg, ${bgFrom || bgColor || "#050505"}, ${bgTo || bgFrom || bgColor || "#ed1c24"})`,
+      }}
     >
+      {/* Background Image Layer */}
       {useImage && backgroundImageUrl && (
         <div
-          className="absolute inset-0 bg-cover bg-no-repeat opacity-35 grayscale"
+          className={`absolute inset-0 bg-cover bg-no-repeat transition-all duration-300 ${imageGrayscale ? "grayscale" : ""}`}
           style={{
             backgroundImage: `url(${backgroundImageUrl})`,
             backgroundPosition: `center ${imagePositionY}`,
+            opacity: (imageOpacity ?? 100) / 100,
           }}
           aria-hidden="true"
         />
       )}
 
-      {/* Decorative Overlays */}
-      <div
-        className="absolute inset-0 bg-[linear-gradient(110deg,rgba(5,5,5,0.96)_0%,rgba(5,5,5,0.88)_54%,rgba(237,28,36,0.30)_100%)]"
-        aria-hidden="true"
-      />
+      {/* Customizable Color Overlay Layer */}
+      {useImage && overlayEnabled !== false && (
+        <div
+          className="absolute inset-0 pointer-events-none transition-all duration-300"
+          style={{
+            backgroundColor: overlayColor || "#050505",
+            opacity: (overlayOpacity ?? 60) / 100,
+          }}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Top Red Accent Line */}
       <div className="absolute inset-x-0 top-0 h-1 bg-[#ed1c24]" aria-hidden="true" />
+
+      {/* Bottom Subtle Grid Texture */}
       <div
-        className="absolute bottom-0 left-0 h-20 w-full border-t border-white/10 bg-[repeating-linear-gradient(135deg,rgba(255,255,255,0.08)_0,rgba(255,255,255,0.08)_1px,transparent_1px,transparent_14px)]"
+        className="absolute bottom-0 left-0 h-16 w-full border-t border-white/10 bg-[repeating-linear-gradient(135deg,rgba(255,255,255,0.06)_0,rgba(255,255,255,0.06)_1px,transparent_1px,transparent_14px)]"
         aria-hidden="true"
       />
 
       <div className="container relative z-10 px-6">
-        <div className={`mx-auto max-w-4xl flex flex-col ${alignClass}`}>
-          {badge && (
+        <div className={`mx-auto w-full max-w-[70%] flex flex-col ${alignClass}`}>
+          {showBadge && badge && (
             <motion.div
               onClick={onBadgeClick}
               className={`mb-6 inline-flex items-center gap-2 border-l-4 border-[#ed1c24] bg-white/10 px-4 py-2 backdrop-blur-sm ${
@@ -105,10 +140,10 @@ export function SharedPageHero({
             </motion.div>
           )}
 
-          {title && (
+          {showTitle && title && (
             <motion.h1
               onClick={onTitleClick}
-              className={`mb-6 text-5xl font-black uppercase leading-tight md:text-6xl ${
+              className={`mb-6 text-4xl sm:text-5xl lg:text-6xl font-black uppercase leading-tight ${
                 isPreviewMode ? "cursor-pointer hover:ring-2 hover:ring-[#ed1c24]" : ""
               }`}
               style={{ color: titleColor }}
@@ -120,10 +155,10 @@ export function SharedPageHero({
             </motion.h1>
           )}
 
-          {description && (
+          {showDescription && description && (
             <motion.p
               onClick={onDescriptionClick}
-              className={`mb-8 text-xl font-semibold leading-relaxed ${
+              className={`mb-8 text-lg sm:text-xl font-semibold leading-relaxed ${
                 isPreviewMode ? "cursor-pointer hover:ring-2 hover:ring-[#ed1c24]" : ""
               }`}
               style={{ color: descriptionColor }}

@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import SectionIntro from "@/components/sections/common/SectionIntro"
 
 export interface StorySplitProps {
-  eyebrow?: string
   title?: string
   subtitle?: string
   body?: string

@@ -104,7 +104,7 @@ const Header = () => {
   return (
     <>
       <div className={`fixed inset-x-0 top-0 z-[60] hidden h-9 border-b border-white/10 bg-[#050505] text-white transition duration-300 lg:block ${isScrolled ? "-translate-y-full opacity-0" : "translate-y-0 opacity-100"}`}>
-        <div className="container flex h-full items-center justify-between text-[11px] font-bold uppercase">
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 flex h-full items-center justify-between text-[11px] font-bold uppercase">
           <div className="flex items-center gap-6 text-white/80">
             <span className="inline-flex items-center gap-2">
               <Mail className="h-3.5 w-3.5 text-[#ed1c24]" />
@@ -132,25 +132,29 @@ const Header = () => {
             : "top-0 shadow-[0_10px_30px_rgba(0,0,0,0.30)] backdrop-blur-xl lg:top-9"
         }`}
       >
-        <div className="container flex h-[74px] items-center justify-between gap-4 lg:h-[82px]">
-          <Link href="/" className="flex min-w-0 items-center gap-3" aria-label="GZV home">
-            {showLogo && headerLogo && headerLogo.trim() !== "" ? (
-              <div className="relative h-12 w-[156px] shrink-0 lg:h-14 lg:w-[186px]">
-                <Image src={headerLogo} alt="GZV" fill priority unoptimized className="object-contain" />
-              </div>
-            ) : (
-              <div className="h-9 w-9 bg-[#ed1c24] text-white flex items-center justify-center font-black text-xs shrink-0">
-                G
-              </div>
-            )}
-            {headerSiteName && (
-              <span className="text-sm md:text-base font-black uppercase tracking-wider hidden sm:inline" style={{ color: headerTextColor || undefined }}>
-                {headerSiteName}
-              </span>
-            )}
-          </Link>
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 flex h-[74px] items-center justify-between gap-4 lg:h-[82px]">
+          {/* Outer Left: Logo & Brand Name */}
+          <div className="flex items-center shrink-0">
+            <Link href="/" className="flex min-w-0 items-center gap-3" aria-label="GZV home">
+              {showLogo && headerLogo && headerLogo.trim() !== "" ? (
+                <div className="relative h-12 w-[156px] shrink-0 lg:h-14 lg:w-[186px]">
+                  <Image src={headerLogo} alt="GZV" fill priority unoptimized className="object-contain" />
+                </div>
+              ) : (
+                <div className="h-9 w-9 bg-[#ed1c24] text-white flex items-center justify-center font-black text-xs shrink-0">
+                  G
+                </div>
+              )}
+              {headerSiteName && (
+                <span className="text-sm md:text-base font-black uppercase tracking-wider hidden sm:inline" style={{ color: headerTextColor || undefined }}>
+                  {headerSiteName}
+                </span>
+              )}
+            </Link>
+          </div>
 
-          <nav className="hidden items-center gap-1 lg:flex">
+          {/* Center: Navigation Menu Only */}
+          <nav className="hidden items-center justify-center flex-1 mx-4 min-w-0 lg:flex gap-0.5 xl:gap-1">
             {navTree.map(({ item, children }) => {
               const isActive = item.href === activePath || children.some((child) => child.href === activePath)
               const hasChildren = children.length > 0
@@ -167,12 +171,13 @@ const Header = () => {
                 </>
               )
 
-              const linkClass = `group relative flex items-center gap-1 px-3 py-7 text-[12px] font-black transition-colors xl:px-4 ${isActive ? "text-[#ed1c24]" : "text-white hover:text-[#ed1c24]"}`
+              const linkClass = `group relative flex items-center gap-1 px-3 py-7 text-[12px] font-black transition-colors xl:px-4 ${isActive ? "text-[#ed1c24]" : headerTextColor ? "" : "text-white hover:text-[#ed1c24]"}`
+              const linkStyle = !isActive && headerTextColor ? { color: headerTextColor } : undefined
 
               return (
                 <div key={item.href || labelText} className="group/menu relative">
                   {isShop ? (
-                    <span className={`${linkClass} cursor-pointer`}>
+                    <span className={`${linkClass} cursor-pointer`} style={linkStyle}>
                       {linkContent}
                     </span>
                   ) : (
@@ -180,6 +185,7 @@ const Header = () => {
                       href={item.href || "#"}
                       target={item.is_external ? "_blank" : undefined}
                       className={linkClass}
+                      style={linkStyle}
                     >
                       {linkContent}
                     </Link>
@@ -215,7 +221,8 @@ const Header = () => {
             })}
           </nav>
 
-          <div className="flex items-center gap-2">
+          {/* Outer Right: Action Buttons */}
+          <div className="flex items-center gap-2 shrink-0">
             <Link href="https://www.gzv.one/login" target="_blank" className="hidden xl:block">
               <Button className="h-11 rounded-none bg-[#ed1c24] px-5 text-xs font-black uppercase text-white hover:bg-[#c91218]">
                 <LogIn className="mr-2 h-4 w-4" />
@@ -225,7 +232,8 @@ const Header = () => {
             <Button
               variant="outline"
               size="icon"
-              className="hidden h-11 w-11 rounded-none border-white/15 bg-[#101010] text-white hover:border-[#ed1c24] hover:text-[#ed1c24] lg:inline-flex"
+              style={headerTextColor ? { color: headerTextColor, borderColor: `${headerTextColor}40` } : undefined}
+              className={`hidden h-11 w-11 rounded-none border-white/15 bg-[#101010] hover:border-[#ed1c24] hover:text-[#ed1c24] lg:inline-flex ${headerTextColor ? "" : "text-white"}`}
               aria-label={t("common.search")}
             >
               <Search className="h-4 w-4" />
@@ -233,7 +241,8 @@ const Header = () => {
             <button
               type="button"
               onClick={toggleTheme}
-              className="hidden h-11 w-11 items-center justify-center border border-white/15 bg-[#101010] text-white transition hover:border-[#ed1c24] hover:text-[#ed1c24] lg:inline-flex"
+              style={headerTextColor ? { color: headerTextColor, borderColor: `${headerTextColor}40` } : undefined}
+              className={`hidden h-11 w-11 items-center justify-center border border-white/15 bg-[#101010] transition hover:border-[#ed1c24] hover:text-[#ed1c24] lg:inline-flex ${headerTextColor ? "" : "text-white"}`}
               aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
             >
               {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -241,7 +250,8 @@ const Header = () => {
             <button
               type="button"
               onClick={toggleLanguage}
-              className="hidden h-11 border border-white/15 bg-[#101010] px-3 text-xs font-black uppercase text-white transition hover:border-[#ed1c24] hover:text-[#ed1c24] lg:inline-flex lg:items-center"
+              style={headerTextColor ? { color: headerTextColor, borderColor: `${headerTextColor}40` } : undefined}
+              className={`hidden h-11 border border-white/15 bg-[#101010] px-3 text-xs font-black uppercase transition hover:border-[#ed1c24] hover:text-[#ed1c24] lg:inline-flex lg:items-center ${headerTextColor ? "" : "text-white"}`}
               aria-label="Switch language"
             >
               {language === "vi" ? "EN" : "VI"}
@@ -249,7 +259,8 @@ const Header = () => {
             <Button
               variant="outline"
               size="icon"
-              className="h-11 w-11 rounded-none border-white/15 bg-[#101010] text-white hover:border-[#ed1c24] hover:text-[#ed1c24] lg:hidden"
+              style={headerTextColor ? { color: headerTextColor, borderColor: `${headerTextColor}40` } : undefined}
+              className={`h-11 w-11 rounded-none border-white/15 bg-[#101010] hover:border-[#ed1c24] hover:text-[#ed1c24] lg:hidden ${headerTextColor ? "" : "text-white"}`}
               onClick={() => setIsMobileMenuOpen(true)}
               aria-label={t("nav.openMenu")}
             >

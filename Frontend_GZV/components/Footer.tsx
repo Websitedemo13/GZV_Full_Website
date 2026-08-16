@@ -191,7 +191,7 @@ export default function Footer({ overrideConfig, activeColumn, onSelectColumn }:
 
   const fbPage = fc.facebook_page_url || "https://www.facebook.com/gzv.one"
   const fbEmbedSrc = fbPage
-    ? `https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(fbPage)}&tabs&width=250&height=160&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=false`
+    ? `https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(fbPage)}&tabs=&width=250&height=70&small_header=true&adapt_container_width=true&hide_cover=true&show_facepile=false`
     : null
 
   const [email, setEmail] = useState("")
@@ -341,18 +341,19 @@ export default function Footer({ overrideConfig, activeColumn, onSelectColumn }:
             )}
 
             {fbEmbedSrc && (
-              <div className="w-full max-w-[250px] overflow-hidden rounded-none bg-black mt-4 shadow-none">
+              <div className="mt-3 overflow-hidden">
                 <iframe
                   src={fbEmbedSrc}
                   width="250"
-                  height="160"
+                  height="70"
                   style={{ border: "none", overflow: "hidden" }}
                   scrolling="no"
                   frameBorder="0"
-                  allow="encrypted-media"
+                  allowFullScreen={true}
+                  allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
                   title="Facebook Page"
                   loading="lazy"
-                  className="w-[250px] max-w-full h-[160px] block border-0"
+                  className="block h-[70px] w-[250px] max-w-full border-0"
                 />
               </div>
             )}
