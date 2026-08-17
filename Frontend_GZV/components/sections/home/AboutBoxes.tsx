@@ -48,17 +48,18 @@ export default function AboutBoxes({
 
     setLoading(true)
     Promise.all([
-      (!propTitle || !propSubtitle)
-        ? supabase.from("site_page_blocks").select("props").eq("component_type", "about_boxes").limit(1).maybeSingle()
-        : Promise.resolve({ data: null }),
+      supabase.from("site_home_sections").select("*").eq("section_key", "about_boxes").maybeSingle(),
+      supabase.from("site_page_blocks").select("props").eq("component_type", "about_boxes").limit(1).maybeSingle(),
       supabase.from("gzver_departments").select("*").eq("is_active", true).order("sort_order", { ascending: true }),
       api.getGzvers(),
     ])
-      .then(([blockRes, departmentResult, gzvers]) => {
+      .then(([homeRes, blockRes, departmentResult, gzvers]) => {
         if (!active) return
-        if (blockRes.data?.props) {
-          setDbProps(blockRes.data.props)
-        }
+        const homeData = homeRes.data
+        const blockProps = blockRes.data?.props
+        const combined = { ...(blockProps || {}), ...(homeData || {}), ...(homeData?.settings || {}) }
+        setDbProps(combined)
+
         const departmentRows = departmentResult.data || []
         setDepartments(departmentRows)
         setMembers(gzvers || [])
@@ -77,6 +78,10 @@ export default function AboutBoxes({
       active = false
     }
   }, [propTitle, propSubtitle])
+
+  if (dbProps?.is_visible === false && !propTitle) {
+    return null
+  }
 
   const title = propTitle || dbProps?.title || "VỀ CHÚNG TÔI"
   const subtitle = propSubtitle || dbProps?.subtitle || "Đội ngũ nhân sự, chuyên gia và phòng ban nòng cốt tạo nên giá trị cho GZV."

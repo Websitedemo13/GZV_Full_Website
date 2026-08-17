@@ -12,6 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useEffect, useMemo, useState } from "react"
 import { api, Project } from "@/lib/api-supabase"
 import PageBanner from "@/components/sections/common/PageBanner"
+import StatsBar from "@/components/sections/common/StatsBar"
 import BuilderPageGate from "@/components/BuilderPageGate"
 
 const CATEGORIES = [
@@ -109,17 +110,18 @@ export default function ProjectsPage() {
         badge="Những dự án tiêu biểu"
         title="Dự án đã triển khai"
         subtitle="Các dự án Mentoring & Coaching thực tế mà GZV Center đã triển khai, đem lại giá trị thực cho các đối tác và học viên."
-        stats={[
-          { value: `${projects.length}+`, label: 'Dự án tiêu biểu' },
-          { value: '50+', label: 'Doanh nghiệp' },
-          { value: '5000+', label: 'Học viên' },
-          { value: '10+', label: 'Lĩnh vực' },
-        ]}
       />
-
       <BuilderPageGate slug="du-an">
-        <div className="bg-white dark:bg-gray-900">
-          <section className="py-24 bg-gray-50 dark:bg-gray-900">
+        <StatsBar
+          stats={[
+            { value: "10+", label: "Dự án tiêu biểu", description: "Quy mô thực tế" },
+            { value: "50+", label: "Doanh nghiệp", description: "Đồng hành phát triển" },
+            { value: "5000+", label: "Học viên", description: "Tham gia đào tạo" },
+            { value: "10+", label: "Lĩnh vực", description: "Kinh nghiệm đa ngành" },
+          ]}
+        />
+      <div className="bg-white dark:bg-gray-900">
+        <section className="py-24 bg-gray-50 dark:bg-gray-900">
             <div className="container px-4 mx-auto">
 
               {/* SEARCH BAR & CATEGORY FILTER BUTTONS */}
@@ -292,7 +294,7 @@ export default function ProjectsPage() {
               </motion.div>
             </div>
           </section>
-        </div>
+          </div>
       </BuilderPageGate>
     </>
   )

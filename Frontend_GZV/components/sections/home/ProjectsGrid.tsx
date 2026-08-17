@@ -12,6 +12,12 @@ export interface ProjectsGridProps {
   subtitle?: string
   limit?: number
   background?: string
+  showSearch?: boolean
+  show_search?: boolean
+  showCategories?: boolean
+  show_categories?: boolean
+  showFilter?: boolean
+  show_filter?: boolean
 }
 
 const CATEGORIES = [
@@ -23,16 +29,19 @@ const CATEGORIES = [
   { id: "education", label: "Education" },
 ]
 
-export default function ProjectsGrid({
-  title: propTitle,
-  subtitle: propSubtitle,
-  limit = 6,
-  background,
-}: ProjectsGridProps) {
+export default function ProjectsGrid(rawProps: ProjectsGridProps) {
+  const {
+    title: propTitle,
+    subtitle: propSubtitle,
+    limit = 6,
+    background,
+  } = rawProps
+
   const [items, setItems] = useState<any[]>([])
   const [dbProps, setDbProps] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState("all")
+  const [searchQuery, setSearchQuery] = useState("")
 
   const isDark = background ? String(background).toLowerCase() !== "#ffffff" && String(background).toLowerCase() !== "white" : false
 
@@ -42,18 +51,18 @@ export default function ProjectsGrid({
     const fetchData = async () => {
       try {
         setLoading(true)
-        const [blockRes, projectsRes] = await Promise.all([
-          (!propTitle || !propSubtitle)
-            ? supabase.from("site_page_blocks").select("props").eq("component_type", "projects_grid").limit(1).maybeSingle()
-            : Promise.resolve({ data: null }),
-          supabase.from("projects").select("*").order("order_index", { ascending: true }).order("created_at", { ascending: false }).limit(Number(limit) || 6),
+        const [homeRes, blockRes, projectsRes] = await Promise.all([
+          supabase.from("site_home_sections").select("*").eq("section_key", "projects").maybeSingle(),
+          supabase.from("site_page_blocks").select("props").eq("component_type", "projects_grid").limit(1).maybeSingle(),
+          supabase.from("projects").select("*").order("order_index", { ascending: true }).order("created_at", { ascending: false }).limit(Number(limit) || 12),
         ])
 
         if (!active) return
 
-        if (blockRes.data?.props) {
-          setDbProps(blockRes.data.props)
-        }
+        const homeData = homeRes.data
+        const blockProps = blockRes.data?.props
+        const combined = { ...(blockProps || {}), ...(homeData || {}), ...(homeData?.settings || {}) }
+        setDbProps(combined)
 
         if (projectsRes.data) {
           setItems(projectsRes.data)
@@ -72,29 +81,56 @@ export default function ProjectsGrid({
     }
   }, [limit, propTitle, propSubtitle])
 
+  if (dbProps?.is_visible === false && !propTitle) {
+    return null
+  }
+
   const title = propTitle || dbProps?.title || "DỰ ÁN ĐÃ TRIỂN KHAI"
-  const subtitle = propSubtitle || dbProps?.subtitle || "Các dự án Mentoring, Coaching và triển khai thực tế mà GZV đồng hành."
+  const subtitle = propSubtitle || dbProps?.subtitle || "Những chiến dịch và dự án tiêu biểu do GZV cùng đối tác triển khai"
+
+  const showSearch = rawProps.showSearch ?? rawProps.show_search ?? dbProps?.show_search ?? dbProps?.showSearch ?? true
+  const showCategories = rawProps.showCategories ?? rawProps.show_categories ?? rawProps.showFilter ?? rawProps.show_filter ?? dbProps?.show_categories ?? dbProps?.showCategories ?? true
 
   const filteredItems = useMemo(() => {
-    if (selectedCategory === "all") return items
-    return items.filter((item) => {
-      const targetText = [
-        item.category,
-        item.field,
-        item.industry,
-        item.tags,
-        item.title,
-        item.description,
-        item.excerpt,
-        item.company,
-      ].flatMap((val) => (Array.isArray(val) ? val : [val])).filter(Boolean).join(" ").toLowerCase()
+    let result = items
 
-      const searchCat = selectedCategory.toLowerCase().replace("-", " ")
-      const labelCat = CATEGORIES.find((c) => c.id === selectedCategory)?.label.toLowerCase() || ""
+    if (showCategories && selectedCategory !== "all") {
+      result = result.filter((item) => {
+        const targetText = [
+          item.category,
+          item.field,
+          item.industry,
+          item.tags,
+          item.title,
+          item.description,
+          item.excerpt,
+          item.company,
+        ].flatMap((val) => (Array.isArray(val) ? val : [val])).filter(Boolean).join(" ").toLowerCase()
 
-      return targetText.includes(searchCat) || targetText.includes(labelCat)
-    })
-  }, [items, selectedCategory])
+        const searchCat = selectedCategory.toLowerCase().replace("-", " ")
+        const labelCat = CATEGORIES.find((c) => c.id === selectedCategory)?.label.toLowerCase() || ""
+
+        return targetText.includes(searchCat) || targetText.includes(labelCat)
+      })
+    }
+
+    if (showSearch && searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim()
+      result = result.filter((item) => {
+        const targetText = [
+          item.title,
+          item.description,
+          item.category,
+          item.field,
+          item.company,
+          item.excerpt,
+        ].filter(Boolean).join(" ").toLowerCase()
+        return targetText.includes(q)
+      })
+    }
+
+    return result
+  }, [items, selectedCategory, searchQuery, showCategories, showSearch])
 
   return (
     <section className="bg-slate-50 py-16 dark:bg-slate-900 sm:py-20" style={background ? { background } : undefined}>
@@ -106,27 +142,47 @@ export default function ProjectsGrid({
           </div>
         )}
 
-        <div className="mb-10 flex flex-wrap items-center justify-start gap-2">
-          {CATEGORIES.map((cat) => {
-            const isActive = selectedCategory === cat.id
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`rounded-full px-5 py-2 text-xs font-black uppercase tracking-wider transition ${
-                  isActive
-                    ? "bg-[#ed1c24] text-white shadow-md"
-                    : isDark
-                    ? "bg-white/10 text-white/80 hover:bg-white/20"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200"
-                }`}
-              >
-                {cat.label}
-              </button>
-            )
-          })}
-        </div>
+        {(showCategories || showSearch) && (
+          <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            {showCategories ? (
+              <div className="flex flex-wrap items-center justify-start gap-2">
+                {CATEGORIES.map((cat) => {
+                  const isActive = selectedCategory === cat.id
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => setSelectedCategory(cat.id)}
+                      className={`rounded-full px-5 py-2 text-xs font-black uppercase tracking-wider transition ${
+                        isActive
+                          ? "bg-[#ed1c24] text-white shadow-md"
+                          : isDark
+                          ? "bg-white/10 text-white/80 hover:bg-white/20"
+                          : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200"
+                      }`}
+                    >
+                      {cat.label}
+                    </button>
+                  )
+                })}
+              </div>
+            ) : (
+              <div />
+            )}
+
+            {showSearch && (
+              <div className="relative w-full sm:w-64 shrink-0">
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm dự án..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-10 w-full rounded-full border border-slate-200 bg-white pl-4 pr-4 text-xs font-bold text-slate-900 placeholder-slate-400 shadow-sm transition focus:border-[#ed1c24] focus:outline-none focus:ring-1 focus:ring-[#ed1c24] dark:border-white/10 dark:bg-slate-900 dark:text-white"
+                />
+              </div>
+            )}
+          </div>
+        )}
 
         {loading ? (
           <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-[#ed1c24]" />
@@ -136,7 +192,7 @@ export default function ProjectsGrid({
           </div>
         ) : (
           <div className="py-12 text-center text-sm font-semibold text-slate-500 dark:text-slate-400">
-            Chưa có dự án nào thuộc danh mục này.
+            Chưa có dự án nào khớp với điều kiện tìm kiếm.
           </div>
         )}
       </div>

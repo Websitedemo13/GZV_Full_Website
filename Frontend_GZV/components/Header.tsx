@@ -20,6 +20,10 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [navItems, setNavItems] = useState<SiteNavItem[]>(defaultNavigation)
   const [headerLogo, setHeaderLogo] = useState("/logo.webp")
+  const [headerSiteName, setHeaderSiteName] = useState("")
+  const [showLogo, setShowLogo] = useState(true)
+  const [headerBgColor, setHeaderBgColor] = useState("")
+  const [headerTextColor, setHeaderTextColor] = useState("")
   const [topbar, setTopbar] = useState({
     email: "gzv.one@gmail.com",
     phone: "(+84) 329 381 489",
@@ -53,7 +57,18 @@ const Header = () => {
     let active = true
     Promise.all([getBrandingSettings(), getSiteNavigation()]).then(([branding, navigation]) => {
       if (!active) return
-      setHeaderLogo(branding.header_logo_url || "/logo.webp")
+      let meta: any = {}
+      try {
+        if (branding.default_keywords && branding.default_keywords.startsWith("{")) {
+          meta = JSON.parse(branding.default_keywords)
+        }
+      } catch (e) {}
+
+      setHeaderLogo(branding.header_logo_url !== undefined ? branding.header_logo_url : "")
+      setHeaderSiteName(meta.header_site_name || (branding as any).header_site_name || branding.site_name || "")
+      setShowLogo(meta.show_logo !== undefined ? meta.show_logo : ((branding as any).show_logo !== false))
+      setHeaderBgColor(meta.header_bg_color || (branding as any).header_bg_color || "")
+      setHeaderTextColor(meta.header_text_color || (branding as any).header_text_color || "")
       setNavItems(navigation.filter((item) => item.is_visible !== false))
       setTopbar({
         email: branding.topbar_email_label || "gzv.one@gmail.com",
@@ -89,7 +104,7 @@ const Header = () => {
   return (
     <>
       <div className={`fixed inset-x-0 top-0 z-[60] hidden h-9 border-b border-white/10 bg-[#050505] text-white transition duration-300 lg:block ${isScrolled ? "-translate-y-full opacity-0" : "translate-y-0 opacity-100"}`}>
-        <div className="container flex h-full items-center justify-between text-[11px] font-bold uppercase">
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 flex h-full items-center justify-between text-[11px] font-bold uppercase">
           <div className="flex items-center gap-6 text-white/80">
             <span className="inline-flex items-center gap-2">
               <Mail className="h-3.5 w-3.5 text-[#ed1c24]" />
@@ -105,19 +120,41 @@ const Header = () => {
       </div>
 
       <motion.header
-        className={`fixed inset-x-0 z-[70] border-b border-white/10 bg-[#050505] transition-all duration-300 ${isScrolled
+        style={{
+          backgroundColor: headerBgColor || undefined,
+          color: headerTextColor || undefined,
+        }}
+        className={`fixed inset-x-0 z-[70] border-b border-white/10 transition-all duration-300 ${
+          headerBgColor ? "" : "bg-[#050505]"
+        } ${
+          isScrolled
             ? "top-0 shadow-[0_16px_38px_rgba(0,0,0,0.50)] backdrop-blur-xl lg:top-0"
             : "top-0 shadow-[0_10px_30px_rgba(0,0,0,0.30)] backdrop-blur-xl lg:top-9"
-          }`}
+        }`}
       >
-        <div className="container flex h-[74px] items-center justify-between gap-4 lg:h-[82px]">
-          <Link href="/" className="flex min-w-0 items-center gap-3" aria-label="GZV home">
-            <div className="relative h-12 w-[156px] shrink-0 lg:h-14 lg:w-[186px]">
-              <Image src={headerLogo} alt="GZV" fill priority unoptimized className="object-contain" />
-            </div>
-          </Link>
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 flex h-[74px] items-center justify-between gap-4 lg:h-[82px]">
+          {/* Outer Left: Logo & Brand Name */}
+          <div className="flex items-center shrink-0">
+            <Link href="/" className="flex min-w-0 items-center gap-3" aria-label="GZV home">
+              {showLogo && headerLogo && headerLogo.trim() !== "" ? (
+                <div className="relative h-12 w-[156px] shrink-0 lg:h-14 lg:w-[186px]">
+                  <Image src={headerLogo} alt="GZV" fill priority unoptimized className="object-contain" />
+                </div>
+              ) : (
+                <div className="h-9 w-9 bg-[#ed1c24] text-white flex items-center justify-center font-black text-xs shrink-0">
+                  G
+                </div>
+              )}
+              {headerSiteName && (
+                <span className="text-sm md:text-base font-black uppercase tracking-wider hidden sm:inline" style={{ color: headerTextColor || undefined }}>
+                  {headerSiteName}
+                </span>
+              )}
+            </Link>
+          </div>
 
-          <nav className="hidden items-center gap-1 lg:flex">
+          {/* Center: Navigation Menu Only */}
+          <nav className="hidden items-center justify-center flex-1 mx-4 min-w-0 lg:flex gap-0.5 xl:gap-1">
             {navTree.map(({ item, children }) => {
               const isActive = item.href === activePath || children.some((child) => child.href === activePath)
               const hasChildren = children.length > 0
@@ -134,19 +171,21 @@ const Header = () => {
                 </>
               )
 
-              const linkClass = `group relative flex items-center gap-1 px-3 py-7 text-[12px] font-black transition-colors xl:px-4 ${isActive ? "text-[#ed1c24]" : "text-white hover:text-[#ed1c24]"}`
+              const linkClass = `group relative flex items-center gap-1 px-3 py-7 text-[12px] font-black transition-colors xl:px-4 ${isActive ? "text-[#ed1c24]" : headerTextColor ? "" : "text-white hover:text-[#ed1c24]"}`
+              const linkStyle = !isActive && headerTextColor ? { color: headerTextColor } : undefined
 
               return (
                 <div key={item.href || labelText} className="group/menu relative">
                   {isShop ? (
-                    <span className={`${linkClass} cursor-pointer`}>
+                    <span className={`${linkClass} cursor-pointer`} style={linkStyle}>
                       {linkContent}
                     </span>
                   ) : (
                     <Link
-                      href={item.href}
+                      href={item.href || "#"}
                       target={item.is_external ? "_blank" : undefined}
                       className={linkClass}
+                      style={linkStyle}
                     >
                       {linkContent}
                     </Link>
@@ -155,7 +194,7 @@ const Header = () => {
                     <div className="invisible absolute left-0 top-full w-72 translate-y-3 border border-white/10 bg-[#080808] p-2 opacity-0 shadow-[0_24px_60px_rgba(0,0,0,0.5)] transition duration-200 group-hover/menu:visible group-hover/menu:translate-y-0 group-hover/menu:opacity-100">
                       {children.map((child) => {
                         const childLabel = getLabel(child)
-                        const isChildShop = childLabel.toLowerCase().includes("cửa hàng") || childLabel.toLowerCase().includes("shop") || childLabel.toLowerCase().includes("store") || child.href.includes("cua-hang") || child.href === "#"
+                        const isChildShop = childLabel.toLowerCase().includes("cửa hàng") || childLabel.toLowerCase().includes("shop") || childLabel.toLowerCase().includes("store") || (child.href && child.href.includes("cua-hang")) || child.href === "#"
                         const childClass = "flex items-center justify-between border-b border-white/10 px-4 py-3 text-xs font-black uppercase text-white transition last:border-b-0 hover:bg-[#ed1c24] hover:text-white"
 
                         return isChildShop ? (
@@ -165,8 +204,8 @@ const Header = () => {
                           </span>
                         ) : (
                           <Link
-                            key={child.href}
-                            href={child.href}
+                            key={child.href || childLabel}
+                            href={child.href || "#"}
                             target={child.is_external ? "_blank" : undefined}
                             className={childClass}
                           >
@@ -182,7 +221,8 @@ const Header = () => {
             })}
           </nav>
 
-          <div className="flex items-center gap-2">
+          {/* Outer Right: Action Buttons */}
+          <div className="flex items-center gap-2 shrink-0">
             <Link href="https://www.gzv.one/login" target="_blank" className="hidden xl:block">
               <Button className="h-11 rounded-none bg-[#ed1c24] px-5 text-xs font-black uppercase text-white hover:bg-[#c91218]">
                 <LogIn className="mr-2 h-4 w-4" />
@@ -192,7 +232,8 @@ const Header = () => {
             <Button
               variant="outline"
               size="icon"
-              className="hidden h-11 w-11 rounded-none border-white/15 bg-[#101010] text-white hover:border-[#ed1c24] hover:text-[#ed1c24] lg:inline-flex"
+              style={headerTextColor ? { color: headerTextColor, borderColor: `${headerTextColor}40` } : undefined}
+              className={`hidden h-11 w-11 rounded-none border-white/15 bg-[#101010] hover:border-[#ed1c24] hover:text-[#ed1c24] lg:inline-flex ${headerTextColor ? "" : "text-white"}`}
               aria-label={t("common.search")}
             >
               <Search className="h-4 w-4" />
@@ -200,7 +241,8 @@ const Header = () => {
             <button
               type="button"
               onClick={toggleTheme}
-              className="hidden h-11 w-11 items-center justify-center border border-white/15 bg-[#101010] text-white transition hover:border-[#ed1c24] hover:text-[#ed1c24] lg:inline-flex"
+              style={headerTextColor ? { color: headerTextColor, borderColor: `${headerTextColor}40` } : undefined}
+              className={`hidden h-11 w-11 items-center justify-center border border-white/15 bg-[#101010] transition hover:border-[#ed1c24] hover:text-[#ed1c24] lg:inline-flex ${headerTextColor ? "" : "text-white"}`}
               aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
             >
               {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -208,7 +250,8 @@ const Header = () => {
             <button
               type="button"
               onClick={toggleLanguage}
-              className="hidden h-11 border border-white/15 bg-[#101010] px-3 text-xs font-black uppercase text-white transition hover:border-[#ed1c24] hover:text-[#ed1c24] lg:inline-flex lg:items-center"
+              style={headerTextColor ? { color: headerTextColor, borderColor: `${headerTextColor}40` } : undefined}
+              className={`hidden h-11 border border-white/15 bg-[#101010] px-3 text-xs font-black uppercase transition hover:border-[#ed1c24] hover:text-[#ed1c24] lg:inline-flex lg:items-center ${headerTextColor ? "" : "text-white"}`}
               aria-label="Switch language"
             >
               {language === "vi" ? "EN" : "VI"}
@@ -216,7 +259,8 @@ const Header = () => {
             <Button
               variant="outline"
               size="icon"
-              className="h-11 w-11 rounded-none border-white/15 bg-[#101010] text-white hover:border-[#ed1c24] hover:text-[#ed1c24] lg:hidden"
+              style={headerTextColor ? { color: headerTextColor, borderColor: `${headerTextColor}40` } : undefined}
+              className={`h-11 w-11 rounded-none border-white/15 bg-[#101010] hover:border-[#ed1c24] hover:text-[#ed1c24] lg:hidden ${headerTextColor ? "" : "text-white"}`}
               onClick={() => setIsMobileMenuOpen(true)}
               aria-label={t("nav.openMenu")}
             >
@@ -271,7 +315,7 @@ const Header = () => {
                         </div>
                       ) : (
                         <Link
-                          href={item.href}
+                          href={item.href || "#"}
                           target={item.is_external ? "_blank" : undefined}
                           onClick={() => setIsMobileMenuOpen(false)}
                           className="flex items-center justify-between py-2 text-sm font-black uppercase tracking-wide text-white transition hover:text-[#ed1c24]"
@@ -284,7 +328,7 @@ const Header = () => {
                         <div className="mt-2 grid gap-2 border-l border-white/10 pl-4">
                           {children.map((child) => {
                             const childLabel = getLabel(child)
-                            const isChildShop = childLabel.toLowerCase().includes("cửa hàng") || childLabel.toLowerCase().includes("shop") || childLabel.toLowerCase().includes("store") || child.href.includes("cua-hang") || child.href === "#"
+                            const isChildShop = childLabel.toLowerCase().includes("cửa hàng") || childLabel.toLowerCase().includes("shop") || childLabel.toLowerCase().includes("store") || (child.href && child.href.includes("cua-hang")) || child.href === "#"
                             const childClass = "flex items-center justify-between bg-white/[0.04] px-3 py-3 text-xs font-black uppercase text-white/78 transition hover:bg-[#ed1c24] hover:text-white"
 
                             return isChildShop ? (
@@ -294,8 +338,8 @@ const Header = () => {
                               </div>
                             ) : (
                               <Link
-                                key={child.href}
-                                href={child.href}
+                                key={child.href || childLabel}
+                                href={child.href || "#"}
                                 target={child.is_external ? "_blank" : undefined}
                                 onClick={() => setIsMobileMenuOpen(false)}
                                 className={childClass}

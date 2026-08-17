@@ -15,6 +15,7 @@ import CtaBand from "@/components/sections/common/CtaBand"
 import MscWords from "@/components/sections/common/MscWords"
 import WhyColumns from "@/components/sections/common/WhyColumns"
 import HtmlBlock from "@/components/sections/common/HtmlBlock"
+import StatsBar from "@/components/sections/common/StatsBar"
 
 // Home Sections
 import HeroStats from "@/components/sections/home/HeroStats"
@@ -42,7 +43,11 @@ export default function PageBuilderRenderer({ slug, fallback }: { slug: string; 
     let active = true
     getPageBlocks(slug).then((data) => {
       if (!active) return
-      setBlocks(data || [])
+      let filtered = data || []
+      if (slug === "lien-he") {
+        filtered = filtered.filter((b) => b.component_type !== "cta_band" && b.block_key !== "cta")
+      }
+      setBlocks(filtered)
       setLoading(false)
     })
     return () => {
@@ -57,11 +62,20 @@ export default function PageBuilderRenderer({ slug, fallback }: { slug: string; 
 }
 
 function RenderBlock({ block, language }: { block: PageBlock; language: "vi" | "en" }) {
-  const props = localizeRecord(block.props || {}, language)
+  if (block.is_visible === false) return null
+  const localizedProps = localizeRecord(block.props || {}, language)
+  const blockTitle = language === "en"
+    ? ((block as any).title_en || localizedProps.title_en || block.title || localizedProps.title || "")
+    : (block.title || localizedProps.title || "")
+  const blockSubtitle = language === "en"
+    ? ((block as any).subtitle_en || localizedProps.subtitle_en || localizedProps.subtitle || "")
+    : (localizedProps.subtitle || "")
+  const props: any = { ...localizedProps, title: blockTitle, subtitle: blockSubtitle }
   const contentHtml = language === "en" ? ((block as any).content_html_en || props.content_html_en || block.content_html || "") : (block.content_html || "")
   switch (block.component_type) {
+    case "stats_bar":
     case "hero_stats":
-      return <HeroStats {...props} />
+      return <StatsBar {...props} />
     case "msc_words":
       return <MscWords {...props} />
     case "about_gzv":
@@ -97,7 +111,7 @@ function RenderBlock({ block, language }: { block: PageBlock; language: "vi" | "
     case "contact_form":
       return <ContactFormBlock {...props} />
     case "page_banner":
-      return <PageBanner title={props.title || ""} {...props} />
+      return null
     case "core_showcase":
       return <CoreShowcase {...props} />
     case "image_gallery":

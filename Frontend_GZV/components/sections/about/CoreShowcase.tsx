@@ -1,7 +1,6 @@
 "use client"
 
 export interface CoreShowcaseProps {
-  eyebrow?: string
   title?: string
   subtitle?: string
   highlights?: any[]

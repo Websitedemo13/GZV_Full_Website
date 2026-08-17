@@ -45,9 +45,9 @@ export default function PeopleGrid({
   }, [type, limit])
 
   return (
-    <section className="bg-white py-16 dark:bg-slate-950 lg:py-24">
+    <section className="bg-slate-50 py-16 text-slate-950 dark:bg-slate-900 dark:text-white lg:py-24">
       <div className="container px-4">
-        <SectionIntro title={title} subtitle={subtitle} align="center" />
+        <SectionIntro title={title} subtitle={subtitle} align="left" />
         {loading ? (
           <div className="mx-auto h-12 w-12 animate-spin border-b-2 border-[#ed1c24]" />
         ) : (
