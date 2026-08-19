@@ -24,10 +24,16 @@ const Header = () => {
   const [showLogo, setShowLogo] = useState(true)
   const [headerBgColor, setHeaderBgColor] = useState("")
   const [headerTextColor, setHeaderTextColor] = useState("")
+  const [showTopbar, setShowTopbar] = useState(true)
+  const [showTopbarEmail, setShowTopbarEmail] = useState(true)
+  const [showTopbarPhone, setShowTopbarPhone] = useState(true)
+  const [showTopbarBadge, setShowTopbarBadge] = useState(true)
+  const [topbarBgColor, setTopbarBgColor] = useState("")
+  const [topbarTextColor, setTopbarTextColor] = useState("")
   const [topbar, setTopbar] = useState({
     email: "gzv.one@gmail.com",
     phone: "(+84) 329 381 489",
-    badge: "THE NEXT-GEN COMPANY",
+    badge: "GZV",
   })
 
   useEffect(() => {
@@ -67,13 +73,19 @@ const Header = () => {
       setHeaderLogo(branding.header_logo_url !== undefined ? branding.header_logo_url : "")
       setHeaderSiteName(meta.header_site_name || (branding as any).header_site_name || branding.site_name || "")
       setShowLogo(meta.show_logo !== undefined ? meta.show_logo : ((branding as any).show_logo !== false))
+      setShowTopbar(meta.show_topbar !== undefined ? meta.show_topbar : true)
+      setShowTopbarEmail(meta.show_topbar_email !== undefined ? meta.show_topbar_email : true)
+      setShowTopbarPhone(meta.show_topbar_phone !== undefined ? meta.show_topbar_phone : true)
+      setShowTopbarBadge(meta.show_topbar_badge !== undefined ? meta.show_topbar_badge : true)
+      setTopbarBgColor(meta.topbar_bg_color || "")
+      setTopbarTextColor(meta.topbar_text_color || "")
       setHeaderBgColor(meta.header_bg_color || (branding as any).header_bg_color || "")
       setHeaderTextColor(meta.header_text_color || (branding as any).header_text_color || "")
       setNavItems(navigation.filter((item) => item.is_visible !== false))
       setTopbar({
         email: branding.topbar_email_label || "gzv.one@gmail.com",
         phone: branding.topbar_phone_label || "(+84) 329 381 489",
-        badge: branding.topbar_badge_label || "THE NEXT-GEN COMPANY",
+        badge: branding.topbar_badge_label || "GZV",
       })
     })
     return () => {
@@ -103,21 +115,37 @@ const Header = () => {
 
   return (
     <>
-      <div className={`fixed inset-x-0 top-0 z-[60] hidden h-9 border-b border-white/10 bg-[#050505] text-white transition duration-300 lg:block ${isScrolled ? "-translate-y-full opacity-0" : "translate-y-0 opacity-100"}`}>
-        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 flex h-full items-center justify-between text-[11px] font-bold uppercase">
-          <div className="flex items-center gap-6 text-white/80">
-            <span className="inline-flex items-center gap-2">
-              <Mail className="h-3.5 w-3.5 text-[#ed1c24]" />
-              {topbar.email}
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <Phone className="h-3.5 w-3.5 text-[#ed1c24]" />
-              {topbar.phone}
-            </span>
+      {showTopbar && (
+        <div
+          style={{
+            backgroundColor: topbarBgColor || undefined,
+            color: topbarTextColor || undefined,
+          }}
+          className={`fixed inset-x-0 top-0 z-[60] hidden h-9 border-b border-white/10 ${
+            topbarBgColor ? "" : "bg-[#050505] text-white"
+          } transition duration-300 lg:block ${isScrolled ? "-translate-y-full opacity-0" : "translate-y-0 opacity-100"}`}
+        >
+          <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 flex h-full items-center justify-between text-[11px] font-bold uppercase">
+            <div className="flex items-center gap-6 opacity-90">
+              {showTopbarEmail && (
+                <span className="inline-flex items-center gap-2">
+                  <Mail className="h-3.5 w-3.5 text-[#ed1c24]" />
+                  {topbar.email}
+                </span>
+              )}
+              {showTopbarPhone && (
+                <span className="inline-flex items-center gap-2">
+                  <Phone className="h-3.5 w-3.5 text-[#ed1c24]" />
+                  {topbar.phone}
+                </span>
+              )}
+            </div>
+            {showTopbarBadge && (
+              <span className="border-l-4 border-[#ed1c24] pl-3">{topbar.badge}</span>
+            )}
           </div>
-          <span className="border-l-4 border-[#ed1c24] pl-3 text-white">{topbar.badge}</span>
         </div>
-      </div>
+      )}
 
       <motion.header
         style={{
@@ -127,7 +155,7 @@ const Header = () => {
         className={`fixed inset-x-0 z-[70] border-b border-white/10 transition-all duration-300 ${
           headerBgColor ? "" : "bg-[#050505]"
         } ${
-          isScrolled
+          isScrolled || !showTopbar
             ? "top-0 shadow-[0_16px_38px_rgba(0,0,0,0.50)] backdrop-blur-xl lg:top-0"
             : "top-0 shadow-[0_10px_30px_rgba(0,0,0,0.30)] backdrop-blur-xl lg:top-9"
         }`}

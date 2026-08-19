@@ -309,11 +309,50 @@ export default function GzversGrid({
             <Loader2 className="mb-4 h-10 w-10 animate-spin text-[#ed1c24]" />
             <p className="text-xs font-black uppercase tracking-widest text-slate-400">Đang tải dữ liệu nhân sự...</p>
           </div>
+        ) : activeFilter === "all" ? (
+          /* Khi chọn "TẤT CẢ": Phân nhóm theo từng Ban rõ ràng, khoa học */
+          <div className="space-y-12">
+            {filterTabs
+              .filter((tab) => tab.id !== "all")
+              .map((tab) => {
+                const deptMembers = items.filter((m) => matchDepartment(m, tab))
+                if (deptMembers.length === 0) return null
+
+                return (
+                  <div key={tab.id} className="rounded-2xl border border-slate-200 bg-slate-50/50 p-6 dark:border-white/10 dark:bg-slate-950 lg:p-8">
+                    {/* Header từng ban */}
+                    <div className="mb-8 flex flex-col gap-2 border-b border-slate-200 pb-5 dark:border-white/10 sm:flex-row sm:items-end sm:justify-between">
+                      <div>
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#ed1c24]">
+                          Phòng ban / Đơn vị
+                        </span>
+                        <h3 className="mt-1 text-2xl font-black uppercase text-slate-950 dark:text-white">
+                          {tab.label}
+                        </h3>
+                      </div>
+                      <span className="text-xs font-black uppercase tracking-widest text-slate-400">
+                        {deptMembers.length} thành viên
+                      </span>
+                    </div>
+
+                    {/* Lưới danh sách thành viên */}
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                      {deptMembers.map((item, index) => (
+                        <GzverCardItem key={item.id || item.slug || index} item={item} />
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
+          </div>
         ) : filteredItems.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredItems.map((item, index) => (
-              <GzverCardItem key={item.id || item.slug || index} item={item} />
-            ))}
+          /* Khi chọn một Ban cụ thể */
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-6 dark:border-white/10 dark:bg-slate-950 lg:p-8">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {filteredItems.map((item, index) => (
+                <GzverCardItem key={item.id || item.slug || index} item={item} />
+              ))}
+            </div>
           </div>
         ) : (
           <div className="border border-slate-100 bg-slate-50 py-16 text-center text-sm font-semibold text-slate-500 dark:border-white/10 dark:bg-slate-950 dark:text-slate-400">
@@ -332,39 +371,32 @@ function GzverCardItem({ item }: { item: any }) {
   const href = item.slug ? `/gzver/${item.slug}` : `/gzver`
 
   return (
-    <div className="group flex h-full flex-col justify-between overflow-hidden border border-slate-200 bg-white p-5 shadow-xs transition hover:-translate-y-1 hover:border-[#ed1c24] hover:shadow-xl dark:border-white/10 dark:bg-slate-900">
-      <div>
-        <div className="relative aspect-[4/3] overflow-hidden bg-slate-100 dark:bg-slate-950">
+    <Link href={href} className="group block h-full">
+      <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl dark:border-white/10 dark:bg-slate-900">
+        {/* Top Image Frame */}
+        <div className="relative aspect-[4/4.5] w-full overflow-hidden bg-slate-900">
           <img
             src={image}
             alt={name}
-            className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+            className="h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
             style={{
-              objectPosition: `${item.avatar_position_x ?? 50}% ${item.avatar_position_y ?? 32}%`,
+              objectPosition: `${item.avatar_position_x ?? 50}% ${item.avatar_position_y ?? 25}%`,
               transform: `scale(${(item.avatar_scale || 100) / 100})`,
             }}
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
         </div>
-        <div className="mt-5 text-center">
-          <h3 className="text-xl font-black uppercase text-slate-950 transition group-hover:text-[#ed1c24] dark:text-white">
+
+        {/* Bottom Text Content */}
+        <div className="flex flex-1 flex-col items-center justify-center p-5 text-center">
+          <h4 className="text-base font-bold text-[#ed1c24] transition-colors group-hover:text-[#c91218] dark:text-[#ff4d4f]">
             {name}
-          </h3>
-          <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
+          </h4>
+          <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
             {position}
           </p>
         </div>
       </div>
-
-      <div className="mt-6">
-        <Link href={href}>
-          <Button
-            variant="outline"
-            className="w-full rounded-none border-[#ed1c24] bg-white text-xs font-black uppercase text-[#ed1c24] transition hover:bg-[#ed1c24] hover:text-white dark:bg-slate-900"
-          >
-            Chi tiết <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        </Link>
-      </div>
-    </div>
+    </Link>
   )
 }

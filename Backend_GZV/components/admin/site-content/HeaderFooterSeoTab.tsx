@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
@@ -35,6 +35,29 @@ import {
   Send,
 } from "lucide-react"
 
+function updateAdminFavicon(url?: string | null) {
+  if (!url || typeof document === "undefined") return
+  const rels = ["icon", "shortcut icon", "apple-touch-icon"]
+  rels.forEach((rel) => {
+    let link = document.querySelector(`link[rel="${rel}"]`) as HTMLLinkElement | null
+    if (link) {
+      link.href = url
+    } else {
+      link = document.createElement("link")
+      link.rel = rel
+      link.href = url
+      document.head.appendChild(link)
+    }
+  })
+}
+
+export function AdminFaviconManager({ faviconUrl }: { faviconUrl?: string | null }) {
+  useEffect(() => {
+    if (faviconUrl) updateAdminFavicon(faviconUrl)
+  }, [faviconUrl])
+  return null
+}
+
 function TikTokIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
@@ -65,12 +88,22 @@ export function HeaderFooterSeoTab({
   const [subTab, setSubTab] = useState<"header" | "footer" | "seo">("header")
   const [activeFooterCol, setActiveFooterCol] = useState<number | string>(1)
 
+  // Tự động đồng bộ Favicon tab trình duyệt Admin khi đổi favicon
+  useEffect(() => {
+    if (branding?.favicon_url) {
+      updateAdminFavicon(branding.favicon_url)
+    }
+  }, [branding?.favicon_url])
+
   // Local helper getters & setters for Branding
   const logoUrl = branding.header_logo_url || ""
   const setLogoUrl = (url: string) => setBranding({ ...branding, header_logo_url: url })
 
   const faviconUrl = branding.favicon_url || ""
-  const setFaviconUrl = (url: string) => setBranding({ ...branding, favicon_url: url })
+  const setFaviconUrl = (url: string) => {
+    updateAdminFavicon(url)
+    setBranding({ ...branding, favicon_url: url })
+  }
 
   const siteTitle = branding.site_name || "GZV"
   const setSiteTitle = (val: string) => setBranding({ ...branding, site_name: val })
@@ -110,6 +143,33 @@ export function HeaderFooterSeoTab({
 
   const showLogo = branding.show_logo !== false
   const setShowLogo = (val: boolean) => setBranding({ ...branding, show_logo: val })
+
+  const showTopbar = branding.show_topbar !== false
+  const setShowTopbar = (val: boolean) => setBranding({ ...branding, show_topbar: val })
+
+  const showTopbarEmail = branding.show_topbar_email !== false
+  const setShowTopbarEmail = (val: boolean) => setBranding({ ...branding, show_topbar_email: val })
+
+  const showTopbarPhone = branding.show_topbar_phone !== false
+  const setShowTopbarPhone = (val: boolean) => setBranding({ ...branding, show_topbar_phone: val })
+
+  const showTopbarBadge = branding.show_topbar_badge !== false
+  const setShowTopbarBadge = (val: boolean) => setBranding({ ...branding, show_topbar_badge: val })
+
+  const topbarEmail = branding.topbar_email_label || "gzv.one@gmail.com"
+  const setTopbarEmail = (val: string) => setBranding({ ...branding, topbar_email_label: val })
+
+  const topbarPhone = branding.topbar_phone_label || "(+84) 329 381 489"
+  const setTopbarPhone = (val: string) => setBranding({ ...branding, topbar_phone_label: val })
+
+  const topbarBadge = branding.topbar_badge_label || "GZV"
+  const setTopbarBadge = (val: string) => setBranding({ ...branding, topbar_badge_label: val })
+
+  const topbarBgColor = branding.topbar_bg_color || ""
+  const setTopbarBgColor = (val: string) => setBranding({ ...branding, topbar_bg_color: val })
+
+  const topbarTextColor = branding.topbar_text_color || ""
+  const setTopbarTextColor = (val: string) => setBranding({ ...branding, topbar_text_color: val })
 
   const headerBgColor = branding.header_bg_color || ""
   const setHeaderBgColor = (val: string) => setBranding({ ...branding, header_bg_color: val })
@@ -168,6 +228,12 @@ export function HeaderFooterSeoTab({
 
   const privacyUrl = footer.privacy_url || "/privacy"
   const setPrivacyUrl = (val: string) => setFooter({ ...footer, privacy_url: val })
+
+  const showTerms = footer.show_terms !== false
+  const setShowTerms = (val: boolean) => setFooter({ ...footer, show_terms: val })
+
+  const showPrivacy = footer.show_privacy !== false
+  const setShowPrivacy = (val: boolean) => setFooter({ ...footer, show_privacy: val })
 
   const showSocial = footer.show_social !== false
   const setShowSocial = (val: boolean) => setFooter({ ...footer, show_social: val })
@@ -247,17 +313,52 @@ export function HeaderFooterSeoTab({
         {/* SUB-TAB 1: HEADER */}
         {/* ========================================================================= */}
         <TabsContent value="header" className="space-y-6 mt-0">
-          {/* Live Preview Header at Top */}
+          {/* Live Preview Header & Topbar at Top */}
           <Card className="border-slate-200 rounded-none shadow-xs bg-white overflow-hidden dark:border-white/10 dark:bg-slate-900">
             <div className="px-4 py-2 border-b border-slate-200 bg-slate-50 flex items-center justify-between dark:border-white/10 dark:bg-slate-950">
               <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-none bg-[#ed1c24] animate-pulse" />
-                Xem trước trực tiếp (Live Preview Header)
+                Xem trước trực tiếp (Live Preview Header & Topbar)
               </span>
               <span className="text-[10px] font-mono text-slate-400 uppercase hidden sm:inline">
                 Giao diện Header ngoài trang public
               </span>
             </div>
+
+            {/* Topbar Preview */}
+            {showTopbar && (
+              <div
+                className="w-full border-b border-white/10 px-4 py-1.5 transition-colors text-[11px] font-bold uppercase"
+                style={{
+                  backgroundColor: topbarBgColor || "#050505",
+                  color: topbarTextColor || "#ffffff",
+                }}
+              >
+                <div className="flex items-center justify-between max-w-5xl mx-auto">
+                  <div className="flex items-center gap-6 opacity-90">
+                    {showTopbarEmail && (
+                      <span className="inline-flex items-center gap-1.5">
+                        <Mail className="h-3.5 w-3.5 text-[#ed1c24]" />
+                        {topbarEmail}
+                      </span>
+                    )}
+                    {showTopbarPhone && (
+                      <span className="inline-flex items-center gap-1.5">
+                        <Phone className="h-3.5 w-3.5 text-[#ed1c24]" />
+                        {topbarPhone}
+                      </span>
+                    )}
+                  </div>
+                  {showTopbarBadge && (
+                    <span className="border-l-2 border-[#ed1c24] pl-2.5 font-bold">
+                      {topbarBadge}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Navbar Preview */}
             <div
               className="w-full border-b border-slate-200 p-4 transition-colors dark:border-white/10"
               style={{
@@ -279,15 +380,162 @@ export function HeaderFooterSeoTab({
                   </span>
                 </div>
                 <div className="flex items-center gap-4 text-xs font-bold uppercase tracking-wider opacity-80 hidden md:flex">
+                  <span>Trang chủ</span>
                   <span>Giới thiệu</span>
                   <span>Dịch vụ</span>
                   <span>Dự án</span>
                   <span>GZVers</span>
+                  <span>Đối tác</span>
                   <span>Tin tức</span>
                   <span>Liên hệ</span>
                 </div>
               </div>
             </div>
+          </Card>
+
+          {/* CẤU HÌNH THANH TOPBAR (EMAIL, SĐT, BADGE PHÍA TRÊN CÙNG) */}
+          <Card className="border-slate-200 rounded-none shadow-xs bg-white dark:border-white/10 dark:bg-slate-900">
+            <CardHeader className="pb-3 border-b border-slate-200 dark:border-white/10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-sm font-black uppercase tracking-wider flex items-center gap-2 text-slate-900 dark:text-white">
+                    <Phone className="h-4 w-4 text-[#ed1c24]" /> Cấu hình thanh Topbar trên cùng
+                  </CardTitle>
+                  <CardDescription className="text-xs font-semibold mt-1">
+                    Bật/tắt toàn bộ hoặc tùy chỉnh từng mục Email, Số điện thoại và Nhãn thương hiệu hiển thị ở thanh trên cùng.
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    {showTopbar ? "Đang bật" : "Đang tắt"}
+                  </span>
+                  <Switch checked={showTopbar} onCheckedChange={setShowTopbar} />
+                </div>
+              </div>
+            </CardHeader>
+            {showTopbar && (
+              <CardContent className="space-y-4 pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* 1. Email */}
+                  <div className="space-y-2 p-3.5 bg-slate-50 border border-slate-200 rounded-none dark:border-white/10 dark:bg-slate-950/40">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <Mail className="h-3.5 w-3.5 text-[#ed1c24]" /> Email liên hệ
+                      </Label>
+                      <Switch checked={showTopbarEmail} onCheckedChange={setShowTopbarEmail} />
+                    </div>
+                    <Input
+                      value={topbarEmail}
+                      onChange={(e) => setTopbarEmail(e.target.value)}
+                      placeholder="gzv.one@gmail.com"
+                      disabled={!showTopbarEmail}
+                      className="rounded-none border-slate-200 text-xs font-semibold h-9 bg-white dark:border-white/10 dark:bg-slate-900 disabled:opacity-50"
+                    />
+                  </div>
+
+                  {/* 2. Số điện thoại */}
+                  <div className="space-y-2 p-3.5 bg-slate-50 border border-slate-200 rounded-none dark:border-white/10 dark:bg-slate-950/40">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <Phone className="h-3.5 w-3.5 text-[#ed1c24]" /> Số điện thoại / Hotline
+                      </Label>
+                      <Switch checked={showTopbarPhone} onCheckedChange={setShowTopbarPhone} />
+                    </div>
+                    <Input
+                      value={topbarPhone}
+                      onChange={(e) => setTopbarPhone(e.target.value)}
+                      placeholder="(+84) 329 381 489"
+                      disabled={!showTopbarPhone}
+                      className="rounded-none border-slate-200 text-xs font-semibold h-9 bg-white dark:border-white/10 dark:bg-slate-900 disabled:opacity-50"
+                    />
+                  </div>
+
+                  {/* 3. Nhãn bên phải */}
+                  <div className="space-y-2 p-3.5 bg-slate-50 border border-slate-200 rounded-none dark:border-white/10 dark:bg-slate-950/40">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <Sparkles className="h-3.5 w-3.5 text-[#ed1c24]" /> Nhãn thương hiệu
+                      </Label>
+                      <Switch checked={showTopbarBadge} onCheckedChange={setShowTopbarBadge} />
+                    </div>
+                    <Input
+                      value={topbarBadge}
+                      onChange={(e) => setTopbarBadge(e.target.value)}
+                      placeholder="GZV"
+                      disabled={!showTopbarBadge}
+                      className="rounded-none border-slate-200 text-xs font-semibold h-9 bg-white dark:border-white/10 dark:bg-slate-900 disabled:opacity-50"
+                    />
+                  </div>
+                </div>
+
+                {/* Tùy chỉnh màu sắc Topbar */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-200 dark:border-white/10">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Màu nền Topbar</Label>
+                      {topbarBgColor && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setTopbarBgColor("")}
+                          className="h-5 px-1.5 text-[10px] font-bold text-slate-500 hover:text-red-600 rounded-none"
+                        >
+                          <RotateCcw className="h-3 w-3 mr-1" /> Reset
+                        </Button>
+                      )}
+                    </div>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="color"
+                        value={topbarBgColor || "#050505"}
+                        onChange={(e) => setTopbarBgColor(e.target.value)}
+                        className="w-8 h-8 rounded-none cursor-pointer border border-slate-200 shrink-0"
+                        style={{ padding: 1 }}
+                      />
+                      <Input
+                        value={topbarBgColor}
+                        onChange={(e) => setTopbarBgColor(e.target.value)}
+                        placeholder="#050505 (Mặc định)"
+                        className="flex-1 font-mono text-xs uppercase rounded-none border-slate-200 h-8 bg-white dark:border-white/10 dark:bg-slate-900"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Màu chữ Topbar</Label>
+                      {topbarTextColor && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setTopbarTextColor("")}
+                          className="h-5 px-1.5 text-[10px] font-bold text-slate-500 hover:text-red-600 rounded-none"
+                        >
+                          <RotateCcw className="h-3 w-3 mr-1" /> Reset
+                        </Button>
+                      )}
+                    </div>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="color"
+                        value={topbarTextColor || "#ffffff"}
+                        onChange={(e) => setTopbarTextColor(e.target.value)}
+                        className="w-8 h-8 rounded-none cursor-pointer border border-slate-200 shrink-0"
+                        style={{ padding: 1 }}
+                      />
+                      <Input
+                        value={topbarTextColor}
+                        onChange={(e) => setTopbarTextColor(e.target.value)}
+                        placeholder="#FFFFFF (Mặc định)"
+                        className="flex-1 font-mono text-xs uppercase rounded-none border-slate-200 h-8 bg-white dark:border-white/10 dark:bg-slate-900"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            )}
           </Card>
 
           {/* Tùy chỉnh màu sắc Header */}
@@ -706,7 +954,7 @@ export function HeaderFooterSeoTab({
                       <div className="mt-3 p-3 rounded-none border text-[11px] font-semibold bg-white text-slate-900 border-slate-200">
                         <p className="text-[9px] uppercase tracking-widest font-black text-slate-500">Liên hệ GZV</p>
                         <p className="font-bold">{contactPerson || "GZV Ltd"}</p>
-                        {contactPersonPhone && <p className="text-slate-600">SĐT: {contactPersonPhone}</p>}
+                        {contactPersonPhone && <p className="text-slate-600">Điện thoại: {contactPersonPhone}</p>}
                         {contactPersonEmail && <p className="text-slate-600">Email: {contactPersonEmail}</p>}
                       </div>
                     )}
@@ -721,8 +969,8 @@ export function HeaderFooterSeoTab({
                 >
                   <p>{copyrightText || `© 2026 ${siteTitle}. All rights reserved.`}</p>
                   <div className="flex items-center gap-4 text-[11px]">
-                    <span className="hover:text-[#ed1c24]">Điều khoản sử dụng</span>
-                    <span className="hover:text-[#ed1c24]">Bảo mật</span>
+                    {showTerms && <span className="hover:text-[#ed1c24]">Điều khoản sử dụng</span>}
+                    {showPrivacy && <span className="hover:text-[#ed1c24]">Bảo mật</span>}
                   </div>
                 </div>
               </div>
@@ -1154,22 +1402,37 @@ export function HeaderFooterSeoTab({
                     />
                   </div>
                   <div className="grid sm:grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">URL Điều khoản sử dụng</Label>
+                    {/* Điều khoản sử dụng */}
+                    <div className="space-y-2 p-3.5 bg-slate-50 border border-slate-200 rounded-none dark:border-white/10 dark:bg-slate-950/40">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
+                          Điều khoản sử dụng
+                        </Label>
+                        <Switch checked={showTerms} onCheckedChange={setShowTerms} />
+                      </div>
                       <Input
                         value={termsUrl}
                         onChange={(e) => setTermsUrl(e.target.value)}
                         placeholder="/terms..."
-                        className="mt-1.5 rounded-none border-slate-200 text-xs font-mono h-10 dark:border-white/10"
+                        disabled={!showTerms}
+                        className="rounded-none border-slate-200 text-xs font-mono h-9 bg-white dark:border-white/10 dark:bg-slate-900 disabled:opacity-50"
                       />
                     </div>
-                    <div>
-                      <Label className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">URL Chính sách bảo mật</Label>
+
+                    {/* Chính sách bảo mật */}
+                    <div className="space-y-2 p-3.5 bg-slate-50 border border-slate-200 rounded-none dark:border-white/10 dark:bg-slate-950/40">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
+                          Chính sách bảo mật
+                        </Label>
+                        <Switch checked={showPrivacy} onCheckedChange={setShowPrivacy} />
+                      </div>
                       <Input
                         value={privacyUrl}
                         onChange={(e) => setPrivacyUrl(e.target.value)}
                         placeholder="/privacy..."
-                        className="mt-1.5 rounded-none border-slate-200 text-xs font-mono h-10 dark:border-white/10"
+                        disabled={!showPrivacy}
+                        className="rounded-none border-slate-200 text-xs font-mono h-9 bg-white dark:border-white/10 dark:bg-slate-900 disabled:opacity-50"
                       />
                     </div>
                   </div>

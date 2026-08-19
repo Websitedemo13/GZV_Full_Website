@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -44,19 +44,26 @@ export function EditArticleModal({ open, onClose, article, onUpdateArticle }: an
   }
 
   const handleSave = async () => {
-    if (!formData.title) return toast({ title: "Thiếu tiêu đề bài viết" })
+    if (!formData.title?.trim() || !formData.content?.trim()) {
+      return toast({ title: "Thiếu thông tin", description: "Vui lòng nhập đầy đủ tiêu đề và nội dung bài viết." })
+    }
     setLoading(true)
     try {
+      const authorIds = formData.author_ids?.length > 0
+        ? formData.author_ids
+        : (formData.author_id ? [formData.author_id] : (members.length > 0 ? [members[0].id] : []))
+
       const { data, error } = await supabase
         .from('articles')
         .update({
-          title: formData.title,
+          title: formData.title.trim(),
           content: formData.content,
-          excerpt: formData.excerpt,
-          image: formData.image,
-          author_ids: formData.author_ids,
-          category: formData.category,
-          status: 'published', // Ép về published khi nhấn Save
+          excerpt: formData.excerpt || "",
+          image: formData.image || "",
+          author_ids: authorIds,
+          author_id: authorIds[0] || null,
+          category: formData.category || "Tin tức",
+          status: 'published',
           updated_at: new Date().toISOString(),
           published_at: article.published_at || new Date().toISOString()
         })
@@ -66,7 +73,9 @@ export function EditArticleModal({ open, onClose, article, onUpdateArticle }: an
       onUpdateArticle(data?.[0] || formData)
       toast({ title: "Đã xuất bản bài viết thành công!" })
       onClose()
-    } catch (err: any) { toast({ title: "Lỗi", description: err.message, variant: "destructive" }) }
+    } catch (err: any) { 
+      toast({ title: "Lỗi xuất bản", description: err.message || "Không thể lưu bài viết.", variant: "destructive" }) 
+    }
     finally { setLoading(false) }
   }
 
@@ -75,6 +84,8 @@ export function EditArticleModal({ open, onClose, article, onUpdateArticle }: an
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-[95vw] lg:max-w-7xl max-h-[96vh] overflow-y-auto p-0 bg-white border border-slate-200 shadow-2xl rounded-none">
+        <DialogTitle className="sr-only">Chỉnh sửa bài viết</DialogTitle>
+        <DialogDescription className="sr-only">Biểu mẫu chỉnh sửa và xuất bản bài viết</DialogDescription>
         {/* TOP BAR NHƯ MỘT EDITOR CHUYÊN NGHIỆP */}
         <div className="bg-slate-900 p-5 text-white flex justify-between items-center sticky top-0 z-50">
           <div className="flex items-center gap-4">

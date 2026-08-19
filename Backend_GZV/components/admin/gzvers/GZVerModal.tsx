@@ -385,11 +385,14 @@ export function GZVerModal({ open, onClose, gzver, departments, onSave }: any) {
                       <SelectValue placeholder="Chọn phòng ban..." />
                     </SelectTrigger>
                     <SelectContent className="rounded-none border-slate-200 bg-white text-slate-900 dark:border-white/10 dark:bg-slate-900 dark:text-white">
-                      {departments.map((department: Department) => (
-                        <SelectItem key={department.id} value={department.id}>
-                          {department.name}
-                        </SelectItem>
-                      ))}
+                      {departments.map((department: Department, index: number) => {
+                        const deptVal = department.id || department.slug || `dept-${index}`
+                        return (
+                          <SelectItem key={deptVal} value={deptVal}>
+                            {department.name}
+                          </SelectItem>
+                        )
+                      })}
                     </SelectContent>
                   </Select>
                 </Field>

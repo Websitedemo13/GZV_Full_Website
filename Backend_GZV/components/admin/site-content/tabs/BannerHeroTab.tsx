@@ -527,7 +527,7 @@ export function BannerHeroTab({
                   </div>
                   <Input
                     disabled={isTitleDisabled}
-                    value={selectedPageObj.banner_title || selectedPageObj.title || ""}
+                    value={selectedPageObj.banner_title !== undefined && selectedPageObj.banner_title !== null ? selectedPageObj.banner_title : (selectedPageObj.title || "")}
                     onChange={(e) =>
                       setPages(pages.map((p) => (p.slug === selectedPageObj.slug ? { ...p, banner_title: e.target.value } : p)))
                     }
@@ -564,7 +564,7 @@ export function BannerHeroTab({
                   </div>
                   <Textarea
                     disabled={isSubtitleDisabled}
-                    value={selectedPageObj.banner_subtitle || selectedPageObj.banner_description || ""}
+                    value={selectedPageObj.banner_subtitle !== undefined && selectedPageObj.banner_subtitle !== null ? selectedPageObj.banner_subtitle : (selectedPageObj.banner_description || "")}
                     onChange={(e) =>
                       setPages(pages.map((p) => (p.slug === selectedPageObj.slug ? { ...p, banner_subtitle: e.target.value, banner_description: e.target.value } : p)))
                     }

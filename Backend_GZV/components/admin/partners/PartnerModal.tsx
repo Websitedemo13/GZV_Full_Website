@@ -30,8 +30,10 @@ import {
   Plus,
   Layers,
   RotateCcw,
+  FolderOpen,
 } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
+import { MediaPickerDialog, type MediaPickResult } from "@/components/media/MediaPickerDialog"
 import type { Partner, CategoryItem } from "@/app/admin/partners/page"
 
 interface Props {
@@ -47,7 +49,7 @@ interface Props {
 const empty: Omit<Partner, "id" | "created_at" | "updated_at"> = {
   name: "",
   logo_url: "",
-  category: "don-vi-thuc-hien",
+  category: "doi-tac-khac",
   website_url: "",
   sort_order: 10,
   is_active: true,
@@ -76,6 +78,7 @@ export function PartnerModal({
   const [form, setForm] = useState<any>(empty)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [mediaPickerOpen, setMediaPickerOpen] = useState(false)
   const [isCustomCategory, setIsCustomCategory] = useState(false)
   const [customCategoryName, setCustomCategoryName] = useState("")
 
@@ -132,6 +135,7 @@ export function PartnerModal({
       toast({ title: "Lỗi tải ảnh", description: err.message || "Không thể tải ảnh lên", variant: "destructive" })
     } finally {
       setUploading(false)
+      e.target.value = ""
     }
   }
 
@@ -154,10 +158,6 @@ export function PartnerModal({
       toast({ title: "Thiếu thông tin", description: "Vui lòng nhập tên đối tác.", variant: "destructive" })
       return
     }
-    if (!form.logo_url?.trim()) {
-      toast({ title: "Thiếu logo", description: "Vui lòng tải lên hoặc dán URL logo.", variant: "destructive" })
-      return
-    }
 
     // Determine target category
     let finalCategory = form.category
@@ -176,7 +176,7 @@ export function PartnerModal({
     setSaving(true)
     const payload = {
       name: form.name.trim(),
-      logo_url: form.logo_url.trim(),
+      logo_url: form.logo_url?.trim() || "",
       category: finalCategory,
       website_url: form.website_url?.trim() || null,
       sort_order: Number(form.sort_order) || 0,
@@ -217,7 +217,7 @@ export function PartnerModal({
                 {partner ? "Chỉnh sửa thông tin đối tác" : "Thêm đối tác đồng hành mới"}
               </DialogTitle>
               <DialogDescription className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
-                Cập nhật logo nhận diện, tùy chỉnh danh mục và thiết lập liên kết website.
+                Cập nhật logo nhận diện (có thể thêm sau), tùy chỉnh danh mục và thiết lập liên kết website.
               </DialogDescription>
             </div>
           </div>
@@ -229,7 +229,7 @@ export function PartnerModal({
             {/* Left Column: Logo preview & upload */}
             <div className="space-y-3">
               <Label className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                Logo nhận diện *
+                Logo nhận diện (Tùy chọn - có thể thêm sau)
               </Label>
 
               <div className="relative aspect-[4/3] overflow-hidden border border-slate-200 bg-white p-4 shadow-2xs dark:border-white/10 flex items-center justify-center">
@@ -265,22 +265,34 @@ export function PartnerModal({
               </div>
 
               <div className="space-y-2">
-                <label className="block">
-                  <input type="file" accept="image/*" className="hidden" onChange={handleUpload} />
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="block">
+                    <input type="file" accept="image/*" className="hidden" onChange={handleUpload} />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={uploading}
+                      className="w-full rounded-none border-[#ed1c24] text-[11px] font-black uppercase text-[#ed1c24] hover:bg-red-50 dark:hover:bg-red-950/30 h-9 pointer-events-none"
+                    >
+                      {uploading ? (
+                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Upload className="mr-1.5 h-3.5 w-3.5" />
+                      )}
+                      {uploading ? "Đang tải..." : "Tải từ máy"}
+                    </Button>
+                  </label>
+
                   <Button
                     type="button"
                     variant="outline"
-                    disabled={uploading}
-                    className="w-full rounded-none border-[#ed1c24] text-xs font-black uppercase text-[#ed1c24] hover:bg-red-50 dark:hover:bg-red-950/30 h-9 pointer-events-none"
+                    onClick={() => setMediaPickerOpen(true)}
+                    className="w-full rounded-none border-slate-300 text-[11px] font-black uppercase text-slate-700 hover:bg-slate-100 dark:border-white/10 dark:text-slate-200 dark:hover:bg-slate-800 h-9"
                   >
-                    {uploading ? (
-                      <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <Upload className="mr-2 h-3.5 w-3.5" />
-                    )}
-                    {uploading ? "Đang tải ảnh lên..." : "Tải ảnh Logo từ máy"}
+                    <FolderOpen className="mr-1.5 h-3.5 w-3.5 text-[#ed1c24]" />
+                    Thư viện ảnh
                   </Button>
-                </label>
+                </div>
 
                 <div className="relative">
                   <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-3.5 w-3.5" />
@@ -354,7 +366,7 @@ export function PartnerModal({
                       <SelectItem value="__custom__" className="text-xs font-bold text-[#ed1c24] border-t border-slate-100 dark:border-white/5 mt-1 pt-1">
                         <div className="flex items-center gap-2">
                           <Plus className="h-3.5 w-3.5 text-[#ed1c24]" />
-                          <span>+ TẠO DANH MỤC MỚI...</span>
+                          <span>TẠO DANH MỤC MỚI...</span>
                         </div>
                       </SelectItem>
                     </SelectContent>
@@ -393,7 +405,6 @@ export function PartnerModal({
                   )}
                 </div>
                 <div className="relative">
-                  <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-3.5 w-3.5" />
                   <Input
                     value={form.website_url || ""}
                     onChange={(e) => setForm({ ...form, website_url: e.target.value })}
@@ -419,11 +430,10 @@ export function PartnerModal({
                     onCheckedChange={(v) => setForm({ ...form, is_active: v })}
                   />
                   <span
-                    className={`text-[11px] font-black uppercase ${
-                      form.is_active
-                        ? "text-emerald-600 dark:text-emerald-400"
-                        : "text-slate-400"
-                    }`}
+                    className={`text-[11px] font-black uppercase ${form.is_active
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-slate-400"
+                      }`}
                   >
                     {form.is_active ? "Bật" : "Tắt"}
                   </span>
@@ -458,6 +468,20 @@ export function PartnerModal({
           </Button>
         </div>
       </DialogContent>
+
+      {/* Media Picker Dialog */}
+      <MediaPickerDialog
+        open={mediaPickerOpen}
+        onClose={() => setMediaPickerOpen(false)}
+        defaultFolder="partners"
+        onSelect={(res) => {
+          if (res?.url) {
+            setForm((p: any) => ({ ...p, logo_url: res.url }))
+            toast({ title: "Đã chọn ảnh", description: "Đã áp dụng logo từ thư viện." })
+          }
+          setMediaPickerOpen(false)
+        }}
+      />
     </Dialog>
   )
 }

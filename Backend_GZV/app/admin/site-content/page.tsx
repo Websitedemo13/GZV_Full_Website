@@ -172,18 +172,11 @@ function SiteContentManager() {
             nextNav.unshift(defaultNav[0])
           }
         }
-
-        const nextPages = pagesResult.data?.length
-          ? (pagesResult.data as PageContent[])
-          : defaultNav.map((item) => ({
-            slug: item.href.replace("/", "") || "home",
-            title: item.label_vi,
-            menu_title: item.label_vi,
-            banner_title: item.label_vi,
-            is_visible: true,
-          }))
-
         setNavItems(nextNav)
+
+        let nextPages = ((pagesResult.data || []) as PageContent[]).filter(
+          (p) => p.slug !== "dong-hanh" && p.slug !== "mentors" && p.slug !== "mentor"
+        )
         setPages(nextPages)
         setSelectedSlug(nextPages[0]?.slug || "gioi-thieu")
         const validHomeKeys = ["hero", "about_gzv", "projects", "services_three", "about_boxes", "partners", "news"]
@@ -215,8 +208,13 @@ function SiteContentManager() {
           social_youtube: contactPersonMeta.social_youtube || "",
           social_instagram: contactPersonMeta.social_instagram || "",
           social_tiktok: contactPersonMeta.social_tiktok || "",
-          terms_url: contactPersonMeta.terms_url || "/terms",
-          privacy_url: contactPersonMeta.privacy_url || "/privacy",
+          terms_url: contactPersonMeta.terms_url || fetchedFooter.terms_url || "/terms",
+          privacy_url: contactPersonMeta.privacy_url || fetchedFooter.privacy_url || "/privacy",
+          show_terms: contactPersonMeta.show_terms !== undefined ? contactPersonMeta.show_terms : true,
+          show_privacy: contactPersonMeta.show_privacy !== undefined ? contactPersonMeta.show_privacy : true,
+          footer_bg_color: fetchedFooter.background_color || "",
+          footer_text_color: fetchedFooter.footer_text_color || "",
+          footer_link_color: fetchedFooter.footer_link_color || "",
         })
 
         if (floatingResult.data) setFloating((floatingResult.data || []) as FloatingAction[])
@@ -234,6 +232,15 @@ function SiteContentManager() {
         setBranding({
           ...defaultBranding,
           ...fetchedBranding,
+          show_topbar: headerMeta.show_topbar !== undefined ? headerMeta.show_topbar : true,
+          show_topbar_email: headerMeta.show_topbar_email !== undefined ? headerMeta.show_topbar_email : true,
+          show_topbar_phone: headerMeta.show_topbar_phone !== undefined ? headerMeta.show_topbar_phone : true,
+          show_topbar_badge: headerMeta.show_topbar_badge !== undefined ? headerMeta.show_topbar_badge : true,
+          topbar_bg_color: headerMeta.topbar_bg_color || "#050505",
+          topbar_text_color: headerMeta.topbar_text_color || "#ffffff",
+          topbar_email_label: fetchedBranding.topbar_email_label || "gzv.one@gmail.com",
+          topbar_phone_label: fetchedBranding.topbar_phone_label || "(+84) 329 381 489",
+          topbar_badge_label: fetchedBranding.topbar_badge_label || "GZV",
           header_bg_color: headerMeta.header_bg_color || fetchedBranding.header_bg_color || "",
           header_text_color: headerMeta.header_text_color || fetchedBranding.header_text_color || "",
           header_site_name: headerMeta.header_site_name || fetchedBranding.header_site_name || fetchedBranding.site_name || "GZV CENTER",
@@ -397,15 +404,19 @@ function SiteContentManager() {
         await supabase.from("site_pages").delete().in("slug", oldSlugs)
       }
       const pageRows = [page]
-      const targetBlocks = pageBlocks.filter((item) => slugsToClean.includes(item.page_slug)).map((block, idx) => ({
-        ...block,
-        page_slug: builderSlug,
-        sort_order: (idx + 1) * 10,
-        props: {
-          ...(block.props || {}),
-          title: block.props?.title ?? block.title,
-        },
-      }))
+      const targetBlocks = pageBlocks.filter((item) => slugsToClean.includes(item.page_slug)).map((block, idx) => {
+        const customTitle = block.props?.title !== undefined && block.props?.title !== null ? block.props.title : block.title
+        return {
+          ...block,
+          title: customTitle,
+          page_slug: builderSlug,
+          sort_order: (idx + 1) * 10,
+          props: {
+            ...(block.props || {}),
+            title: customTitle,
+          },
+        }
+      })
       await supabase.from("site_page_blocks").delete().eq("page_slug", builderSlug)
       if (targetBlocks.length > 0) {
         const { error: blockErr } = await supabase.from("site_page_blocks").upsert(targetBlocks)
@@ -560,6 +571,8 @@ function SiteContentManager() {
           contact_person_email: footer.contact_person_email || "",
           terms_url: footer.terms_url || "/terms",
           privacy_url: footer.privacy_url || "/privacy",
+          show_terms: footer.show_terms !== false,
+          show_privacy: footer.show_privacy !== false,
           social_facebook: footer.social_facebook || "",
           social_youtube: footer.social_youtube || "",
           social_instagram: footer.social_instagram || "",
@@ -587,6 +600,12 @@ function SiteContentManager() {
       }
 
       const headerMeta = {
+        show_topbar: branding.show_topbar !== false,
+        show_topbar_email: branding.show_topbar_email !== false,
+        show_topbar_phone: branding.show_topbar_phone !== false,
+        show_topbar_badge: branding.show_topbar_badge !== false,
+        topbar_bg_color: branding.topbar_bg_color || "",
+        topbar_text_color: branding.topbar_text_color || "",
         header_bg_color: branding.header_bg_color || "",
         header_text_color: branding.header_text_color || "",
         header_site_name: branding.header_site_name || branding.site_name || "",
@@ -985,6 +1004,7 @@ function SiteContentManager() {
           <TabsContent value="builder" className="space-y-6">
             <PageBuilderTab
               builderSlug={builderSlug}
+              onSelectSlug={(slug) => handleGoToPageSections("/" + slug)}
               builderBlocks={builderBlocks}
               activeBlockItem={activeBlockItem}
               selectedBlockKey={selectedBlockKey}

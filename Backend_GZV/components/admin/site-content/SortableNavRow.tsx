@@ -45,6 +45,7 @@ export function SortableNavRow({
     "/cua-hang",
     "/du-an",
     "/gzver",
+    "/doi-tac",
     "/tin-tuc",
     "/lien-he",
   ]

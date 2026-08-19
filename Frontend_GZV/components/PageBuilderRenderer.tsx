@@ -25,6 +25,7 @@ import NewsGrid from "@/components/sections/home/NewsGrid"
 import MentorsGrid from "@/components/sections/home/MentorsGrid"
 import GzversGrid from "@/components/sections/home/GzversGrid"
 import PartnersGrid from "@/components/sections/home/PartnersGrid"
+import PartnersListSection from "@/components/sections/PartnersListSection"
 import AboutGzv from "@/components/sections/home/AboutGzv"
 
 // About Sections
@@ -65,11 +66,11 @@ function RenderBlock({ block, language }: { block: PageBlock; language: "vi" | "
   if (block.is_visible === false) return null
   const localizedProps = localizeRecord(block.props || {}, language)
   const blockTitle = language === "en"
-    ? ((block as any).title_en || localizedProps.title_en || block.title || localizedProps.title || "")
-    : (block.title || localizedProps.title || "")
+    ? ((block as any).title_en || localizedProps.title_en || localizedProps.title || block.title || "")
+    : (localizedProps.title || block.title || "")
   const blockSubtitle = language === "en"
-    ? ((block as any).subtitle_en || localizedProps.subtitle_en || localizedProps.subtitle || "")
-    : (localizedProps.subtitle || "")
+    ? ((block as any).subtitle_en || localizedProps.subtitle_en || localizedProps.subtitle || (block as any).subtitle || "")
+    : (localizedProps.subtitle || (block as any).subtitle || "")
   const props: any = { ...localizedProps, title: blockTitle, subtitle: blockSubtitle }
   const contentHtml = language === "en" ? ((block as any).content_html_en || props.content_html_en || block.content_html || "") : (block.content_html || "")
   switch (block.component_type) {
@@ -107,7 +108,8 @@ function RenderBlock({ block, language }: { block: PageBlock; language: "vi" | "
     case "gzvers_grid":
       return <GzversGrid {...props} />
     case "partners_grid":
-      return <PartnersGrid {...props} />
+    case "partners_list":
+      return <PartnersListSection {...props} />
     case "contact_form":
       return <ContactFormBlock {...props} />
     case "page_banner":
