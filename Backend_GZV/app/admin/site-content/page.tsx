@@ -171,27 +171,11 @@ function SiteContentManager() {
           if (!nextNav.some((item) => item.href === "/")) {
             nextNav.unshift(defaultNav[0])
           }
-          if (!nextNav.some((item) => item.href === "/doi-tac")) {
-            const insertIdx = nextNav.findIndex((item) => item.href === "/tin-tuc")
-            const doiTacItem: NavItem = {
-              href: "/doi-tac",
-              label_vi: "ĐỐI TÁC",
-              label_en: "PARTNERS",
-              sort_order: 45,
-              is_visible: true,
-              is_page_enabled: true,
-            }
-            if (insertIdx !== -1) {
-              nextNav.splice(insertIdx, 0, doiTacItem)
-            } else {
-              nextNav.push(doiTacItem)
-            }
-          }
         }
         setNavItems(nextNav)
 
         let nextPages = ((pagesResult.data || []) as PageContent[]).filter(
-          (p) => p.slug !== "doi-tac" && p.slug !== "dong-hanh"
+          (p) => p.slug !== "dong-hanh" && p.slug !== "mentors" && p.slug !== "mentor"
         )
         setPages(nextPages)
         setSelectedSlug(nextPages[0]?.slug || "gioi-thieu")
@@ -406,15 +390,19 @@ function SiteContentManager() {
         await supabase.from("site_pages").delete().in("slug", oldSlugs)
       }
       const pageRows = [page]
-      const targetBlocks = pageBlocks.filter((item) => slugsToClean.includes(item.page_slug)).map((block, idx) => ({
-        ...block,
-        page_slug: builderSlug,
-        sort_order: (idx + 1) * 10,
-        props: {
-          ...(block.props || {}),
-          title: block.props?.title ?? block.title,
-        },
-      }))
+      const targetBlocks = pageBlocks.filter((item) => slugsToClean.includes(item.page_slug)).map((block, idx) => {
+        const customTitle = block.props?.title !== undefined && block.props?.title !== null ? block.props.title : block.title
+        return {
+          ...block,
+          title: customTitle,
+          page_slug: builderSlug,
+          sort_order: (idx + 1) * 10,
+          props: {
+            ...(block.props || {}),
+            title: customTitle,
+          },
+        }
+      })
       await supabase.from("site_page_blocks").delete().eq("page_slug", builderSlug)
       if (targetBlocks.length > 0) {
         const { error: blockErr } = await supabase.from("site_page_blocks").upsert(targetBlocks)
@@ -994,6 +982,7 @@ function SiteContentManager() {
           <TabsContent value="builder" className="space-y-6">
             <PageBuilderTab
               builderSlug={builderSlug}
+              onSelectSlug={(slug) => handleGoToPageSections("/" + slug)}
               builderBlocks={builderBlocks}
               activeBlockItem={activeBlockItem}
               selectedBlockKey={selectedBlockKey}

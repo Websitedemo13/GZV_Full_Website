@@ -66,11 +66,11 @@ function RenderBlock({ block, language }: { block: PageBlock; language: "vi" | "
   if (block.is_visible === false) return null
   const localizedProps = localizeRecord(block.props || {}, language)
   const blockTitle = language === "en"
-    ? ((block as any).title_en || localizedProps.title_en || block.title || localizedProps.title || "")
-    : (block.title || localizedProps.title || "")
+    ? ((block as any).title_en || localizedProps.title_en || localizedProps.title || block.title || "")
+    : (localizedProps.title || block.title || "")
   const blockSubtitle = language === "en"
-    ? ((block as any).subtitle_en || localizedProps.subtitle_en || localizedProps.subtitle || "")
-    : (localizedProps.subtitle || "")
+    ? ((block as any).subtitle_en || localizedProps.subtitle_en || localizedProps.subtitle || (block as any).subtitle || "")
+    : (localizedProps.subtitle || (block as any).subtitle || "")
   const props: any = { ...localizedProps, title: blockTitle, subtitle: blockSubtitle }
   const contentHtml = language === "en" ? ((block as any).content_html_en || props.content_html_en || block.content_html || "") : (block.content_html || "")
   switch (block.component_type) {

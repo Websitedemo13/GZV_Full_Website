@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import type { PageBlock, SectionTemplate } from "../types"
-import { fallbackTemplates, defaultPageBlocks } from "../defaults"
+import { fallbackTemplates, defaultPageBlocks, quickBuilderPages } from "../defaults"
 import { SortableBuilderBlockRow } from "../helpers/SortableRows"
 import { Field } from "../helpers/BasicHelpers"
 import { RawJsonEditor } from "../helpers/RawJsonEditor"
@@ -16,6 +16,7 @@ import { BlockPropsEditor } from "../helpers/PropsEditor"
 
 export function PageBuilderTab({
   builderSlug,
+  onSelectSlug,
   builderBlocks,
   activeBlockItem,
   selectedBlockKey,
@@ -32,6 +33,7 @@ export function PageBuilderTab({
   saving,
 }: {
   builderSlug: string
+  onSelectSlug?: (slug: string) => void
   builderBlocks: Array<{ block: PageBlock; index: number }>
   activeBlockItem: { block: PageBlock; index: number } | undefined
   selectedBlockKey: string | null
@@ -57,8 +59,8 @@ export function PageBuilderTab({
   return (
     <div className="space-y-6">
       {/* Top Bar with Navigation & Save */}
-      <div className="flex items-center justify-between gap-4 bg-white p-3.5 border border-slate-200 shadow-xs dark:border-white/10 dark:bg-slate-900">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-3.5 border border-slate-200 shadow-xs dark:border-white/10 dark:bg-slate-900">
+        <div className="flex flex-wrap items-center gap-3">
           <Button
             type="button"
             variant="outline"
@@ -68,10 +70,22 @@ export function PageBuilderTab({
           >
             ← Quay lại Menu
           </Button>
-          <div className="h-4 w-[1px] bg-slate-200 dark:bg-white/10" />
-          <span className="text-xs font-black text-[#ed1c24] uppercase tracking-wide">
-            Đang chỉnh sửa: Section trang /{builderSlug}
-          </span>
+          <div className="h-4 w-[1px] bg-slate-200 dark:bg-white/10 hidden sm:block" />
+          
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-slate-500">Chuyển trang:</span>
+            <select
+              value={builderSlug}
+              onChange={(e) => onSelectSlug && onSelectSlug(e.target.value)}
+              className="h-8 border border-slate-300 bg-white px-2 text-xs font-black text-[#ed1c24] uppercase rounded-none focus:outline-none dark:bg-slate-800 dark:border-white/10"
+            >
+              {quickBuilderPages.map((qp) => (
+                <option key={qp.slug} value={qp.slug}>
+                  /{qp.slug} ({qp.label})
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">

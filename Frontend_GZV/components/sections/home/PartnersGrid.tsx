@@ -78,9 +78,9 @@ const InfiniteMarqueeRow = ({
   // TRẠNG THÁI 1: ÍT Ô & ADMIN CHỌN "ĐỨNG YÊN" (Không trượt)
   if (!shouldScroll) {
     return (
-      <div className="w-full flex justify-start items-center overflow-hidden">
+      <div className="w-full flex justify-center items-center overflow-hidden">
         <div ref={containerRef} className="absolute inset-0 pointer-events-none opacity-0" />
-        <div ref={contentRef} className="flex flex-nowrap justify-start items-stretch">
+        <div ref={contentRef} className="flex flex-nowrap justify-center items-stretch">
           {items.map((partner, idx) => (
             <div key={partner.id || `${partner.name}-${idx}`} className={logoBoxClass}>
               {renderLogo(partner)}
@@ -216,40 +216,31 @@ export default function PartnersGrid({
 
   if (!allPartners.length) return null
 
-  // Categorize partners into 3 rows
+  // Categorize partners into 3 rows strictly according to admin configuration
   const row1Groups: string[] = meta.row1_groups || (meta.row1_group ? [meta.row1_group] : [])
   const row2Groups: string[] = meta.row2_groups || (meta.row2_group ? [meta.row2_group] : [])
   const row3Groups: string[] = meta.row3_groups || (meta.row3_group ? [meta.row3_group] : [])
 
-  let row1Partners = allPartners.filter((p) => {
+  const hasConfiguredRows = row1Groups.length > 0 || row2Groups.length > 0 || row3Groups.length > 0
+
+  let row1Partners = row1Groups.length > 0 ? allPartners.filter((p) => {
     const grp = p.group_name || p.category
     return grp && row1Groups.includes(grp)
-  })
+  }) : []
 
-  let row2Partners = allPartners.filter((p) => {
+  let row2Partners = row2Groups.length > 0 ? allPartners.filter((p) => {
     const grp = p.group_name || p.category
     return grp && row2Groups.includes(grp)
-  })
+  }) : []
 
-  let row3Partners = allPartners.filter((p) => {
+  let row3Partners = row3Groups.length > 0 ? allPartners.filter((p) => {
     const grp = p.group_name || p.category
     return grp && row3Groups.includes(grp)
-  })
+  }) : []
 
-  // If no group filtering is configured or results are empty, automatically distribute all partners across rows
-  if (row1Partners.length === 0 && row2Partners.length === 0 && row3Partners.length === 0) {
-    const total = allPartners.length
-    if (total <= 6) {
-      row1Partners = allPartners
-    } else if (total <= 14) {
-      row1Partners = allPartners.slice(0, 6)
-      row2Partners = allPartners.slice(6)
-    } else {
-      const perRow = Math.ceil(total / 3)
-      row1Partners = allPartners.slice(0, Math.min(6, perRow))
-      row2Partners = allPartners.slice(Math.min(6, perRow), Math.min(6, perRow) + perRow)
-      row3Partners = allPartners.slice(Math.min(6, perRow) + perRow)
-    }
+  // If admin has not added any categories to any row, do not display logos
+  if (!hasConfiguredRows) {
+    return null
   }
 
   return (
@@ -265,7 +256,7 @@ export default function PartnersGrid({
         }}
       />
 
-      <div className="container mx-auto px-4 text-center mb-16 relative z-10 max-w-7xl">
+      <div className="container mx-auto px-4 text-left mb-12 relative z-10 max-w-7xl">
         <h2 className="text-3xl md:text-5xl font-black tracking-tight text-slate-950 dark:text-white uppercase leading-tight">
           {displayTitle.includes("VƯỢT TRỘI") ? (
             <>
@@ -278,7 +269,7 @@ export default function PartnersGrid({
           )}
         </h2>
         {subtitle && subtitle !== displayTitle && (
-          <p className="mt-3 text-sm md:text-base font-semibold text-slate-600 dark:text-slate-400 max-w-2xl mx-auto tracking-wider">
+          <p className="mt-3 text-base sm:text-lg font-medium leading-relaxed text-slate-600 dark:text-slate-400 max-w-3xl">
             {subtitle.includes("VƯỢT TRỘI") ? (
               <>
                 {subtitle.split("VƯỢT TRỘI")[0]}

@@ -436,6 +436,7 @@ export const quickBuilderPages = [
   { slug: "gioi-thieu", label: "Giới thiệu", hint: "Câu chuyện, sứ mệnh, tầm nhìn" },
   { slug: "du-an", label: "Dự án", hint: "Banner, block dự án" },
   { slug: "gzver", label: "GZVers", hint: "Cộng đồng, ban, profile" },
+  { slug: "doi-tac", label: "Đối tác", hint: "Mạng lưới đối tác, stats, CTA" },
   { slug: "tin-tuc", label: "Tin tức", hint: "Banner và block nội dung tin" },
   { slug: "lien-he", label: "Liên hệ", hint: "Form, map, thông tin liên hệ" },
 ]

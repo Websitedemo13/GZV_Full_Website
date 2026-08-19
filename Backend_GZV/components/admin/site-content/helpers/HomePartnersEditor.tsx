@@ -203,14 +203,14 @@ interface HomePartnersEditorProps {
   onSubtitleChange: (subtitle: string) => void
 }
 
-const INITIAL_GROUPS = [
-  { key: "don-vi-chi-dao", label: "ĐƠN VỊ CHỈ ĐẠO THỰC HIỆN" },
-  { key: "doi-tac-dong-hanh", label: "ĐỐI TÁC ĐỒNG HÀNH" },
-  { key: "dai-hoc-cao-dang", label: "ĐẠI HỌC / CAO ĐẲNG" },
-  { key: "don-vi-bao-tro", label: "ĐƠN VỊ BẢO TRỢ" },
-  { key: "don-vi-thuc-hien", label: "ĐƠN VỊ THỰC HIỆN" },
-  { key: "doi-tac-khac", label: "ĐỐI TÁC KHÁC" },
-]
+const DEFAULT_CATEGORY_LABELS: Record<string, string> = {
+  "don-vi-chi-dao": "ĐƠN VỊ CHỈ ĐẠO THỰC HIỆN",
+  "doi-tac-dong-hanh": "ĐỐI TÁC ĐỒNG HÀNH",
+  "dai-hoc-cao-dang": "ĐẠI HỌC / CAO ĐẲNG",
+  "don-vi-bao-tro": "ĐƠN VỊ BẢO TRỢ",
+  "don-vi-thuc-hien": "ĐƠN VỊ THỰC HIỆN",
+  "doi-tac-khac": "ĐỐI TÁC KHÁC",
+}
 
 export function HomePartnersEditor({
   settings = {},
@@ -220,7 +220,7 @@ export function HomePartnersEditor({
   onTitleChange,
   onSubtitleChange,
 }: HomePartnersEditorProps) {
-  const [allGroups, setAllGroups] = useState<Array<{ key: string; label: string }>>(INITIAL_GROUPS)
+  const [allGroups, setAllGroups] = useState<Array<{ key: string; label: string }>>([])
 
   useEffect(() => {
     let active = true
@@ -231,16 +231,17 @@ export function HomePartnersEditor({
       .then(({ data, error }) => {
         if (!active || error || !data) return
 
-        const existingKeys = new Set(INITIAL_GROUPS.map((g) => g.key))
-        const dynamicGroups = [...INITIAL_GROUPS]
+        const foundKeys = new Set<string>()
+        const dynamicGroups: Array<{ key: string; label: string }> = []
 
         data.forEach((p: any) => {
-          const cat = p.category
-          if (cat && !existingKeys.has(cat)) {
-            existingKeys.add(cat)
+          const rawCat = (p.category || "").trim()
+          const cat = rawCat || "doi-tac-khac"
+          if (!foundKeys.has(cat)) {
+            foundKeys.add(cat)
             dynamicGroups.push({
               key: cat,
-              label: cat.replace(/-/g, " ").toUpperCase(),
+              label: DEFAULT_CATEGORY_LABELS[cat] || cat.replace(/-/g, " ").toUpperCase(),
             })
           }
         })
@@ -269,27 +270,7 @@ export function HomePartnersEditor({
             Thiết lập tiêu đề, danh mục và hướng trượt cho từng hàng marquee
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-5 space-y-5">
-          {/* Header Title Controls */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 border rounded-none bg-slate-50/60 border-slate-200 dark:bg-slate-950/30 dark:border-white/10">
-            <div className="space-y-1.5">
-              <Label className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-[#ed1c24]" /> Tiêu đề phụ (Badge nhỏ trên)
-              </Label>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs font-bold text-slate-900 dark:text-white">
-                Tiêu đề chính (Chữ to dưới)
-              </Label>
-              <Input
-                value={title || ""}
-                onChange={(e) => onTitleChange(e.target.value)}
-                placeholder="VD: VÌ MỘT VIỆT NAM VƯỢT TRỘI"
-                className="bg-white rounded-none border-slate-200 text-xs font-bold h-9 text-slate-900 dark:bg-slate-900 dark:border-white/10 dark:text-white"
-              />
-            </div>
-          </div>
-
+        <CardContent className="p-5 space-y-5">    
           {/* 3 Hàng Cấu hình Marquee */}
           <div className="space-y-4">
             <RowConfigBlock
