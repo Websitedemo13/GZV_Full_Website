@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -74,28 +74,35 @@ export function CreateArticleModal({ open, onClose, onCreateArticle }: any) {
   }
 
 const handleSubmit = async () => {
-  // Kiểm tra mảng author_ids (phải có ít nhất 1 người)
-  if (!formData.title || formData.author_ids.length === 0 || !formData.content) {
+  if (!formData.title?.trim() || !formData.content?.trim()) {
     return toast({ 
       title: "Thiếu thông tin", 
-      description: "Vui lòng nhập tiêu đề, nội dung và chọn ít nhất 1 tác giả.", 
+      description: "Vui lòng nhập đầy đủ tiêu đề và nội dung bài viết.", 
       variant: "destructive" 
     });
   }
 
+  // Tự động chọn tác giả đầu tiên nếu chưa chọn
+  const authorIds = formData.author_ids?.length > 0 
+    ? formData.author_ids 
+    : (members.length > 0 ? [members[0].id] : []);
+
+  const safeSlug = (formData.slug?.trim() || generateSlug(formData.title) || `article-${Date.now()}`);
+
   setLoading(true);
   try {
-    const payload = {
-      title: formData.title,
-      slug: formData.slug,
+    const payload: any = {
+      title: formData.title.trim(),
+      slug: safeSlug,
       content: formData.content,
-      excerpt: formData.excerpt,
-      image: formData.image, // Đây là link ảnh đã up thành công trong hình bạn gửi
-      category: formData.category,
-      author_ids: formData.author_ids, // Gửi mảng ID tác giả
+      excerpt: formData.excerpt || "",
+      image: formData.image || "",
+      category: formData.category || "Tin tức",
+      author_ids: authorIds,
+      author_id: authorIds[0] || null,
       status: 'published',
-      featured: formData.featured,
-      published_at: new Date().toISOString() // Dùng đúng tên cột trong DB
+      featured: !!formData.featured,
+      published_at: new Date().toISOString()
     };
 
     const { data, error } = await supabase
@@ -106,13 +113,15 @@ const handleSubmit = async () => {
     if (error) throw error;
 
     toast({ title: "Thành công!", description: "Bài viết đã được xuất bản." });
-    onCreateArticle(data[0]);
+    if (data && data[0]) {
+      onCreateArticle(data[0]);
+    }
     onClose();
   } catch (err: any) {
     console.error("Lỗi xuất bản:", err);
     toast({ 
       title: "Lỗi xuất bản", 
-      description: err.message || "Vui lòng kiểm tra lại các cột dữ liệu.", 
+      description: err.message || "Vui lòng kiểm tra lại thông tin.", 
       variant: "destructive" 
     });
   } finally {
@@ -123,6 +132,8 @@ const handleSubmit = async () => {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-[95vw] lg:max-w-7xl h-[95vh] p-0 border-none shadow-2xl overflow-hidden bg-slate-50">
+        <DialogTitle className="sr-only">Tạo bài viết mới</DialogTitle>
+        <DialogDescription className="sr-only">Biểu mẫu soạn thảo và xuất bản bài viết</DialogDescription>
         
         {/* TOP NAVIGATION BAR */}
         <div className="h-16 bg-white border-b border-slate-200 dark:border-white/10 flex items-center justify-between px-6 sticky top-0 z-50">
@@ -162,7 +173,7 @@ const handleSubmit = async () => {
                 />
                 <div className="flex items-center gap-2 text-slate-400 font-mono text-xs">
                   <Globe className="h-3 w-3" />
-                  <span>gzvcenter.edu.vn/chia-se/</span>
+                  <span>gzv.one/tin-tuc/</span>
                   <span className="text-[#ed1c24] bg-red-50 px-2 py-0.5 rounded-none font-bold">{formData.slug || 'your-slug-here'}</span>
                 </div>
               </div>

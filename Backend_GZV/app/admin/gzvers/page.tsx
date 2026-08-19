@@ -32,6 +32,7 @@ import { toast } from "sonner"
 
 type Department = {
   id?: string
+  temp_id?: string
   name: string
   slug: string
   description?: string | null
@@ -193,9 +194,11 @@ export default function AdminGzversPage() {
 
   const addDepartment = () => {
     const name = "BAN MỚI"
+    const tempId = `temp-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`
     setDepartments((items) => [
       ...items,
       {
+        temp_id: tempId,
         name,
         slug: `ban-moi-${Date.now()}`,
         description: "",
@@ -211,25 +214,70 @@ export default function AdminGzversPage() {
       items.map((item, idx) => {
         if (idx !== index) return item
         const next = { ...item, ...patch }
-        if (patch.name && (!item.id || next.slug.startsWith("ban-moi-"))) next.slug = slugify(patch.name)
         return next
       })
     )
   }
 
+  const removeDepartment = async (index: number) => {
+    const dept = departments[index]
+    if (!dept) return
+
+    if (dept.id) {
+      if (!window.confirm(`Bạn có chắc muốn xóa ban "${dept.name}"? Các thành viên thuộc ban này sẽ được chuyển về Chưa gán ban.`)) return
+      const { error } = await supabase.from("gzver_departments").delete().eq("id", dept.id)
+      if (error) {
+        toast.error("Không xóa được ban: " + error.message)
+        return
+      }
+    }
+
+    setDepartments((items) => items.filter((_, idx) => idx !== index))
+    toast.success(`Đã xóa ban "${dept.name}"`)
+    fetchData()
+  }
+
   const saveDepartments = async () => {
     setSavingDepartments(true)
     try {
-      const rows = orderedDepartments.map((department, index) => ({
-        ...department,
-        slug: department.slug || slugify(department.name),
-        sort_order: (index + 1) * 10,
-      }))
-      const { error } = await supabase.from("gzver_departments").upsert(rows, { onConflict: "slug" })
-      if (error) throw error
+      // Chuẩn hóa tất cả các object có đúng cùng tập keys để PostgREST không báo lỗi PGRST102
+      const rows = orderedDepartments.map((department, index) => {
+        const payload: any = {
+          name: department.name.trim(),
+          slug: department.slug?.trim() || slugify(department.name) || `ban-${index + 1}`,
+          description: department.description || "",
+          color: department.color || "#ed1c24",
+          sort_order: (index + 1) * 10,
+          is_active: department.is_active !== false,
+        }
+        if (department.id) {
+          payload.id = department.id
+        }
+        return payload
+      })
+
+      // Đối với items đã có id thì upsert theo id, items mới thì insert
+      const toUpdate = rows.filter((r) => r.id)
+      const toInsert = rows.filter((r) => !r.id)
+
+      if (toUpdate.length > 0) {
+        const { error: updErr } = await supabase
+          .from("gzver_departments")
+          .upsert(toUpdate, { onConflict: "id" })
+        if (updErr) throw updErr
+      }
+
+      if (toInsert.length > 0) {
+        const { error: insErr } = await supabase
+          .from("gzver_departments")
+          .upsert(toInsert, { onConflict: "slug" })
+        if (insErr) throw insErr
+      }
+
       toast.success("Đã lưu danh sách ban thành công!")
       fetchData()
     } catch (error: any) {
+      console.error("Lỗi lưu ban:", error)
       toast.error(error.message || "Không lưu được ban")
     } finally {
       setSavingDepartments(false)
@@ -467,15 +515,17 @@ export default function AdminGzversPage() {
               <div className="grid gap-4 md:grid-cols-2">
                 {orderedDepartments.map((department) => {
                   const realIndex = departments.findIndex(
-                    (item) => (item.id || item.slug) === (department.id || department.slug)
+                    (item) => (item.id || item.temp_id || item.slug) === (department.id || department.temp_id || department.slug)
                   )
                   const memberCount = gzvers.filter(
                     (g) => (g.department_id || g.gzver_departments?.id) === department.id
                   ).length
 
+                  const stableKey = department.id || department.temp_id || department.slug
+
                   return (
                     <div
-                      key={department.id || department.slug}
+                      key={stableKey}
                       className={`border p-4 transition-all space-y-3 ${department.is_active
                           ? "border-slate-200 bg-slate-50/70 dark:border-white/10 dark:bg-slate-950/50"
                           : "border-slate-200/60 bg-slate-100/40 opacity-75 dark:border-white/5 dark:bg-slate-950/20"
@@ -518,9 +568,15 @@ export default function AdminGzversPage() {
                       </div>
 
                       <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-white/10">
-                        <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400">
-                          Trạng thái hiển thị hệ thống
-                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeDepartment(realIndex)}
+                          className="h-8 px-2 text-xs font-bold text-slate-400 hover:text-red-600 rounded-none"
+                        >
+                          <Trash2 className="h-3.5 w-3.5 mr-1" /> Xóa ban
+                        </Button>
+
                         <div className="flex items-center gap-2">
                           <Switch
                             checked={department.is_active}

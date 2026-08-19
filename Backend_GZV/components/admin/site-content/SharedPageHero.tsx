@@ -113,12 +113,6 @@ export function SharedPageHero({
       {/* Top Red Accent Line */}
       <div className="absolute inset-x-0 top-0 h-1 bg-[#ed1c24]" aria-hidden="true" />
 
-      {/* Bottom Subtle Grid Texture */}
-      <div
-        className="absolute bottom-0 left-0 h-16 w-full border-t border-white/10 bg-[repeating-linear-gradient(135deg,rgba(255,255,255,0.06)_0,rgba(255,255,255,0.06)_1px,transparent_1px,transparent_14px)]"
-        aria-hidden="true"
-      />
-
       <div className="container relative z-10 px-6">
         <div className={`mx-auto w-full max-w-[70%] flex flex-col ${alignClass}`}>
           {showBadge && badge && (

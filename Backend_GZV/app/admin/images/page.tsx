@@ -236,63 +236,81 @@ export default function AdminImagesPage() {
     }
   }
 
-  // 3. Tải lên media (Logic gửi qua API + Supabase Storage như MediaPickerDialog)
-  const handleUpload = async (files: FileList | null) => {
-    if (!files?.length) return
+  // 3. Tải lên media (Trực tiếp Supabase Storage + API Sync)
+  const handleUpload = async (files: FileList | File[] | null) => {
+    if (!files || files.length === 0) return
     setUploading(true)
     const targetFolder = currentFolder === "all" ? "uploads" : currentFolder
     let ok = 0
     let fail = 0
+    let lastError = ""
 
     try {
-      const { data: sessionData } = await supabase.auth.getSession()
-      const token = sessionData?.session?.access_token
-
-      for (const file of Array.from(files)) {
+      const fileArray = Array.from(files)
+      for (const file of fileArray) {
         let uploaded = false
 
-        // Try API upload first
+        // 1. Direct Supabase Storage Upload
         try {
-          const formData = new FormData()
-          formData.append("file", file)
-          formData.append("folder", targetFolder)
-
-          const res = await fetch("/api/images", {
-            method: "POST",
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-            body: formData,
-          })
-
-          const json = await res.json()
-          if (res.ok && json.success && json.data) {
-            uploaded = true
-            ok += 1
-          }
-        } catch (e) {}
-
-        // Fallback to direct Supabase upload if API fails
-        if (!uploaded) {
           const safe = file.name.replace(/\s+/g, "-").replace(/[^a-zA-Z0-9._-]/g, "")
           const path = `${targetFolder}/${Date.now()}_${safe}`
-          const { error: directErr } = await supabase.storage.from(BUCKET).upload(path, file, {
+          
+          const { data, error: supaErr } = await supabase.storage.from(BUCKET).upload(path, file, {
             cacheControl: "3600",
             upsert: true,
-            contentType: file.type,
+            contentType: file.type || "image/jpeg",
           })
 
-          if (directErr) {
-            fail += 1
-          } else {
+          if (!supaErr && data) {
+            uploaded = true
             ok += 1
+          } else if (supaErr) {
+            lastError = supaErr.message
+          }
+        } catch (e: any) {
+          lastError = e.message || "Lỗi Supabase Storage"
+        }
+
+        // 2. Fallback via Local Server API if direct storage failed
+        if (!uploaded) {
+          try {
+            const formData = new FormData()
+            formData.append("file", file)
+            formData.append("folder", targetFolder)
+
+            const res = await fetch("/api/images", {
+              method: "POST",
+              body: formData,
+            })
+
+            const json = await res.json()
+            if (res.ok && json.success) {
+              uploaded = true
+              ok += 1
+            } else {
+              fail += 1
+              lastError = json.error || json.message || lastError
+            }
+          } catch (apiErr: any) {
+            fail += 1
+            lastError = apiErr.message || lastError
           }
         }
       }
 
-      toast({
-        title: "Tải lên hoàn tất",
-        description: `${ok} thành công · ${fail} thất bại`,
-        variant: fail && !ok ? "destructive" : "default",
-      })
+      if (fail && !ok) {
+        toast({
+          title: "Tải lên thất bại",
+          description: lastError || "Không thể tải tệp lên",
+          variant: "destructive",
+        })
+      } else {
+        toast({
+          title: "Tải lên thành công",
+          description: `Đã tải lên ${ok} tệp tin vào thư mục "${targetFolder}"${fail > 0 ? ` (${fail} lỗi: ${lastError})` : ""}`,
+          variant: fail > 0 ? "destructive" : "default",
+        })
+      }
       await loadFolder(currentFolder)
     } catch (err: any) {
       toast({ title: "Lỗi tải tệp", description: err.message, variant: "destructive" })
@@ -624,7 +642,36 @@ export default function AdminImagesPage() {
       {/* Main Content: Files List / Grid + Detail Panel */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Files Grid / Table */}
-        <div className="lg:col-span-8 border border-slate-200 bg-white dark:border-white/10 dark:bg-slate-900 shadow-xs min-h-[420px]">
+        <div
+          onDragOver={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            setDragging(true)
+          }}
+          onDragLeave={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            setDragging(false)
+          }}
+          onDrop={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            setDragging(false)
+            if (e.dataTransfer?.files?.length) {
+              handleUpload(e.dataTransfer.files)
+            }
+          }}
+          className={`lg:col-span-8 border relative transition-all bg-white dark:border-white/10 dark:bg-slate-900 shadow-xs min-h-[420px] ${
+            dragging ? "border-dashed border-[#ed1c24] bg-red-50/20 ring-2 ring-[#ed1c24]/30" : "border-slate-200"
+          }`}
+        >
+          {dragging && (
+            <div className="absolute inset-0 z-30 bg-red-500/10 backdrop-blur-[2px] flex flex-col items-center justify-center border-2 border-dashed border-[#ed1c24]">
+              <Upload className="h-10 w-10 text-[#ed1c24] animate-bounce mb-2" />
+              <p className="text-sm font-black uppercase text-[#ed1c24]">Thả tệp vào đây để tải lên /{currentFolder === "all" ? "uploads" : currentFolder}</p>
+            </div>
+          )}
+
           {loading ? (
             <div className="py-28 flex flex-col items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin text-[#ed1c24]" />

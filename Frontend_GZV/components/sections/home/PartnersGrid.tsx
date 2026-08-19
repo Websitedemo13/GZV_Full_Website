@@ -265,7 +265,7 @@ export default function PartnersGrid({
         }}
       />
 
-      <div className="container mx-auto px-4 text-left mb-12 relative z-10 max-w-7xl">
+      <div className="container mx-auto px-4 text-center mb-16 relative z-10 max-w-7xl">
         <h2 className="text-3xl md:text-5xl font-black tracking-tight text-slate-950 dark:text-white uppercase leading-tight">
           {displayTitle.includes("VƯỢT TRỘI") ? (
             <>
@@ -278,7 +278,7 @@ export default function PartnersGrid({
           )}
         </h2>
         {subtitle && subtitle !== displayTitle && (
-          <p className="mt-3 text-sm md:text-base font-semibold text-slate-600 dark:text-slate-400 max-w-2xl uppercase tracking-wider">
+          <p className="mt-3 text-sm md:text-base font-semibold text-slate-600 dark:text-slate-400 max-w-2xl mx-auto tracking-wider">
             {subtitle.includes("VƯỢT TRỘI") ? (
               <>
                 {subtitle.split("VƯỢT TRỘI")[0]}

@@ -110,7 +110,7 @@ export default function NewsGrid({
           <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-slate-950 dark:text-white leading-tight">
             {title}
           </h2>
-          <p className="mt-3 text-sm md:text-base font-semibold text-slate-600 dark:text-slate-400 max-w-2xl uppercase tracking-wider">
+          <p className="mt-3 text-sm md:text-base font-semibold text-slate-600 dark:text-slate-400 max-w-2xl tracking-wider">
             {subtitle}
           </p>
           <div className="p-8 border border-dashed border-slate-200 dark:border-white/10 rounded-none bg-slate-50 dark:bg-slate-900 text-xs font-black uppercase tracking-wider text-slate-400 max-w-md mt-6">
@@ -146,7 +146,7 @@ export default function NewsGrid({
             )}
           </h2>
           {subtitle && (
-            <p className="mt-3 text-sm md:text-base font-semibold text-slate-600 dark:text-slate-400 max-w-2xl uppercase tracking-wider">
+            <p className="mt-3 text-sm md:text-base font-semibold text-slate-600 dark:text-slate-400 max-w-2xl tracking-wider">
               {subtitle.includes("VƯỢT TRỘI") ? (
                 <>
                   {subtitle.split("VƯỢT TRỘI")[0]}

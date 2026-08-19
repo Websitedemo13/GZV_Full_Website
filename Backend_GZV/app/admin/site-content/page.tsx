@@ -171,19 +171,28 @@ function SiteContentManager() {
           if (!nextNav.some((item) => item.href === "/")) {
             nextNav.unshift(defaultNav[0])
           }
+          if (!nextNav.some((item) => item.href === "/doi-tac")) {
+            const insertIdx = nextNav.findIndex((item) => item.href === "/tin-tuc")
+            const doiTacItem: NavItem = {
+              href: "/doi-tac",
+              label_vi: "ĐỐI TÁC",
+              label_en: "PARTNERS",
+              sort_order: 45,
+              is_visible: true,
+              is_page_enabled: true,
+            }
+            if (insertIdx !== -1) {
+              nextNav.splice(insertIdx, 0, doiTacItem)
+            } else {
+              nextNav.push(doiTacItem)
+            }
+          }
         }
-
-        const nextPages = pagesResult.data?.length
-          ? (pagesResult.data as PageContent[])
-          : defaultNav.map((item) => ({
-            slug: item.href.replace("/", "") || "home",
-            title: item.label_vi,
-            menu_title: item.label_vi,
-            banner_title: item.label_vi,
-            is_visible: true,
-          }))
-
         setNavItems(nextNav)
+
+        let nextPages = ((pagesResult.data || []) as PageContent[]).filter(
+          (p) => p.slug !== "doi-tac" && p.slug !== "dong-hanh"
+        )
         setPages(nextPages)
         setSelectedSlug(nextPages[0]?.slug || "gioi-thieu")
         const validHomeKeys = ["hero", "about_gzv", "projects", "services_three", "about_boxes", "partners", "news"]

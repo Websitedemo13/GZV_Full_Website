@@ -25,6 +25,7 @@ import NewsGrid from "@/components/sections/home/NewsGrid"
 import MentorsGrid from "@/components/sections/home/MentorsGrid"
 import GzversGrid from "@/components/sections/home/GzversGrid"
 import PartnersGrid from "@/components/sections/home/PartnersGrid"
+import PartnersListSection from "@/components/sections/PartnersListSection"
 import AboutGzv from "@/components/sections/home/AboutGzv"
 
 // About Sections
@@ -107,7 +108,8 @@ function RenderBlock({ block, language }: { block: PageBlock; language: "vi" | "
     case "gzvers_grid":
       return <GzversGrid {...props} />
     case "partners_grid":
-      return <PartnersGrid {...props} />
+    case "partners_list":
+      return <PartnersListSection {...props} />
     case "contact_form":
       return <ContactFormBlock {...props} />
     case "page_banner":

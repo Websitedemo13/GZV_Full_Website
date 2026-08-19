@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
@@ -35,6 +35,29 @@ import {
   Send,
 } from "lucide-react"
 
+function updateAdminFavicon(url?: string | null) {
+  if (!url || typeof document === "undefined") return
+  const rels = ["icon", "shortcut icon", "apple-touch-icon"]
+  rels.forEach((rel) => {
+    let link = document.querySelector(`link[rel="${rel}"]`) as HTMLLinkElement | null
+    if (link) {
+      link.href = url
+    } else {
+      link = document.createElement("link")
+      link.rel = rel
+      link.href = url
+      document.head.appendChild(link)
+    }
+  })
+}
+
+export function AdminFaviconManager({ faviconUrl }: { faviconUrl?: string | null }) {
+  useEffect(() => {
+    if (faviconUrl) updateAdminFavicon(faviconUrl)
+  }, [faviconUrl])
+  return null
+}
+
 function TikTokIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
@@ -65,12 +88,22 @@ export function HeaderFooterSeoTab({
   const [subTab, setSubTab] = useState<"header" | "footer" | "seo">("header")
   const [activeFooterCol, setActiveFooterCol] = useState<number | string>(1)
 
+  // Tự động đồng bộ Favicon tab trình duyệt Admin khi đổi favicon
+  useEffect(() => {
+    if (branding?.favicon_url) {
+      updateAdminFavicon(branding.favicon_url)
+    }
+  }, [branding?.favicon_url])
+
   // Local helper getters & setters for Branding
   const logoUrl = branding.header_logo_url || ""
   const setLogoUrl = (url: string) => setBranding({ ...branding, header_logo_url: url })
 
   const faviconUrl = branding.favicon_url || ""
-  const setFaviconUrl = (url: string) => setBranding({ ...branding, favicon_url: url })
+  const setFaviconUrl = (url: string) => {
+    updateAdminFavicon(url)
+    setBranding({ ...branding, favicon_url: url })
+  }
 
   const siteTitle = branding.site_name || "GZV"
   const setSiteTitle = (val: string) => setBranding({ ...branding, site_name: val })

@@ -15,15 +15,21 @@ const upsertMeta = (name: string, content?: string | null) => {
   tag.content = content
 }
 
-const upsertLink = (rel: string, href?: string | null) => {
-  if (!href) return
-  let tag = document.querySelector(`link[rel="${rel}"]`) as HTMLLinkElement | null
-  if (!tag) {
-    tag = document.createElement("link")
-    tag.rel = rel
-    document.head.appendChild(tag)
-  }
-  tag.href = href
+const updateFavicons = (faviconUrl?: string | null) => {
+  if (!faviconUrl || typeof document === "undefined") return
+
+  const rels = ["icon", "shortcut icon", "apple-touch-icon"]
+  rels.forEach((rel) => {
+    let link = document.querySelector(`link[rel="${rel}"]`) as HTMLLinkElement | null
+    if (link) {
+      link.href = faviconUrl
+    } else {
+      link = document.createElement("link")
+      link.rel = rel
+      link.href = faviconUrl
+      document.head.appendChild(link)
+    }
+  })
 }
 
 export default function SeoBrandingManager() {
@@ -36,11 +42,10 @@ export default function SeoBrandingManager() {
       const rawTitle = page?.seo_title || page?.title || branding.default_title
       document.title = rawTitle === branding.default_title
         ? rawTitle
-        : branding.title_template.replace("%s", rawTitle)
+        : (branding.title_template ? branding.title_template.replace("%s", rawTitle) : `${rawTitle} | ${branding.site_name || "GZV"}`)
       upsertMeta("description", page?.seo_description || branding.default_description)
       upsertMeta("keywords", branding.default_keywords)
-      upsertLink("icon", branding.favicon_url)
-      upsertLink("apple-touch-icon", branding.favicon_url)
+      updateFavicons(branding.favicon_url)
     })
     return () => {
       active = false

@@ -11,6 +11,7 @@ import type { HomeSection } from "../types"
 import { SortableHomeSectionRow } from "../helpers/SortableRows"
 import { Field, SwitchLine } from "../helpers/BasicHelpers"
 import { RawJsonEditor } from "../helpers/RawJsonEditor"
+import { HomePartnersEditor } from "../helpers/HomePartnersEditor"
 
 export function HomeSectionsTab({
   homeSections,
@@ -476,6 +477,18 @@ export function HomeSectionsTab({
                     />
                   </Field>
                 </div>
+              )}
+
+              {/* 4.1. PARTNERS MARQUEE CONTROLS ON HOME */}
+              {selectedSection.section_key === "partners" && (
+                <HomePartnersEditor
+                  settings={selectedSection.settings || {}}
+                  updateSectionSettings={updateSectionSettings}
+                  title={selectedSection.title}
+                  subtitle={selectedSection.subtitle || ""}
+                  onTitleChange={(newTitle) => updateSection({ title: newTitle })}
+                  onSubtitleChange={(newSubtitle) => updateSection({ subtitle: newSubtitle })}
+                />
               )}
 
               {/* 5. CTA SECTION CONTROLS ON HOME */}
