@@ -49,7 +49,7 @@ interface Props {
 const empty: Omit<Partner, "id" | "created_at" | "updated_at"> = {
   name: "",
   logo_url: "",
-  category: "don-vi-thuc-hien",
+  category: "doi-tac-khac",
   website_url: "",
   sort_order: 10,
   is_active: true,

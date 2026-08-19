@@ -739,7 +739,7 @@ export function HeaderFooterSeoTab({
                       <div className="mt-3 p-3 rounded-none border text-[11px] font-semibold bg-white text-slate-900 border-slate-200">
                         <p className="text-[9px] uppercase tracking-widest font-black text-slate-500">Liên hệ GZV</p>
                         <p className="font-bold">{contactPerson || "GZV Ltd"}</p>
-                        {contactPersonPhone && <p className="text-slate-600">SĐT: {contactPersonPhone}</p>}
+                        {contactPersonPhone && <p className="text-slate-600">Điện thoại: {contactPersonPhone}</p>}
                         {contactPersonEmail && <p className="text-slate-600">Email: {contactPersonEmail}</p>}
                       </div>
                     )}

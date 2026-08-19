@@ -68,11 +68,6 @@ export interface CategoryItem {
 }
 
 const INITIAL_CATEGORIES: CategoryItem[] = [
-  { key: "don-vi-chi-dao", label: "ĐƠN VỊ CHỈ ĐẠO THỰC HIỆN", aliases: ["don-vi-chi-dao", "chi-dao", "governance"] },
-  { key: "doi-tac-dong-hanh", label: "ĐỐI TÁC ĐỒNG HÀNH", aliases: ["doi-tac-dong-hanh", "corporate", "dong-hanh"] },
-  { key: "dai-hoc-cao-dang", label: "ĐẠI HỌC / CAO ĐẲNG", aliases: ["dai-hoc-cao-dang", "education", "dai-hoc"] },
-  { key: "don-vi-bao-tro", label: "ĐƠN VỊ BẢO TRỢ", aliases: ["don-vi-bao-tro", "sponsor", "bao-tro"] },
-  { key: "don-vi-thuc-hien", label: "ĐƠN VỊ THỰC HIỆN", aliases: ["don-vi-thuc-hien", "organizer", "thuc-hien"] },
   { key: "doi-tac-khac", label: "ĐỐI TÁC KHÁC", aliases: ["doi-tac-khac", "other", "khac", ""] },
 ]
 
@@ -81,7 +76,7 @@ export default function PartnersAdminPage() {
   const [categories, setCategories] = useState<CategoryItem[]>(INITIAL_CATEGORIES)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
-  const [activeGroup, setActiveGroup] = useState<string>("don-vi-thuc-hien")
+  const [activeGroup, setActiveGroup] = useState<string>("doi-tac-khac")
   const [modalOpen, setModalOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [current, setCurrent] = useState<Partner | null>(null)
@@ -91,6 +86,12 @@ export default function PartnersAdminPage() {
   const [categoryToRename, setCategoryToRename] = useState<CategoryItem | null>(null)
   const [newCategoryName, setNewCategoryName] = useState("")
   const [isRenaming, setIsRenaming] = useState(false)
+
+  // Delete Category Dialog State
+  const [deleteCategoryDialogOpen, setDeleteCategoryDialogOpen] = useState(false)
+  const [categoryToDelete, setCategoryToDelete] = useState<CategoryItem | null>(null)
+  const [deleteCategoryAction, setDeleteCategoryAction] = useState<"move" | "delete">("move")
+  const [isDeletingCategory, setIsDeletingCategory] = useState(false)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -111,30 +112,67 @@ export default function PartnersAdminPage() {
       const partnerList = (data as Partner[]) || []
       setPartners(partnerList)
 
-      // Discover custom categories dynamically
-      const knownKeys = new Set(INITIAL_CATEGORIES.flatMap((c) => [c.key, ...(c.aliases || [])]))
+      // Discover categories dynamically from actual database records
+      const knownKeys = new Set(["doi-tac-khac"])
       const extraCategories: CategoryItem[] = []
 
       partnerList.forEach((p) => {
-        if (p.category && !knownKeys.has(p.category)) {
-          knownKeys.add(p.category)
+        const rawCat = (p.category || "").trim()
+        if (rawCat && rawCat !== "doi-tac-khac" && !knownKeys.has(rawCat)) {
+          knownKeys.add(rawCat)
           extraCategories.push({
-            key: p.category,
-            label: p.category.replace(/-/g, " ").toUpperCase(),
-            aliases: [p.category],
+            key: rawCat,
+            label: rawCat.replace(/-/g, " ").toUpperCase(),
+            aliases: [rawCat],
           })
         }
       })
 
-      if (extraCategories.length > 0) {
-        setCategories([
-          ...INITIAL_CATEGORIES.filter((c) => c.key !== "doi-tac-khac"),
-          ...extraCategories,
-          INITIAL_CATEGORIES.find((c) => c.key === "doi-tac-khac")!,
-        ])
+      const combinedCategories = [
+        ...extraCategories,
+        { key: "doi-tac-khac", label: "ĐỐI TÁC KHÁC", aliases: ["doi-tac-khac", "other", "khac", ""] },
+      ]
+
+      setCategories(combinedCategories)
+      if (!combinedCategories.some((c) => c.key === activeGroup)) {
+        setActiveGroup(combinedCategories[0]?.key || "doi-tac-khac")
       }
     }
     setLoading(false)
+  }
+
+  const handleDeleteCategory = async () => {
+    if (!categoryToDelete) return
+    setIsDeletingCategory(true)
+    try {
+      if (deleteCategoryAction === "delete") {
+        // Delete all partners in this category
+        const { error } = await supabase
+          .from("partners")
+          .delete()
+          .eq("category", categoryToDelete.key)
+        if (error) throw error
+        toast({ title: `Đã xóa danh mục "${categoryToDelete.label}" và toàn bộ đối tác bên trong.` })
+      } else {
+        // Move all partners in this category to 'doi-tac-khac'
+        const { error } = await supabase
+          .from("partners")
+          .update({ category: "doi-tac-khac" })
+          .eq("category", categoryToDelete.key)
+        if (error) throw error
+        toast({ title: `Đã xóa danh mục "${categoryToDelete.label}" và chuyển đối tác sang "ĐỐI TÁC KHÁC".` })
+      }
+
+      setCategories((prev) => prev.filter((c) => c.key !== categoryToDelete.key))
+      setActiveGroup("doi-tac-khac")
+      fetchPartners()
+    } catch (err: any) {
+      toast({ title: "Không thể xóa danh mục", description: err.message, variant: "destructive" })
+    } finally {
+      setIsDeletingCategory(false)
+      setDeleteCategoryDialogOpen(false)
+      setCategoryToDelete(null)
+    }
   }
 
   useEffect(() => {
@@ -385,6 +423,10 @@ export default function PartnersAdminPage() {
                           setNewCategoryName(cat.label)
                           setRenameDialogOpen(true)
                         }}
+                        onDelete={(cat) => {
+                          setCategoryToDelete(cat)
+                          setDeleteCategoryDialogOpen(true)
+                        }}
                       />
                     ))}
                   </div>
@@ -401,19 +443,33 @@ export default function PartnersAdminPage() {
                       <CardTitle className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-2 uppercase tracking-wider">
                         {activeCategoryData.label}
                         {activeCategoryData.key !== "doi-tac-khac" && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 rounded-none hover:bg-slate-200 text-slate-400 hover:text-[#ed1c24] transition-all ml-1"
-                            onClick={() => {
-                              setCategoryToRename(activeCategoryData)
-                              setNewCategoryName(activeCategoryData.label)
-                              setRenameDialogOpen(true)
-                            }}
-                            title="Đổi tên danh mục"
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
+                          <div className="flex items-center gap-1 ml-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 rounded-none hover:bg-slate-200 text-slate-400 hover:text-[#ed1c24] transition-all"
+                              onClick={() => {
+                                setCategoryToRename(activeCategoryData)
+                                setNewCategoryName(activeCategoryData.label)
+                                setRenameDialogOpen(true)
+                              }}
+                              title="Đổi tên danh mục"
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 rounded-none hover:bg-red-100 text-slate-400 hover:text-red-600 transition-all"
+                              onClick={() => {
+                                setCategoryToDelete(activeCategoryData)
+                                setDeleteCategoryDialogOpen(true)
+                              }}
+                              title="Xóa danh mục này"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
                         )}
                       </CardTitle>
                       <CardDescription className="text-xs mt-1 font-semibold text-slate-500">
@@ -530,6 +586,78 @@ export default function PartnersAdminPage() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Delete Category Dialog */}
+      {deleteCategoryDialogOpen && categoryToDelete && (
+        <Dialog open={deleteCategoryDialogOpen} onOpenChange={(v) => !v && !isDeletingCategory && setDeleteCategoryDialogOpen(false)}>
+          <DialogContent className="max-w-md p-6 rounded-none border border-slate-200 bg-white dark:border-white/10 dark:bg-slate-900 shadow-2xl outline-none">
+            <DialogHeader className="border-b border-slate-200 dark:border-white/10 pb-4">
+              <DialogTitle className="text-xs font-black uppercase tracking-wider text-red-600 flex items-center gap-2">
+                <Trash2 className="h-4 w-4" /> Xóa danh mục đối tác
+              </DialogTitle>
+              <DialogDescription className="text-xs text-slate-500 mt-1">
+                Bạn đang chuẩn bị xóa danh mục <span className="font-bold text-slate-900 dark:text-white uppercase">"{categoryToDelete.label}"</span>.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 pt-2">
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  Chọn hành động với các đối tác trong danh mục:
+                </Label>
+                <div className="space-y-2">
+                  <label className="flex items-start gap-2.5 p-3 border border-slate-200 dark:border-white/10 cursor-pointer bg-slate-50/50 dark:bg-slate-800/50 hover:bg-slate-50">
+                    <input
+                      type="radio"
+                      name="deleteCategoryAction"
+                      value="move"
+                      checked={deleteCategoryAction === "move"}
+                      onChange={() => setDeleteCategoryAction("move")}
+                      className="mt-0.5 accent-[#ed1c24]"
+                    />
+                    <div className="text-xs">
+                      <p className="font-bold text-slate-900 dark:text-white">Chuyển đối tác sang "ĐỐI TÁC KHÁC"</p>
+                      <p className="text-slate-500 text-[11px] mt-0.5">Giữ lại logo đối tác, chỉ xóa bỏ tên danh mục này.</p>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start gap-2.5 p-3 border border-red-200 dark:border-red-900/30 cursor-pointer bg-red-50/30 dark:bg-red-950/20 hover:bg-red-50/50">
+                    <input
+                      type="radio"
+                      name="deleteCategoryAction"
+                      value="delete"
+                      checked={deleteCategoryAction === "delete"}
+                      onChange={() => setDeleteCategoryAction("delete")}
+                      className="mt-0.5 accent-[#ed1c24]"
+                    />
+                    <div className="text-xs">
+                      <p className="font-bold text-red-600">Xóa vĩnh viễn tất cả đối tác trong danh mục</p>
+                      <p className="text-slate-500 text-[11px] mt-0.5">Xóa hoàn toàn danh mục và tất cả đối tác bên trong.</p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex gap-2 justify-end pt-2 border-t border-slate-200 dark:border-white/10">
+                <Button
+                  variant="outline"
+                  onClick={() => setDeleteCategoryDialogOpen(false)}
+                  disabled={isDeletingCategory}
+                  className="h-9 rounded-none text-xs font-black uppercase"
+                >
+                  Hủy
+                </Button>
+                <Button
+                  onClick={handleDeleteCategory}
+                  disabled={isDeletingCategory}
+                  className="h-9 rounded-none font-black text-xs uppercase bg-red-600 text-white hover:bg-red-700"
+                >
+                  {isDeletingCategory ? "Đang xóa..." : "Xác nhận xóa"}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   )
 }
@@ -540,13 +668,19 @@ function SortableGroupItem({
   isActive,
   onClick,
   onRename,
+  onDelete,
 }: {
-  group: any
+  group: { key: string; label: string; partners: Partner[] }
   isActive: boolean
   onClick: () => void
-  onRename: (group: any) => void
+  onRename?: (group: { key: string; label: string }) => void
+  onDelete?: (group: { key: string; label: string }) => void
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: group.key })
+  const isUngrouped = group.key === "doi-tac-khac"
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: group.key,
+    disabled: isUngrouped,
+  })
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -554,13 +688,11 @@ function SortableGroupItem({
     zIndex: isDragging ? 50 : undefined,
   }
 
-  const isUngrouped = group.key === "doi-tac-khac"
-
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`relative group flex items-center gap-2 p-3 rounded-none cursor-pointer transition-all duration-200 border ${
+      className={`group relative flex items-center gap-2 p-2.5 rounded-none border transition-all cursor-pointer ${
         isDragging
           ? "bg-red-50/40 border-[#ed1c24] shadow-md ring-2 ring-red-200 scale-105"
           : isActive
@@ -594,19 +726,35 @@ function SortableGroupItem({
           {group.label}
         </h4>
       </div>
-
-      {!isUngrouped && onRename && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation()
-            onRename(group)
-          }}
-          className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-[#ed1c24] p-1 rounded-none hover:bg-slate-200 transition-all"
-          title="Đổi tên danh mục"
-        >
-          <Pencil className="h-3 w-3" />
-        </button>
+      {!isUngrouped && (
+        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          {onRename && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                onRename(group)
+              }}
+              className="text-slate-400 hover:text-[#ed1c24] p-1 rounded-none hover:bg-slate-200 transition-all"
+              title="Đổi tên danh mục"
+            >
+              <Pencil className="h-3 w-3" />
+            </button>
+          )}
+          {onDelete && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete(group)
+              }}
+              className="text-slate-400 hover:text-red-600 p-1 rounded-none hover:bg-red-100 transition-all"
+              title="Xóa danh mục"
+            >
+              <Trash2 className="h-3 w-3" />
+            </button>
+          )}
+        </div>
       )}
 
       <Badge

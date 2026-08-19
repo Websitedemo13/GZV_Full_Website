@@ -171,11 +171,6 @@ export function PartnersSectionEditor({
       return savedGroups.length > 0
         ? savedGroups
         : [
-          { key: "don-vi-chi-dao", label: "ĐƠN VỊ CHỈ ĐẠO THỰC HIỆN", visible: true },
-          { key: "doi-tac-dong-hanh", label: "ĐỐI TÁC ĐỒNG HÀNH", visible: true },
-          { key: "dai-hoc-cao-dang", label: "ĐẠI HỌC / CAO ĐẲNG", visible: true },
-          { key: "don-vi-bao-tro", label: "ĐƠN VỊ BẢO TRỢ", visible: true },
-          { key: "don-vi-thuc-hien", label: "ĐƠN VỊ THỰC HIỆN", visible: true },
           { key: "doi-tac-khac", label: "ĐỐI TÁC KHÁC", visible: true },
         ]
     }
