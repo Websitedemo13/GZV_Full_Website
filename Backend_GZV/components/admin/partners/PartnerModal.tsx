@@ -158,10 +158,6 @@ export function PartnerModal({
       toast({ title: "Thiếu thông tin", description: "Vui lòng nhập tên đối tác.", variant: "destructive" })
       return
     }
-    if (!form.logo_url?.trim()) {
-      toast({ title: "Thiếu logo", description: "Vui lòng tải lên hoặc dán URL logo.", variant: "destructive" })
-      return
-    }
 
     // Determine target category
     let finalCategory = form.category
@@ -180,7 +176,7 @@ export function PartnerModal({
     setSaving(true)
     const payload = {
       name: form.name.trim(),
-      logo_url: form.logo_url.trim(),
+      logo_url: form.logo_url?.trim() || "",
       category: finalCategory,
       website_url: form.website_url?.trim() || null,
       sort_order: Number(form.sort_order) || 0,
@@ -221,7 +217,7 @@ export function PartnerModal({
                 {partner ? "Chỉnh sửa thông tin đối tác" : "Thêm đối tác đồng hành mới"}
               </DialogTitle>
               <DialogDescription className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
-                Cập nhật logo nhận diện, tùy chỉnh danh mục và thiết lập liên kết website.
+                Cập nhật logo nhận diện (có thể thêm sau), tùy chỉnh danh mục và thiết lập liên kết website.
               </DialogDescription>
             </div>
           </div>
@@ -233,7 +229,7 @@ export function PartnerModal({
             {/* Left Column: Logo preview & upload */}
             <div className="space-y-3">
               <Label className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                Logo nhận diện *
+                Logo nhận diện (Tùy chọn - có thể thêm sau)
               </Label>
 
               <div className="relative aspect-[4/3] overflow-hidden border border-slate-200 bg-white p-4 shadow-2xs dark:border-white/10 flex items-center justify-center">

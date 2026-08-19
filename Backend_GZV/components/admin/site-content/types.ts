@@ -82,6 +82,8 @@ export type FooterSettings = {
   social_tiktok?: string | null
   terms_url?: string | null
   privacy_url?: string | null
+  show_terms?: boolean
+  show_privacy?: boolean
   show_social?: boolean
   footer_text_color?: string | null
   footer_link_color?: string | null

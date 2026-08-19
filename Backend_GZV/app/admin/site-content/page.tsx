@@ -208,8 +208,13 @@ function SiteContentManager() {
           social_youtube: contactPersonMeta.social_youtube || "",
           social_instagram: contactPersonMeta.social_instagram || "",
           social_tiktok: contactPersonMeta.social_tiktok || "",
-          terms_url: contactPersonMeta.terms_url || "/terms",
-          privacy_url: contactPersonMeta.privacy_url || "/privacy",
+          terms_url: contactPersonMeta.terms_url || fetchedFooter.terms_url || "/terms",
+          privacy_url: contactPersonMeta.privacy_url || fetchedFooter.privacy_url || "/privacy",
+          show_terms: contactPersonMeta.show_terms !== undefined ? contactPersonMeta.show_terms : true,
+          show_privacy: contactPersonMeta.show_privacy !== undefined ? contactPersonMeta.show_privacy : true,
+          footer_bg_color: fetchedFooter.background_color || "",
+          footer_text_color: fetchedFooter.footer_text_color || "",
+          footer_link_color: fetchedFooter.footer_link_color || "",
         })
 
         if (floatingResult.data) setFloating((floatingResult.data || []) as FloatingAction[])
@@ -566,6 +571,8 @@ function SiteContentManager() {
           contact_person_email: footer.contact_person_email || "",
           terms_url: footer.terms_url || "/terms",
           privacy_url: footer.privacy_url || "/privacy",
+          show_terms: footer.show_terms !== false,
+          show_privacy: footer.show_privacy !== false,
           social_facebook: footer.social_facebook || "",
           social_youtube: footer.social_youtube || "",
           social_instagram: footer.social_instagram || "",

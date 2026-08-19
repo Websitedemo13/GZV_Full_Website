@@ -143,7 +143,17 @@ export default function PartnersListSection({
       orderedCategories = customOrdered
     }
 
-    orderedCategories.forEach((cat) => {
+    // Reorder categories so 'doi-tac-khac' (ĐỐI TÁC KHÁC) is always pushed to the very end
+    const nonOtherCats = orderedCategories.filter(
+      (c) => c.key !== "doi-tac-khac" && !c.aliases?.includes("doi-tac-khac")
+    )
+    const otherCat = orderedCategories.find(
+      (c) => c.key === "doi-tac-khac" || c.aliases?.includes("doi-tac-khac")
+    ) || { key: "doi-tac-khac", label: "ĐỐI TÁC KHÁC", aliases: ["doi-tac-khac", "other", "khac", ""] }
+
+    const finalOrderedCats = [...nonOtherCats, otherCat]
+
+    finalOrderedCats.forEach((cat) => {
       const groupPartners = partners.filter((p) => matchCategory(p, cat.key))
       if (groupPartners.length > 0) {
         result.push({

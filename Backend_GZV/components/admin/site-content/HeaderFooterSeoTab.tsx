@@ -229,6 +229,12 @@ export function HeaderFooterSeoTab({
   const privacyUrl = footer.privacy_url || "/privacy"
   const setPrivacyUrl = (val: string) => setFooter({ ...footer, privacy_url: val })
 
+  const showTerms = footer.show_terms !== false
+  const setShowTerms = (val: boolean) => setFooter({ ...footer, show_terms: val })
+
+  const showPrivacy = footer.show_privacy !== false
+  const setShowPrivacy = (val: boolean) => setFooter({ ...footer, show_privacy: val })
+
   const showSocial = footer.show_social !== false
   const setShowSocial = (val: boolean) => setFooter({ ...footer, show_social: val })
 
@@ -963,8 +969,8 @@ export function HeaderFooterSeoTab({
                 >
                   <p>{copyrightText || `© 2026 ${siteTitle}. All rights reserved.`}</p>
                   <div className="flex items-center gap-4 text-[11px]">
-                    <span className="hover:text-[#ed1c24]">Điều khoản sử dụng</span>
-                    <span className="hover:text-[#ed1c24]">Bảo mật</span>
+                    {showTerms && <span className="hover:text-[#ed1c24]">Điều khoản sử dụng</span>}
+                    {showPrivacy && <span className="hover:text-[#ed1c24]">Bảo mật</span>}
                   </div>
                 </div>
               </div>
@@ -1396,22 +1402,37 @@ export function HeaderFooterSeoTab({
                     />
                   </div>
                   <div className="grid sm:grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">URL Điều khoản sử dụng</Label>
+                    {/* Điều khoản sử dụng */}
+                    <div className="space-y-2 p-3.5 bg-slate-50 border border-slate-200 rounded-none dark:border-white/10 dark:bg-slate-950/40">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
+                          Điều khoản sử dụng
+                        </Label>
+                        <Switch checked={showTerms} onCheckedChange={setShowTerms} />
+                      </div>
                       <Input
                         value={termsUrl}
                         onChange={(e) => setTermsUrl(e.target.value)}
                         placeholder="/terms..."
-                        className="mt-1.5 rounded-none border-slate-200 text-xs font-mono h-10 dark:border-white/10"
+                        disabled={!showTerms}
+                        className="rounded-none border-slate-200 text-xs font-mono h-9 bg-white dark:border-white/10 dark:bg-slate-900 disabled:opacity-50"
                       />
                     </div>
-                    <div>
-                      <Label className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">URL Chính sách bảo mật</Label>
+
+                    {/* Chính sách bảo mật */}
+                    <div className="space-y-2 p-3.5 bg-slate-50 border border-slate-200 rounded-none dark:border-white/10 dark:bg-slate-950/40">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
+                          Chính sách bảo mật
+                        </Label>
+                        <Switch checked={showPrivacy} onCheckedChange={setShowPrivacy} />
+                      </div>
                       <Input
                         value={privacyUrl}
                         onChange={(e) => setPrivacyUrl(e.target.value)}
                         placeholder="/privacy..."
-                        className="mt-1.5 rounded-none border-slate-200 text-xs font-mono h-10 dark:border-white/10"
+                        disabled={!showPrivacy}
+                        className="rounded-none border-slate-200 text-xs font-mono h-9 bg-white dark:border-white/10 dark:bg-slate-900 disabled:opacity-50"
                       />
                     </div>
                   </div>

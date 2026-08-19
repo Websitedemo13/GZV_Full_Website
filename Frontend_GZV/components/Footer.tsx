@@ -115,8 +115,10 @@ export default function Footer({ overrideConfig, activeColumn, onSelectColumn }:
     contact_person_phone: metaItem.contact_person_phone || dbFooter?.contact_person_phone || "(+84) 329 381 489",
     contact_person_email: metaItem.contact_person_email || dbFooter?.contact_person_email || "one.gzv@gmail.com",
     copyright_text: dbFooter?.copyright_text,
-    terms_url: metaItem.terms_url || dbFooter?.terms_url,
-    privacy_url: metaItem.privacy_url || dbFooter?.privacy_url,
+    terms_url: metaItem.terms_url || dbFooter?.terms_url || "/terms",
+    privacy_url: metaItem.privacy_url || dbFooter?.privacy_url || "/privacy",
+    show_terms: metaItem.show_terms === false ? false : (dbFooter?.show_terms === false ? false : true),
+    show_privacy: metaItem.show_privacy === false ? false : (dbFooter?.show_privacy === false ? false : true),
     show_social: dbFooter?.show_social,
     footer_bg_color: dbFooter?.background_color,
     footer_text_color: dbFooter?.footer_text_color,
@@ -437,8 +439,16 @@ export default function Footer({ overrideConfig, activeColumn, onSelectColumn }:
         >
           <p>{copyright}</p>
           <div className="flex items-center gap-5">
-            {fc.terms_url && <a href={fc.terms_url} onClick={(e) => onSelectColumn && e.preventDefault()} className="hover:text-[#ed1c24] transition-colors">Điều khoản sử dụng</a>}
-            {fc.privacy_url && <a href={fc.privacy_url} onClick={(e) => onSelectColumn && e.preventDefault()} className="hover:text-[#ed1c24] transition-colors">Bảo mật</a>}
+            {fc.show_terms && fc.terms_url && (
+              <a href={fc.terms_url} onClick={(e) => onSelectColumn && e.preventDefault()} className="hover:text-[#ed1c24] transition-colors">
+                Điều khoản sử dụng
+              </a>
+            )}
+            {fc.show_privacy && fc.privacy_url && (
+              <a href={fc.privacy_url} onClick={(e) => onSelectColumn && e.preventDefault()} className="hover:text-[#ed1c24] transition-colors">
+                Bảo mật
+              </a>
+            )}
           </div>
         </div>
       </div>

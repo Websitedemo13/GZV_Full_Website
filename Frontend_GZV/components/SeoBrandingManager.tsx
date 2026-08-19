@@ -45,8 +45,20 @@ export default function SeoBrandingManager() {
       if (isHome) {
         document.title = defaultSiteTitle
       } else {
-        const pageTitle = page?.title && page.title !== "doi-tac" ? page.title : (page?.seo_title || "Đối tác")
-        document.title = `${pageTitle} | ${branding.site_name || "GZV"}`
+        const slug = getPageSlugFromPath(pathname)
+        const DEFAULT_PAGE_NAMES: Record<string, string> = {
+          "gioi-thieu": "Giới thiệu",
+          "dich-vu": "Dịch vụ",
+          "du-an": "Dự án",
+          "gzver": "GZVers",
+          "doi-tac": "Đối tác",
+          "tin-tuc": "Tin tức",
+          "lien-he": "Liên hệ",
+        }
+
+        const pageTitle = page?.title || page?.seo_title || DEFAULT_PAGE_NAMES[slug] || slug
+        const siteBrand = branding.site_name || "GZV"
+        document.title = siteBrand ? `${pageTitle} | ${siteBrand}` : pageTitle
       }
 
       upsertMeta("description", page?.seo_description || branding.default_description)
