@@ -74,11 +74,14 @@ const DEFAULT_FIELDS: FormField[] = [
 ]
 
 const DEFAULT_MAP =
-  "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.917155214181!2d106.69327317583824!3d10.740868259846957!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752fa1667d22ef%3A0x9146408a220f7abf!2zMTM5IMSQLiBOZ3V54buFbiBUaOG7iyBUaOG6rXAsIEtodSDEkcO0IHRo4buLIEhpbSBMYW0sIFTDom4gSMawbmcsIEjhu5MgQ2jDrSBNaW5oLCBWaWV0bmFt!5e0!3m2!1sen!2s!4v1777740146485!5m2!1sen!2s"
+  "https://maps.google.com/maps?q=230/5/10%20V%C4%A9nh%20Vi%E1%BB%85n%2C%20Ph%C6%B0%E1%BB%9Dng%20V%C6%B0%E1%BB%9Dn%20L%C3%A0i%2C%20TP.%20HCM&t=&z=16&ie=UTF8&iwloc=&output=embed"
 
 function getSafeMapEmbedUrl(url?: string | null, fallbackAddress?: string): string {
+  const addressQuery = fallbackAddress || "230/5/10 Vĩnh Viễn, Phường Vườn Lài, TP. HCM"
+  const defaultEmbed = `https://maps.google.com/maps?q=${encodeURIComponent(addressQuery)}&t=&z=16&ie=UTF8&iwloc=&output=embed`
+
   if (!url || typeof url !== "string" || !url.trim()) {
-    return DEFAULT_MAP
+    return defaultEmbed
   }
 
   let clean = url.trim()
@@ -95,8 +98,8 @@ function getSafeMapEmbedUrl(url?: string | null, fallbackAddress?: string): stri
   }
 
   // Fallback for regular Google links that block iframes
-  const q = encodeURIComponent(fallbackAddress || "139 Nguyễn Thị Thập, Tân Hưng, Q.7, TP.HCM")
-  return `https://maps.google.com/maps?q=${q}&t=&z=15&ie=UTF8&iwloc=&output=embed`
+  const q = encodeURIComponent(addressQuery)
+  return `https://maps.google.com/maps?q=${q}&t=&z=16&ie=UTF8&iwloc=&output=embed`
 }
 
 const DEFAULT_SETTINGS: ContactSettings = {
@@ -184,57 +187,57 @@ export default function ContactForm(props: ContactFormProps = {}) {
 
   useEffect(() => {
     let mounted = true
-    ;(async () => {
-      const [fieldsResult, settingsResult, blockResult] = await Promise.all([
-        supabase.from("contact_form_fields").select("*").eq("is_active", true).order("sort_order", { ascending: true }),
-        supabase.from("site_contact_settings").select("*").eq("id", 1).maybeSingle(),
-        supabase.from("site_page_blocks").select("*").eq("page_slug", "lien-he").eq("component_type", "contact_form").maybeSingle(),
-      ])
-      if (!mounted) return
-      if (!fieldsResult.error && fieldsResult.data?.length) {
-        setFields(
-          fieldsResult.data.map((row: any) => ({
-            ...row,
-            options: normalizeOptions(row.options),
-            width: row.width === "half" ? "half" : "full",
-          })) as FormField[]
-        )
-      }
-
-      let merged: ContactSettings = { ...DEFAULT_SETTINGS }
-      if (!settingsResult.error && settingsResult.data) {
-        merged = { ...merged, ...settingsResult.data }
-      }
-
-      if (!blockResult.error && blockResult.data?.props) {
-        const bp = blockResult.data.props
-        if (bp.info_title) merged.info_title = bp.info_title
-        if (bp.info_subtitle) merged.hero_subtitle = bp.info_subtitle
-        if (bp.form_title) merged.form_title = bp.form_title
-        if (bp.form_description) merged.form_description = bp.form_description
-        if (bp.submit_label) merged.submit_label = bp.submit_label
-        if (bp.success_message) merged.success_message = bp.success_message
-        if (bp.map_title) merged.map_title = bp.map_title
-        if (bp.map_embed_url) merged.map_embed_url = bp.map_embed_url
-        if (bp.map_enabled !== undefined) merged.map_enabled = bp.map_enabled
-        if (bp.email || bp.phone || bp.address || bp.working_hours) {
-          const items: ContactItem[] = []
-          if (bp.email) items.push({ icon: "mail", title: "EMAIL", lines: [bp.email], href: `mailto:${bp.email}` })
-          if (bp.phone) items.push({ icon: "phone", title: "HOTLINE", lines: [bp.phone], href: `tel:${bp.phone}` })
-          if (bp.address) items.push({ icon: "map", title: "ĐỊA CHỈ", lines: [bp.address] })
-          if (bp.working_hours) items.push({ icon: "clock", title: "GIỜ LÀM VIỆC", lines: [bp.working_hours] })
-          if (items.length > 0) merged.contact_items = items
+      ; (async () => {
+        const [fieldsResult, settingsResult, blockResult] = await Promise.all([
+          supabase.from("contact_form_fields").select("*").eq("is_active", true).order("sort_order", { ascending: true }),
+          supabase.from("site_contact_settings").select("*").eq("id", 1).maybeSingle(),
+          supabase.from("site_page_blocks").select("*").eq("page_slug", "lien-he").eq("component_type", "contact_form").maybeSingle(),
+        ])
+        if (!mounted) return
+        if (!fieldsResult.error && fieldsResult.data?.length) {
+          setFields(
+            fieldsResult.data.map((row: any) => ({
+              ...row,
+              options: normalizeOptions(row.options),
+              width: row.width === "half" ? "half" : "full",
+            })) as FormField[]
+          )
         }
-        if (bp.social_facebook || bp.social_youtube) {
-          const sLinks: SocialLink[] = []
-          if (bp.social_facebook) sLinks.push({ icon: "facebook", label: "Facebook", href: bp.social_facebook, visible: true })
-          if (bp.social_youtube) sLinks.push({ icon: "youtube", label: "YouTube", href: bp.social_youtube, visible: true })
-          if (sLinks.length > 0) merged.social_links = sLinks
-        }
-      }
 
-      setSettings(merged)
-    })().catch(() => undefined)
+        let merged: ContactSettings = { ...DEFAULT_SETTINGS }
+        if (!settingsResult.error && settingsResult.data) {
+          merged = { ...merged, ...settingsResult.data }
+        }
+
+        if (!blockResult.error && blockResult.data?.props) {
+          const bp = blockResult.data.props
+          if (bp.info_title) merged.info_title = bp.info_title
+          if (bp.info_subtitle) merged.hero_subtitle = bp.info_subtitle
+          if (bp.form_title) merged.form_title = bp.form_title
+          if (bp.form_description) merged.form_description = bp.form_description
+          if (bp.submit_label) merged.submit_label = bp.submit_label
+          if (bp.success_message) merged.success_message = bp.success_message
+          if (bp.map_title) merged.map_title = bp.map_title
+          if (bp.map_embed_url) merged.map_embed_url = bp.map_embed_url
+          if (bp.map_enabled !== undefined) merged.map_enabled = bp.map_enabled
+          if (bp.email || bp.phone || bp.address || bp.working_hours) {
+            const items: ContactItem[] = []
+            if (bp.email) items.push({ icon: "mail", title: "EMAIL", lines: [bp.email], href: `mailto:${bp.email}` })
+            if (bp.phone) items.push({ icon: "phone", title: "HOTLINE", lines: [bp.phone], href: `tel:${bp.phone}` })
+            if (bp.address) items.push({ icon: "map", title: "ĐỊA CHỈ", lines: [bp.address] })
+            if (bp.working_hours) items.push({ icon: "clock", title: "GIỜ LÀM VIỆC", lines: [bp.working_hours] })
+            if (items.length > 0) merged.contact_items = items
+          }
+          if (bp.social_facebook || bp.social_youtube) {
+            const sLinks: SocialLink[] = []
+            if (bp.social_facebook) sLinks.push({ icon: "facebook", label: "Facebook", href: bp.social_facebook, visible: true })
+            if (bp.social_youtube) sLinks.push({ icon: "youtube", label: "YouTube", href: bp.social_youtube, visible: true })
+            if (sLinks.length > 0) merged.social_links = sLinks
+          }
+        }
+
+        setSettings(merged)
+      })().catch(() => undefined)
     return () => {
       mounted = false
     }

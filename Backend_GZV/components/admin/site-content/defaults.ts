@@ -399,8 +399,8 @@ export const fallbackTemplates: SectionTemplate[] = [
     component_type: "google_map",
     default_props: {
       title: "Tìm chúng tôi trên bản đồ",
-      address: "139 Nguyễn Thị Thập, Tân Hưng, Q.7, TP.HCM",
-      map_embed_url: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.917155214181!2d106.69327317583824!3d10.740868259846957!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752fa1667d22ef%3A0x9146408a220f7abf!2zMTM5IMSQLiBOZ3V54buFbiBUaOG7iyBUaOG6rXAsIEtodSDEkcO0IHRo4buLIEhpbSBMYW0sIFTDom4gSMawbmcsIEjhu5MgQ2jDrSBNaW5oLCBWaWV0bmFt!5e0!3m2!1sen!2s!4v1777740146485!5m2!1sen!2s",
+      address: "230/5/10 Vĩnh Viễn, Phường Vườn Lài, TP. HCM",
+      map_embed_url: "https://maps.google.com/maps?q=230/5/10%20V%C4%A9nh%20Vi%E1%BB%85n%2C%20Ph%C6%B0%E1%BB%9Dng%20V%C6%B0%E1%BB%9Dn%20L%C3%A0i%2C%20TP.%20HCM&t=&z=16&ie=UTF8&iwloc=&output=embed",
       height: "medium",
       map_enabled: true,
     },
@@ -426,6 +426,7 @@ export const defaultNav: NavItem[] = [
   },
   { href: "/du-an", label_vi: "DỰ ÁN", label_en: "PROJECTS", sort_order: 30, is_visible: true, is_page_enabled: true },
   { href: "/gzver", label_vi: "GZVers", label_en: "GZVers", sort_order: 40, is_visible: true, is_page_enabled: true },
+  { href: "/doi-tac", label_vi: "ĐỐI TÁC", label_en: "PARTNERS", sort_order: 45, is_visible: true, is_page_enabled: true },
   { href: "/tin-tuc", label_vi: "TIN TỨC", label_en: "NEWS", sort_order: 50, is_visible: true, is_page_enabled: true },
   { href: "/lien-he", label_vi: "LIÊN HỆ", label_en: "CONTACT", sort_order: 60, is_visible: true, is_page_enabled: true },
 ]
@@ -435,6 +436,7 @@ export const quickBuilderPages = [
   { slug: "gioi-thieu", label: "Giới thiệu", hint: "Câu chuyện, sứ mệnh, tầm nhìn" },
   { slug: "du-an", label: "Dự án", hint: "Banner, block dự án" },
   { slug: "gzver", label: "GZVers", hint: "Cộng đồng, ban, profile" },
+  { slug: "doi-tac", label: "Đối tác", hint: "Mạng lưới đối tác, stats, CTA" },
   { slug: "tin-tuc", label: "Tin tức", hint: "Banner và block nội dung tin" },
   { slug: "lien-he", label: "Liên hệ", hint: "Form, map, thông tin liên hệ" },
 ]
@@ -850,7 +852,55 @@ export const defaultPageBlocks: PageBlock[] = [
     is_visible: true,
   },
 
-  // 5. Tin tức (/tin-tuc)
+  // 5. Đối tác (/doi-tac)
+  {
+    page_slug: "doi-tac",
+    block_key: "stats",
+    component_type: "stats_bar",
+    title: "MẠNG LƯỚI TOÀN CẦU",
+    props: {
+      columns: 4,
+      stats: [
+        { value: "100+", label: "Đối tác doanh nghiệp", description: "Tập đoàn & Doanh nghiệp hàng đầu" },
+        { value: "50+", label: "Trường ĐH & Viện", description: "Hợp tác đào tạo và nghiên cứu" },
+        { value: "5000+", label: "Học viên", description: "Được đào tạo và kết nối việc làm" },
+        { value: "100%", label: "Thực chiến", description: "Cam kết đồng hành & phát triển" },
+      ],
+    },
+    sort_order: 10,
+    is_visible: true,
+  },
+  {
+    page_slug: "doi-tac",
+    block_key: "partners_list",
+    component_type: "partners_grid",
+    title: "MẠNG LƯỚI ĐỐI TÁC CHIẾN LƯỢC",
+    props: {
+      title: "MẠNG LƯỚI ĐỐI TÁC CHIẾN LƯỢC",
+      subtitle: "Đồng hành cùng các tập đoàn, doanh nghiệp và viện trường hàng đầu kiến tạo giá trị thực chiến",
+      show_filter: true,
+    },
+    sort_order: 20,
+    is_visible: true,
+  },
+  {
+    page_slug: "doi-tac",
+    block_key: "cta",
+    component_type: "cta_band",
+    title: "HỢP TÁC CÙNG GZV",
+    props: {
+      title: "Đồng hành & Phát triển cùng GZV",
+      subtitle: "Kết nối nguồn nhân lực chất lượng cao, triển khai dự án thực chiến và mở rộng mạng lưới kinh doanh.",
+      button_label: "Liên hệ hợp tác ngay",
+      button_url: "/lien-he",
+      background_from: "#050505",
+      background_to: "#ed1c24",
+    },
+    sort_order: 30,
+    is_visible: true,
+  },
+
+  // 6. Tin tức (/tin-tuc)
   {
     page_slug: "tin-tuc",
     block_key: "stats",

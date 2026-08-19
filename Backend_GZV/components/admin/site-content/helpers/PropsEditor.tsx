@@ -27,6 +27,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { PageBlock } from "../types"
 import { Field } from "./BasicHelpers"
 import { ImagePositionAndZoomEditor } from "./ImagePositionAndZoomEditor"
+import { PartnersSectionEditor } from "./PartnersSectionEditor"
 
 function GzversGridPropsEditor({
   value = {},
@@ -620,6 +621,11 @@ export function PropsEditor({
       {/* 0. GZVers Grid Department Order & Selection Config */}
       {isGzversGrid && (
         <GzversGridPropsEditor value={value} updateKey={updateKey} />
+      )}
+
+      {/* 0.1. Partners Grid Configuration */}
+      {isPartners && (
+        <PartnersSectionEditor value={value} updateKey={updateKey} onChange={onChange} />
       )}
 
       {/* 1. Projects Grid Config */}

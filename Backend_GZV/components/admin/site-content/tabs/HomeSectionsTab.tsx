@@ -11,6 +11,7 @@ import type { HomeSection } from "../types"
 import { SortableHomeSectionRow } from "../helpers/SortableRows"
 import { Field, SwitchLine } from "../helpers/BasicHelpers"
 import { RawJsonEditor } from "../helpers/RawJsonEditor"
+import { HomePartnersEditor } from "../helpers/HomePartnersEditor"
 
 export function HomeSectionsTab({
   homeSections,
@@ -160,17 +161,11 @@ export function HomeSectionsTab({
                 <Field label="Tiêu đề chính Section">
                   <Input value={selectedSection.title || ""} onChange={(e) => updateSection({ title: e.target.value })} className="rounded-none font-bold" />
                 </Field>
-                <div className="flex items-end">
-                  <SwitchLine label="Bật hiển thị Section trên Trang Chủ" checked={selectedSection.is_visible} onChange={(v) => updateSection({ is_visible: v })} />
-                </div>
                 {(selectedSection.section_key === "hero" || selectedSection.section_key === "about_gzv") && (
                   <>
                     <Field label="Tên nút bấm (CTA Label)"><Input value={selectedSection.button_label || ""} onChange={(e) => updateSection({ button_label: e.target.value })} placeholder="Ví dụ: Xem chi tiết" className="rounded-none" /></Field>
                     <Field label="Link nút bấm (CTA URL)"><Input value={selectedSection.button_url || ""} onChange={(e) => updateSection({ button_url: e.target.value })} placeholder="/gioi-thieu hoặc /dich-vu" className="rounded-none font-mono text-xs" /></Field>
                   </>
-                )}
-                {(selectedSection.section_key === "projects" || selectedSection.section_key === "partners" || selectedSection.section_key === "news") && (
-                  <Field label="Số lượng item hiển thị tối đa (Limit)"><Input type="number" value={selectedSection.item_limit} onChange={(e) => updateSection({ item_limit: Number(e.target.value) })} className="rounded-none" /></Field>
                 )}
               </div>
               <Field label="Phụ đề / Slogan ngắn"><Input value={selectedSection.subtitle || ""} onChange={(e) => updateSection({ subtitle: e.target.value })} placeholder="Ví dụ: THE NEXT-GEN COMPANY" className="rounded-none text-xs" /></Field>
@@ -476,6 +471,18 @@ export function HomeSectionsTab({
                     />
                   </Field>
                 </div>
+              )}
+
+              {/* 4.1. PARTNERS MARQUEE CONTROLS ON HOME */}
+              {selectedSection.section_key === "partners" && (
+                <HomePartnersEditor
+                  settings={selectedSection.settings || {}}
+                  updateSectionSettings={updateSectionSettings}
+                  title={selectedSection.title}
+                  subtitle={selectedSection.subtitle || ""}
+                  onTitleChange={(newTitle) => updateSection({ title: newTitle })}
+                  onSubtitleChange={(newSubtitle) => updateSection({ subtitle: newSubtitle })}
+                />
               )}
 
               {/* 5. CTA SECTION CONTROLS ON HOME */}
