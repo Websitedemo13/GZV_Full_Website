@@ -101,12 +101,7 @@ export default function AboutBoxes({
     }
 
     return [...rawList].sort((a, b) => {
-      const nameA = (a.name || "").toLowerCase().trim()
-      const nameB = (b.name || "").toLowerCase().trim()
-      const prioA = ORDER_PRIORITY[nameA] ?? 99
-      const prioB = ORDER_PRIORITY[nameB] ?? 99
-      if (prioA !== prioB) return prioA - prioB
-      return (a.sort_order || 0) - (b.sort_order || 0)
+      return (Number(a.sort_order) || 0) - (Number(b.sort_order) || 0)
     })
   }, [departments, boxes])
 
@@ -149,11 +144,11 @@ export default function AboutBoxes({
           })}
         </div>
 
-        <div className="mt-8 border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-slate-950 lg:p-7">
-          <div className="mb-6 flex flex-col gap-3 border-b border-slate-200 pb-5 dark:border-white/10 md:flex-row md:items-end md:justify-between">
+        <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50/50 p-6 dark:border-white/10 dark:bg-slate-950 lg:p-8">
+          <div className="mb-8 flex flex-col gap-3 border-b border-slate-200 pb-5 dark:border-white/10 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#ed1c24]">Đội ngũ</p>
-              <h3 className="mt-2 text-3xl font-black uppercase text-slate-950 dark:text-white">{active?.name || "GZVers"}</h3>
+              <h3 className="mt-1 text-2xl font-black uppercase text-slate-950 dark:text-white sm:text-3xl">{active?.name || "GZVers"}</h3>
             </div>
             <p className="text-xs font-black uppercase tracking-widest text-slate-400">{activeMembers.length} hồ sơ đang hiển thị</p>
           </div>
@@ -161,34 +156,34 @@ export default function AboutBoxes({
           {loading ? (
             <div className="h-36 animate-pulse bg-slate-100 dark:bg-white/5" />
           ) : activeMembers.length > 0 ? (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {activeMembers.map((member) => (
-                <div key={member.id} className="group grid grid-cols-[100px_1fr] overflow-hidden border border-slate-200 bg-slate-50/80 transition-all duration-300 hover:-translate-y-1 hover:border-[#ed1c24] hover:shadow-lg dark:border-white/10 dark:bg-white/[0.04]">
-                  <div className="relative h-full min-h-[136px] overflow-hidden bg-slate-200 dark:bg-black">
+                <div
+                  key={member.id}
+                  className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl dark:border-white/10 dark:bg-slate-900"
+                >
+                  {/* Top Image Frame */}
+                  <div className="relative aspect-[4/4.5] w-full overflow-hidden bg-slate-900">
                     <img
                       src={member.avatar_url || "/gzvers/default.webp"}
                       alt={member.full_name}
-                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      className="h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
                       style={{
-                        objectPosition: `${member.avatar_position_x ?? 50}% ${member.avatar_position_y ?? 32}%`,
+                        objectPosition: `${member.avatar_position_x ?? 50}% ${member.avatar_position_y ?? 25}%`,
                         transform: `scale(${(member.avatar_scale || 100) / 100})`,
                       }}
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                   </div>
-                  <div className="flex flex-col justify-between p-4">
-                    <div>
-                      <span className="inline-block bg-[#ed1c24]/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[#ed1c24] dark:bg-[#ed1c24]/20">
-                        {member.position || member.company || active?.name}
-                      </span>
-                      <h4 className="mt-2 text-base font-black uppercase leading-snug text-slate-950 transition-colors duration-200 group-hover:text-[#ed1c24] dark:text-white">
-                        {member.full_name}
-                      </h4>
-                      {(member.headline || member.achievement_summary) && (
-                        <p className="mt-2 line-clamp-2 text-xs font-semibold leading-5 text-slate-500 dark:text-slate-300">
-                          {member.headline || member.achievement_summary}
-                        </p>
-                      )}
-                    </div>
+
+                  {/* Bottom Text Content */}
+                  <div className="flex flex-1 flex-col items-center justify-center p-5 text-center">
+                    <h4 className="text-base font-bold text-[#ed1c24] transition-colors group-hover:text-[#c91218] dark:text-[#ff4d4f]">
+                      {member.full_name}
+                    </h4>
+                    <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+                      {member.position || member.company || member.headline || active?.name}
+                    </p>
                   </div>
                 </div>
               ))}

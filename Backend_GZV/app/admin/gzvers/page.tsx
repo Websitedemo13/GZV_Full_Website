@@ -27,8 +27,30 @@ import {
   UserCheck,
   Users2,
   Sparkles,
+  GripVertical,
 } from "lucide-react"
 import { toast } from "sonner"
+
+// Drag and Drop imports
+import {
+  DndContext,
+  closestCenter,
+  type DragEndEvent,
+  type DragStartEvent,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  DragOverlay,
+} from "@dnd-kit/core"
+import {
+  SortableContext,
+  useSortable,
+  arrayMove,
+  rectSortingStrategy,
+  sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
 
 type Department = {
   id?: string
@@ -189,6 +211,69 @@ export default function AdminGzversPage() {
       fetchData()
     } else {
       toast.success(`Đã ${nextStatus ? "kích hoạt hiển thị" : "tạm ẩn"} ${gzver.full_name}`)
+    }
+  }
+
+  const [activeDepartmentDragId, setActiveDepartmentDragId] = useState<string | null>(null)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 3,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
+  const handleDepartmentDragStart = (event: DragStartEvent) => {
+    setActiveDepartmentDragId(String(event.active.id))
+  }
+
+  const handleDepartmentDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+    setActiveDepartmentDragId(null)
+    if (!over || active.id === over.id) return
+
+    const oldIndex = orderedDepartments.findIndex(
+      (d) => (d.id || d.temp_id || d.slug) === active.id
+    )
+    const newIndex = orderedDepartments.findIndex(
+      (d) => (d.id || d.temp_id || d.slug) === over.id
+    )
+
+    if (oldIndex !== -1 && newIndex !== -1) {
+      const reordered = arrayMove(orderedDepartments, oldIndex, newIndex).map((item, idx) => ({
+        ...item,
+        sort_order: (idx + 1) * 10,
+      }))
+      setDepartments(reordered)
+
+      // Auto update in database immediately
+      try {
+        const updatePayloads = reordered
+          .filter((d) => d.id)
+          .map((d) => ({
+            id: d.id,
+            name: d.name,
+            slug: d.slug,
+            description: d.description || "",
+            color: d.color || "#ed1c24",
+            sort_order: d.sort_order,
+            is_active: d.is_active !== false,
+          }))
+
+        if (updatePayloads.length > 0) {
+          const { error } = await supabase
+            .from("gzver_departments")
+            .upsert(updatePayloads, { onConflict: "id" })
+          if (error) throw error
+          toast.success("Đã cập nhật thứ tự các ban!")
+        }
+      } catch (err: any) {
+        toast.error("Lỗi khi lưu thứ tự ban: " + err.message)
+      }
     }
   }
 
@@ -407,17 +492,15 @@ export default function AdminGzversPage() {
                 <button
                   type="button"
                   onClick={() => setActiveDepartment("all")}
-                  className={`h-11 px-5 text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2.5 border rounded-none ${
-                    activeDepartment === "all"
+                  className={`h-11 px-5 text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2.5 border rounded-none ${activeDepartment === "all"
                       ? "border-[#ed1c24] bg-[#ed1c24] text-white shadow-sm"
                       : "border-slate-200 bg-white text-slate-800 hover:border-slate-400 hover:bg-slate-50 dark:border-white/10 dark:bg-slate-900 dark:text-slate-200"
-                  }`}
+                    }`}
                 >
                   <span>Tất Cả Ban</span>
                   <span
-                    className={`px-2 py-0.5 text-xs font-bold rounded-none ${
-                      activeDepartment === "all" ? "bg-white/20 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
-                    }`}
+                    className={`px-2 py-0.5 text-xs font-bold rounded-none ${activeDepartment === "all" ? "bg-white/20 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                      }`}
                   >
                     {gzvers.length}
                   </span>
@@ -435,17 +518,15 @@ export default function AdminGzversPage() {
                         type="button"
                         key={dept.id}
                         onClick={() => setActiveDepartment(dept.id || "")}
-                        className={`h-11 px-5 text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2.5 border rounded-none ${
-                          isSelected
+                        className={`h-11 px-5 text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2.5 border rounded-none ${isSelected
                             ? "border-[#ed1c24] bg-[#ed1c24] text-white shadow-sm"
                             : "border-slate-200 bg-white text-slate-800 hover:border-slate-400 hover:bg-slate-50 dark:border-white/10 dark:bg-slate-900 dark:text-slate-200"
-                        }`}
+                          }`}
                       >
                         <span>{dept.name}</span>
                         <span
-                          className={`px-2 py-0.5 text-xs font-bold rounded-none ${
-                            isSelected ? "bg-white/20 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
-                          }`}
+                          className={`px-2 py-0.5 text-xs font-bold rounded-none ${isSelected ? "bg-white/20 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                            }`}
                         >
                           {count}
                         </span>
@@ -512,90 +593,67 @@ export default function AdminGzversPage() {
             </CardHeader>
 
             <CardContent className="pt-6">
-              <div className="grid gap-4 md:grid-cols-2">
-                {orderedDepartments.map((department) => {
-                  const realIndex = departments.findIndex(
-                    (item) => (item.id || item.temp_id || item.slug) === (department.id || department.temp_id || department.slug)
-                  )
-                  const memberCount = gzvers.filter(
-                    (g) => (g.department_id || g.gzver_departments?.id) === department.id
-                  ).length
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragStart={handleDepartmentDragStart}
+                onDragEnd={handleDepartmentDragEnd}
+              >
+                <SortableContext
+                  items={orderedDepartments.map((d) => d.id || d.temp_id || d.slug)}
+                  strategy={rectSortingStrategy}
+                >
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {orderedDepartments.map((department, index) => {
+                      const realIndex = departments.findIndex(
+                        (item) => (item.id || item.temp_id || item.slug) === (department.id || department.temp_id || department.slug)
+                      )
+                      const memberCount = gzvers.filter(
+                        (g) => (g.department_id || g.gzver_departments?.id) === department.id
+                      ).length
 
-                  const stableKey = department.id || department.temp_id || department.slug
+                      const stableKey = department.id || department.temp_id || department.slug
 
-                  return (
-                    <div
-                      key={stableKey}
-                      className={`border p-4 transition-all space-y-3 ${department.is_active
-                          ? "border-slate-200 bg-slate-50/70 dark:border-white/10 dark:bg-slate-950/50"
-                          : "border-slate-200/60 bg-slate-100/40 opacity-75 dark:border-white/5 dark:bg-slate-950/20"
-                        }`}
-                    >
-                      <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-white/10">
+                      return (
+                        <SortableDepartmentCard
+                          key={stableKey}
+                          id={stableKey}
+                          department={department}
+                          positionIndex={index + 1}
+                          memberCount={memberCount}
+                          onUpdate={(patch) => updateDepartment(realIndex, patch)}
+                          onRemove={() => removeDepartment(realIndex)}
+                        />
+                      )
+                    })}
+                  </div>
+                </SortableContext>
+
+                <DragOverlay dropAnimation={{ duration: 150, easing: "cubic-bezier(0.18, 0.67, 0.6, 1.22)" }}>
+                  {activeDepartmentDragId ? (() => {
+                    const dragDept = orderedDepartments.find(
+                      (d) => (d.id || d.temp_id || d.slug) === activeDepartmentDragId
+                    )
+                    if (!dragDept) return null
+                    const dragIndex = orderedDepartments.findIndex(
+                      (d) => (d.id || d.temp_id || d.slug) === activeDepartmentDragId
+                    )
+                    return (
+                      <div className="border-2 border-[#ed1c24] bg-white p-4 shadow-2xl space-y-2 dark:bg-slate-900 opacity-95 pointer-events-none rounded-none">
                         <div className="flex items-center gap-2">
+                          <span className="flex h-5 w-5 items-center justify-center bg-[#ed1c24] text-white font-mono text-[10px] font-black">
+                            {dragIndex + 1}
+                          </span>
                           <span className="text-xs font-black uppercase text-slate-900 dark:text-white">
-                            {department.name || "Ban chưa đặt tên"}
-                          </span>
-                          {!department.is_active && (
-                            <span className="px-1.5 py-0.2 text-[9px] font-bold uppercase bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                              Đang tắt
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-[10px] font-bold text-slate-500 bg-slate-200 dark:bg-slate-800 px-2 py-0.5">
-                          {memberCount} thành viên
-                        </span>
-                      </div>
-
-                      <div className="space-y-1">
-                        <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Tên Ban</Label>
-                        <Input
-                          className="h-9 rounded-none border-slate-200 bg-white text-xs dark:border-white/10 dark:bg-slate-900"
-                          value={department.name}
-                          placeholder="Nhập tên phòng ban..."
-                          onChange={(e) => updateDepartment(realIndex, { name: e.target.value })}
-                        />
-                      </div>
-
-                      <div className="space-y-1">
-                        <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Mô tả tóm tắt</Label>
-                        <Textarea
-                          className="min-h-16 rounded-none border-slate-200 bg-white text-xs dark:border-white/10 dark:bg-slate-900"
-                          value={department.description || ""}
-                          placeholder="Mô tả chức năng nhiệm vụ của ban..."
-                          onChange={(e) => updateDepartment(realIndex, { description: e.target.value })}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-white/10">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeDepartment(realIndex)}
-                          className="h-8 px-2 text-xs font-bold text-slate-400 hover:text-red-600 rounded-none"
-                        >
-                          <Trash2 className="h-3.5 w-3.5 mr-1" /> Xóa ban
-                        </Button>
-
-                        <div className="flex items-center gap-2">
-                          <Switch
-                            checked={department.is_active}
-                            onCheckedChange={(is_active) => updateDepartment(realIndex, { is_active })}
-                          />
-                          <span
-                            className={`text-[11px] font-bold uppercase ${department.is_active
-                                ? "text-emerald-600 dark:text-emerald-400"
-                                : "text-slate-400"
-                              }`}
-                          >
-                            {department.is_active ? "Bật" : "Tắt"}
+                            {dragDept.name}
                           </span>
                         </div>
+                        <p className="text-[11px] text-slate-500 line-clamp-1">{dragDept.description || "Đang di chuyển..."}</p>
                       </div>
-                    </div>
-                  )
-                })}
-              </div>
+                    )
+                  })() : null}
+                </DragOverlay>
+              </DndContext>
             </CardContent>
           </Card>
         </TabsContent>
@@ -617,6 +675,122 @@ export default function AdminGzversPage() {
         departments={departments.filter((d) => d.is_active)}
         onSave={fetchData}
       />
+    </div>
+  )
+}
+
+function SortableDepartmentCard({
+  id,
+  department,
+  positionIndex,
+  memberCount,
+  onUpdate,
+  onRemove,
+}: {
+  id: string
+  department: Department
+  positionIndex: number
+  memberCount: number
+  onUpdate: (patch: Partial<Department>) => void
+  onRemove: () => void
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
+
+  const style: React.CSSProperties = {
+    transform: CSS.Translate.toString(transform),
+    transition,
+    opacity: isDragging ? 0.35 : 1,
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`relative border p-4 transition-[border-color,background-color] space-y-3 ${
+        isDragging
+          ? "border-dashed border-[#ed1c24] bg-red-50/20 dark:bg-red-950/20"
+          : department.is_active
+          ? "border-slate-200 bg-slate-50/70 hover:border-slate-300 dark:border-white/10 dark:bg-slate-950/50"
+          : "border-slate-200/60 bg-slate-100/40 opacity-75 dark:border-white/5 dark:bg-slate-950/20"
+      }`}
+    >
+      <div className="flex items-center justify-between border-b border-slate-200 pb-2.5 dark:border-white/10">
+        <div className="flex items-center gap-2">
+          {/* Drag Handle */}
+          <button
+            {...attributes}
+            {...listeners}
+            type="button"
+            className="cursor-grab active:cursor-grabbing p-1 text-slate-400 hover:text-[#ed1c24] hover:bg-slate-200/80 dark:hover:bg-slate-800 transition-colors"
+            title="Kéo thả để thay đổi vị trí thứ tự hiển thị"
+          >
+            <GripVertical className="h-4 w-4" />
+          </button>
+
+          {/* Position Order Badge */}
+          <span className="flex h-5 w-5 items-center justify-center bg-[#ed1c24] text-white font-mono text-[10px] font-black rounded-none">
+            {positionIndex}
+          </span>
+
+          <span className="text-xs font-black uppercase text-slate-900 dark:text-white">
+            {department.name || "Ban chưa đặt tên"}
+          </span>
+
+          {!department.is_active && (
+            <span className="px-1.5 py-0.2 text-[9px] font-bold uppercase bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+              Đang tắt
+            </span>
+          )}
+        </div>
+
+        <span className="text-[10px] font-bold text-slate-500 bg-slate-200 dark:bg-slate-800 px-2 py-0.5">
+          {memberCount} thành viên
+        </span>
+      </div>
+
+      <div className="space-y-1">
+        <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Tên Ban</Label>
+        <Input
+          className="h-9 rounded-none border-slate-200 bg-white text-xs dark:border-white/10 dark:bg-slate-900"
+          value={department.name}
+          placeholder="Nhập tên phòng ban..."
+          onChange={(e) => onUpdate({ name: e.target.value })}
+        />
+      </div>
+
+      <div className="space-y-1">
+        <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Mô tả tóm tắt</Label>
+        <Textarea
+          className="min-h-16 rounded-none border-slate-200 bg-white text-xs dark:border-white/10 dark:bg-slate-900"
+          value={department.description || ""}
+          placeholder="Mô tả chức năng nhiệm vụ của ban..."
+          onChange={(e) => onUpdate({ description: e.target.value })}
+        />
+      </div>
+
+      <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-white/10">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onRemove}
+          className="h-8 px-2 text-xs font-bold text-slate-400 hover:text-red-600 rounded-none"
+        >
+          <Trash2 className="h-3.5 w-3.5 mr-1" /> Xóa ban
+        </Button>
+
+        <div className="flex items-center gap-2">
+          <Switch
+            checked={department.is_active}
+            onCheckedChange={(is_active) => onUpdate({ is_active })}
+          />
+          <span
+            className={`text-[11px] font-bold uppercase ${department.is_active ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400"
+              }`}
+          >
+            {department.is_active ? "Bật" : "Tắt"}
+          </span>
+        </div>
+      </div>
     </div>
   )
 }

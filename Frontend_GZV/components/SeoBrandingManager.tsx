@@ -39,10 +39,16 @@ export default function SeoBrandingManager() {
     let active = true
     Promise.all([getBrandingSettings(), getSitePageContent(getPageSlugFromPath(pathname))]).then(([branding, page]) => {
       if (!active) return
-      const rawTitle = page?.seo_title || page?.title || branding.default_title
-      document.title = rawTitle === branding.default_title
-        ? rawTitle
-        : (branding.title_template ? branding.title_template.replace("%s", rawTitle) : `${rawTitle} | ${branding.site_name || "GZV"}`)
+      const isHome = getPageSlugFromPath(pathname) === "home" || !getPageSlugFromPath(pathname)
+      const defaultSiteTitle = branding.default_title || branding.site_name || "GZV - The Voice of Genzers"
+
+      if (isHome) {
+        document.title = defaultSiteTitle
+      } else {
+        const pageTitle = page?.title && page.title !== "doi-tac" ? page.title : (page?.seo_title || "Đối tác")
+        document.title = `${pageTitle} | ${branding.site_name || "GZV"}`
+      }
+
       upsertMeta("description", page?.seo_description || branding.default_description)
       upsertMeta("keywords", branding.default_keywords)
       updateFavicons(branding.favicon_url)

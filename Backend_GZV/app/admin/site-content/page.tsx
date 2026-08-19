@@ -227,6 +227,15 @@ function SiteContentManager() {
         setBranding({
           ...defaultBranding,
           ...fetchedBranding,
+          show_topbar: headerMeta.show_topbar !== undefined ? headerMeta.show_topbar : true,
+          show_topbar_email: headerMeta.show_topbar_email !== undefined ? headerMeta.show_topbar_email : true,
+          show_topbar_phone: headerMeta.show_topbar_phone !== undefined ? headerMeta.show_topbar_phone : true,
+          show_topbar_badge: headerMeta.show_topbar_badge !== undefined ? headerMeta.show_topbar_badge : true,
+          topbar_bg_color: headerMeta.topbar_bg_color || "#050505",
+          topbar_text_color: headerMeta.topbar_text_color || "#ffffff",
+          topbar_email_label: fetchedBranding.topbar_email_label || "gzv.one@gmail.com",
+          topbar_phone_label: fetchedBranding.topbar_phone_label || "(+84) 329 381 489",
+          topbar_badge_label: fetchedBranding.topbar_badge_label || "GZV",
           header_bg_color: headerMeta.header_bg_color || fetchedBranding.header_bg_color || "",
           header_text_color: headerMeta.header_text_color || fetchedBranding.header_text_color || "",
           header_site_name: headerMeta.header_site_name || fetchedBranding.header_site_name || fetchedBranding.site_name || "GZV CENTER",
@@ -584,6 +593,12 @@ function SiteContentManager() {
       }
 
       const headerMeta = {
+        show_topbar: branding.show_topbar !== false,
+        show_topbar_email: branding.show_topbar_email !== false,
+        show_topbar_phone: branding.show_topbar_phone !== false,
+        show_topbar_badge: branding.show_topbar_badge !== false,
+        topbar_bg_color: branding.topbar_bg_color || "",
+        topbar_text_color: branding.topbar_text_color || "",
         header_bg_color: branding.header_bg_color || "",
         header_text_color: branding.header_text_color || "",
         header_site_name: branding.header_site_name || branding.site_name || "",

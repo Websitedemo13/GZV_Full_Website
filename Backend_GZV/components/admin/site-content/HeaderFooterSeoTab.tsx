@@ -144,6 +144,33 @@ export function HeaderFooterSeoTab({
   const showLogo = branding.show_logo !== false
   const setShowLogo = (val: boolean) => setBranding({ ...branding, show_logo: val })
 
+  const showTopbar = branding.show_topbar !== false
+  const setShowTopbar = (val: boolean) => setBranding({ ...branding, show_topbar: val })
+
+  const showTopbarEmail = branding.show_topbar_email !== false
+  const setShowTopbarEmail = (val: boolean) => setBranding({ ...branding, show_topbar_email: val })
+
+  const showTopbarPhone = branding.show_topbar_phone !== false
+  const setShowTopbarPhone = (val: boolean) => setBranding({ ...branding, show_topbar_phone: val })
+
+  const showTopbarBadge = branding.show_topbar_badge !== false
+  const setShowTopbarBadge = (val: boolean) => setBranding({ ...branding, show_topbar_badge: val })
+
+  const topbarEmail = branding.topbar_email_label || "gzv.one@gmail.com"
+  const setTopbarEmail = (val: string) => setBranding({ ...branding, topbar_email_label: val })
+
+  const topbarPhone = branding.topbar_phone_label || "(+84) 329 381 489"
+  const setTopbarPhone = (val: string) => setBranding({ ...branding, topbar_phone_label: val })
+
+  const topbarBadge = branding.topbar_badge_label || "GZV"
+  const setTopbarBadge = (val: string) => setBranding({ ...branding, topbar_badge_label: val })
+
+  const topbarBgColor = branding.topbar_bg_color || ""
+  const setTopbarBgColor = (val: string) => setBranding({ ...branding, topbar_bg_color: val })
+
+  const topbarTextColor = branding.topbar_text_color || ""
+  const setTopbarTextColor = (val: string) => setBranding({ ...branding, topbar_text_color: val })
+
   const headerBgColor = branding.header_bg_color || ""
   const setHeaderBgColor = (val: string) => setBranding({ ...branding, header_bg_color: val })
 
@@ -280,17 +307,52 @@ export function HeaderFooterSeoTab({
         {/* SUB-TAB 1: HEADER */}
         {/* ========================================================================= */}
         <TabsContent value="header" className="space-y-6 mt-0">
-          {/* Live Preview Header at Top */}
+          {/* Live Preview Header & Topbar at Top */}
           <Card className="border-slate-200 rounded-none shadow-xs bg-white overflow-hidden dark:border-white/10 dark:bg-slate-900">
             <div className="px-4 py-2 border-b border-slate-200 bg-slate-50 flex items-center justify-between dark:border-white/10 dark:bg-slate-950">
               <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-none bg-[#ed1c24] animate-pulse" />
-                Xem trước trực tiếp (Live Preview Header)
+                Xem trước trực tiếp (Live Preview Header & Topbar)
               </span>
               <span className="text-[10px] font-mono text-slate-400 uppercase hidden sm:inline">
                 Giao diện Header ngoài trang public
               </span>
             </div>
+
+            {/* Topbar Preview */}
+            {showTopbar && (
+              <div
+                className="w-full border-b border-white/10 px-4 py-1.5 transition-colors text-[11px] font-bold uppercase"
+                style={{
+                  backgroundColor: topbarBgColor || "#050505",
+                  color: topbarTextColor || "#ffffff",
+                }}
+              >
+                <div className="flex items-center justify-between max-w-5xl mx-auto">
+                  <div className="flex items-center gap-6 opacity-90">
+                    {showTopbarEmail && (
+                      <span className="inline-flex items-center gap-1.5">
+                        <Mail className="h-3.5 w-3.5 text-[#ed1c24]" />
+                        {topbarEmail}
+                      </span>
+                    )}
+                    {showTopbarPhone && (
+                      <span className="inline-flex items-center gap-1.5">
+                        <Phone className="h-3.5 w-3.5 text-[#ed1c24]" />
+                        {topbarPhone}
+                      </span>
+                    )}
+                  </div>
+                  {showTopbarBadge && (
+                    <span className="border-l-2 border-[#ed1c24] pl-2.5 font-bold">
+                      {topbarBadge}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Navbar Preview */}
             <div
               className="w-full border-b border-slate-200 p-4 transition-colors dark:border-white/10"
               style={{
@@ -312,15 +374,162 @@ export function HeaderFooterSeoTab({
                   </span>
                 </div>
                 <div className="flex items-center gap-4 text-xs font-bold uppercase tracking-wider opacity-80 hidden md:flex">
+                  <span>Trang chủ</span>
                   <span>Giới thiệu</span>
                   <span>Dịch vụ</span>
                   <span>Dự án</span>
                   <span>GZVers</span>
+                  <span>Đối tác</span>
                   <span>Tin tức</span>
                   <span>Liên hệ</span>
                 </div>
               </div>
             </div>
+          </Card>
+
+          {/* CẤU HÌNH THANH TOPBAR (EMAIL, SĐT, BADGE PHÍA TRÊN CÙNG) */}
+          <Card className="border-slate-200 rounded-none shadow-xs bg-white dark:border-white/10 dark:bg-slate-900">
+            <CardHeader className="pb-3 border-b border-slate-200 dark:border-white/10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-sm font-black uppercase tracking-wider flex items-center gap-2 text-slate-900 dark:text-white">
+                    <Phone className="h-4 w-4 text-[#ed1c24]" /> Cấu hình thanh Topbar trên cùng
+                  </CardTitle>
+                  <CardDescription className="text-xs font-semibold mt-1">
+                    Bật/tắt toàn bộ hoặc tùy chỉnh từng mục Email, Số điện thoại và Nhãn thương hiệu hiển thị ở thanh trên cùng.
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    {showTopbar ? "Đang bật" : "Đang tắt"}
+                  </span>
+                  <Switch checked={showTopbar} onCheckedChange={setShowTopbar} />
+                </div>
+              </div>
+            </CardHeader>
+            {showTopbar && (
+              <CardContent className="space-y-4 pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* 1. Email */}
+                  <div className="space-y-2 p-3.5 bg-slate-50 border border-slate-200 rounded-none dark:border-white/10 dark:bg-slate-950/40">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <Mail className="h-3.5 w-3.5 text-[#ed1c24]" /> Email liên hệ
+                      </Label>
+                      <Switch checked={showTopbarEmail} onCheckedChange={setShowTopbarEmail} />
+                    </div>
+                    <Input
+                      value={topbarEmail}
+                      onChange={(e) => setTopbarEmail(e.target.value)}
+                      placeholder="gzv.one@gmail.com"
+                      disabled={!showTopbarEmail}
+                      className="rounded-none border-slate-200 text-xs font-semibold h-9 bg-white dark:border-white/10 dark:bg-slate-900 disabled:opacity-50"
+                    />
+                  </div>
+
+                  {/* 2. Số điện thoại */}
+                  <div className="space-y-2 p-3.5 bg-slate-50 border border-slate-200 rounded-none dark:border-white/10 dark:bg-slate-950/40">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <Phone className="h-3.5 w-3.5 text-[#ed1c24]" /> Số điện thoại / Hotline
+                      </Label>
+                      <Switch checked={showTopbarPhone} onCheckedChange={setShowTopbarPhone} />
+                    </div>
+                    <Input
+                      value={topbarPhone}
+                      onChange={(e) => setTopbarPhone(e.target.value)}
+                      placeholder="(+84) 329 381 489"
+                      disabled={!showTopbarPhone}
+                      className="rounded-none border-slate-200 text-xs font-semibold h-9 bg-white dark:border-white/10 dark:bg-slate-900 disabled:opacity-50"
+                    />
+                  </div>
+
+                  {/* 3. Nhãn bên phải */}
+                  <div className="space-y-2 p-3.5 bg-slate-50 border border-slate-200 rounded-none dark:border-white/10 dark:bg-slate-950/40">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <Sparkles className="h-3.5 w-3.5 text-[#ed1c24]" /> Nhãn thương hiệu
+                      </Label>
+                      <Switch checked={showTopbarBadge} onCheckedChange={setShowTopbarBadge} />
+                    </div>
+                    <Input
+                      value={topbarBadge}
+                      onChange={(e) => setTopbarBadge(e.target.value)}
+                      placeholder="GZV"
+                      disabled={!showTopbarBadge}
+                      className="rounded-none border-slate-200 text-xs font-semibold h-9 bg-white dark:border-white/10 dark:bg-slate-900 disabled:opacity-50"
+                    />
+                  </div>
+                </div>
+
+                {/* Tùy chỉnh màu sắc Topbar */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-200 dark:border-white/10">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Màu nền Topbar</Label>
+                      {topbarBgColor && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setTopbarBgColor("")}
+                          className="h-5 px-1.5 text-[10px] font-bold text-slate-500 hover:text-red-600 rounded-none"
+                        >
+                          <RotateCcw className="h-3 w-3 mr-1" /> Reset
+                        </Button>
+                      )}
+                    </div>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="color"
+                        value={topbarBgColor || "#050505"}
+                        onChange={(e) => setTopbarBgColor(e.target.value)}
+                        className="w-8 h-8 rounded-none cursor-pointer border border-slate-200 shrink-0"
+                        style={{ padding: 1 }}
+                      />
+                      <Input
+                        value={topbarBgColor}
+                        onChange={(e) => setTopbarBgColor(e.target.value)}
+                        placeholder="#050505 (Mặc định)"
+                        className="flex-1 font-mono text-xs uppercase rounded-none border-slate-200 h-8 bg-white dark:border-white/10 dark:bg-slate-900"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Màu chữ Topbar</Label>
+                      {topbarTextColor && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setTopbarTextColor("")}
+                          className="h-5 px-1.5 text-[10px] font-bold text-slate-500 hover:text-red-600 rounded-none"
+                        >
+                          <RotateCcw className="h-3 w-3 mr-1" /> Reset
+                        </Button>
+                      )}
+                    </div>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="color"
+                        value={topbarTextColor || "#ffffff"}
+                        onChange={(e) => setTopbarTextColor(e.target.value)}
+                        className="w-8 h-8 rounded-none cursor-pointer border border-slate-200 shrink-0"
+                        style={{ padding: 1 }}
+                      />
+                      <Input
+                        value={topbarTextColor}
+                        onChange={(e) => setTopbarTextColor(e.target.value)}
+                        placeholder="#FFFFFF (Mặc định)"
+                        className="flex-1 font-mono text-xs uppercase rounded-none border-slate-200 h-8 bg-white dark:border-white/10 dark:bg-slate-900"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            )}
           </Card>
 
           {/* Tùy chỉnh màu sắc Header */}

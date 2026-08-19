@@ -114,6 +114,12 @@ export type BrandingSettings = {
   topbar_email_label?: string | null
   topbar_phone_label?: string | null
   topbar_badge_label?: string | null
+  show_topbar?: boolean
+  show_topbar_email?: boolean
+  show_topbar_phone?: boolean
+  show_topbar_badge?: boolean
+  topbar_bg_color?: string | null
+  topbar_text_color?: string | null
   header_bg_color?: string | null
   header_text_color?: string | null
   header_site_name?: string | null
