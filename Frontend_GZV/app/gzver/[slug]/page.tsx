@@ -33,11 +33,11 @@ type ProfileBadge = NonNullable<gzver["profile_badges"]>[number]
 type SocialLink = NonNullable<gzver["social_links"]>[number]
 
 const defaultSections: ProfileSectionData[] = [
-  { key: "overview", label: "Tổng quan", type: "overview", source: "overview", sort_order: 10, visible: true },
-  { key: "journey", label: "Lộ trình phát triển", type: "text", source: "promotion_path", sort_order: 20, visible: true },
-  { key: "achievements", label: "Thành tựu nổi bật", type: "list", source: "achievements_list", sort_order: 30, visible: true },
-  { key: "experience", label: "Năng lực thực chiến", type: "background", source: "experience", sort_order: 40, visible: true },
-  { key: "impact", label: "Tác động xã hội", type: "text", source: "social_impact", sort_order: 50, visible: true },
+  { key: "overview", label: "TỔNG QUAN", type: "overview", source: "overview", sort_order: 10, visible: true },
+  { key: "journey", label: "LỘ TRÌNH", type: "text", source: "promotion_path", sort_order: 20, visible: true },
+  { key: "achievements", label: "THÀNH TỰU", type: "list", source: "achievements_list", sort_order: 30, visible: true },
+  { key: "experience", label: "KINH NGHIỆM", type: "background", source: "experience", sort_order: 40, visible: true },
+  { key: "impact", label: "TÁC ĐỘNG", type: "text", source: "social_impact", sort_order: 50, visible: true },
 ]
 
 const socialIcons: Record<string, any> = {

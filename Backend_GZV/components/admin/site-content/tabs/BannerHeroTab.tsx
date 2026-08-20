@@ -103,9 +103,8 @@ export function BannerHeroTab({
           </div>
 
           {/* Cấu hình hiển thị chữ (Title, Subtitle, Badge) */}
-          <div className={`p-3 bg-slate-50 border border-slate-200 dark:bg-slate-950/40 dark:border-white/10 space-y-3 transition-opacity duration-200 ${
-            !syncAllBanners ? "opacity-40 pointer-events-none select-none" : ""
-          }`}>
+          <div className={`p-3 bg-slate-50 border border-slate-200 dark:bg-slate-950/40 dark:border-white/10 space-y-3 transition-opacity duration-200 ${!syncAllBanners ? "opacity-40 pointer-events-none select-none" : ""
+            }`}>
             <div className="border-b border-slate-200/60 dark:border-white/10 pb-2">
               <div className="flex items-center justify-between">
                 <Label className="text-xs font-black uppercase text-slate-900 dark:text-white flex items-center gap-1.5">
@@ -123,7 +122,7 @@ export function BannerHeroTab({
                   : "Mỗi trang tự bật/tắt thành phần chữ riêng biệt ở cột bên phải."}
               </p>
             </div>
-            
+
             <div className="flex items-center justify-between">
               <div>
                 <Label className="text-xs font-bold text-slate-900 dark:text-white">Nhãn phụ (Badge)</Label>
@@ -355,28 +354,37 @@ export function BannerHeroTab({
             <div className="grid grid-cols-3 gap-2">
               <Button
                 type="button"
-                variant={globalBannerConfig.titleAlignment === "left" ? "default" : "outline"}
+                variant="outline"
                 size="sm"
                 onClick={() => setGlobalBannerConfig({ ...globalBannerConfig, titleAlignment: "left" })}
-                className="rounded-none text-xs font-bold"
+                className={`rounded-none text-xs font-bold transition-all ${globalBannerConfig.titleAlignment === "left"
+                    ? "bg-[#ed1c24] text-white border-[#ed1c24] hover:bg-[#c91218] hover:text-white"
+                    : "border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5"
+                  }`}
               >
                 <AlignLeft className="h-4 w-4 mr-1.5" /> Trái
               </Button>
               <Button
                 type="button"
-                variant={globalBannerConfig.titleAlignment === "center" ? "default" : "outline"}
+                variant="outline"
                 size="sm"
                 onClick={() => setGlobalBannerConfig({ ...globalBannerConfig, titleAlignment: "center" })}
-                className="rounded-none text-xs font-bold"
+                className={`rounded-none text-xs font-bold transition-all ${globalBannerConfig.titleAlignment === "center"
+                    ? "bg-[#ed1c24] text-white border-[#ed1c24] hover:bg-[#c91218] hover:text-white"
+                    : "border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5"
+                  }`}
               >
                 <AlignCenter className="h-4 w-4 mr-1.5" /> Giữa
               </Button>
               <Button
                 type="button"
-                variant={globalBannerConfig.titleAlignment === "right" ? "default" : "outline"}
+                variant="outline"
                 size="sm"
                 onClick={() => setGlobalBannerConfig({ ...globalBannerConfig, titleAlignment: "right" })}
-                className="rounded-none text-xs font-bold"
+                className={`rounded-none text-xs font-bold transition-all ${globalBannerConfig.titleAlignment === "right"
+                    ? "bg-[#ed1c24] text-white border-[#ed1c24] hover:bg-[#c91218] hover:text-white"
+                    : "border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5"
+                  }`}
               >
                 <AlignRight className="h-4 w-4 mr-1.5" /> Phải
               </Button>
@@ -573,37 +581,37 @@ export function BannerHeroTab({
                   />
                 </div>
 
-              <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-slate-900 dark:text-white">Ảnh bìa riêng trang này (tùy chọn)</Label>
-                <div className="flex gap-2">
-                  <Input
-                    value={selectedPageObj.banner_image_url || ""}
-                    onChange={(e) =>
-                      setPages(pages.map((p) => (p.slug === selectedPageObj.slug ? { ...p, banner_image_url: e.target.value } : p)))
-                    }
-                    placeholder="URL ảnh bìa riêng"
-                    className="flex-1 h-9 text-xs rounded-none font-mono border-slate-200 dark:border-white/10"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onPickMedia("pageCover")}
-                    className="h-9 rounded-none text-xs font-black uppercase shrink-0 border-slate-200 dark:border-white/10"
-                  >
-                    <ImageIcon className="h-4 w-4 mr-1 text-[#ed1c24]" /> Chọn ảnh
-                  </Button>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-slate-900 dark:text-white">Ảnh bìa riêng trang này (tùy chọn)</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={selectedPageObj.banner_image_url || ""}
+                      onChange={(e) =>
+                        setPages(pages.map((p) => (p.slug === selectedPageObj.slug ? { ...p, banner_image_url: e.target.value } : p)))
+                      }
+                      placeholder="URL ảnh bìa riêng"
+                      className="flex-1 h-9 text-xs rounded-none font-mono border-slate-200 dark:border-white/10"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onPickMedia("pageCover")}
+                      className="h-9 rounded-none text-xs font-black uppercase shrink-0 border-slate-200 dark:border-white/10"
+                    >
+                      <ImageIcon className="h-4 w-4 mr-1 text-[#ed1c24]" /> Chọn ảnh
+                    </Button>
+                  </div>
                 </div>
-              </div>
 
-              <Button
-                type="button"
-                onClick={() => onSaveBannerConfig(selectedPageObj.slug)}
-                disabled={saving}
-                className="w-full mt-2 rounded-none bg-[#ed1c24] text-xs font-black uppercase text-white hover:bg-[#c91218]"
-              >
-                {saving ? "Đang lưu..." : `Lưu nội dung trang ${selectedPageObj.title || selectedPageObj.slug}`}
-              </Button>
+                <Button
+                  type="button"
+                  onClick={() => onSaveBannerConfig(selectedPageObj.slug)}
+                  disabled={saving}
+                  className="w-full mt-2 rounded-none bg-[#ed1c24] text-xs font-black uppercase text-white hover:bg-[#c91218]"
+                >
+                  {saving ? "Đang lưu..." : `Lưu nội dung trang ${selectedPageObj.title || selectedPageObj.slug}`}
+                </Button>
               </div>
             )
           })()}

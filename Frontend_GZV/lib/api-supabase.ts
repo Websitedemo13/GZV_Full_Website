@@ -1,456 +1,465 @@
-  'use client'
+'use client'
 
-  import { createBrowserClient } from '@supabase/ssr'
+import { createBrowserClient } from '@supabase/ssr'
 
-  const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-  const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    console.error("❌ CẢNH BÁO: Thiếu biến môi trường Supabase!");
-  }
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  console.error("❌ CẢNH BÁO: Thiếu biến môi trường Supabase!");
+}
 
-  /**
-   * Khởi tạo Supabase Client cho Browser
-   */
-  export function createClient() {
-    return createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-  }
+/**
+ * Khởi tạo Supabase Client cho Browser
+ */
+export function createClient() {
+  return createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+}
 
-  // Chỉ export 1 biến duy nhất này để dùng chung toàn bộ dự án
-  export const supabase = createClient()
-  /**
-   * // // Nguồn: HÀM HELPER QUAN TRỌNG NHẤT
-   * Chuyển đổi đường dẫn file trong Storage thành URL công khai.
-   * Giúp hiển thị ảnh từ bucket 'media' ổn định, không bị lỗi gạch chéo hay thiếu domain.
-   */
-  const getPublicUrl = (path: string | null | undefined): string => {
-    // 1. Nếu không có path, trả về ảnh placeholder
-    if (!path) return '/placeholder-avatar.jpg';
+// Chỉ export 1 biến duy nhất này để dùng chung toàn bộ dự án
+export const supabase = createClient()
+/**
+ * // // Nguồn: HÀM HELPER QUAN TRỌNG NHẤT
+ * Chuyển đổi đường dẫn file trong Storage thành URL công khai.
+ * Giúp hiển thị ảnh từ bucket 'media' ổn định, không bị lỗi gạch chéo hay thiếu domain.
+ */
+const getPublicUrl = (path: string | null | undefined): string => {
+  // 1. Nếu không có path, trả về ảnh placeholder
+  if (!path) return '/placeholder-avatar.jpg';
 
-    // 2. Nếu đã là link tuyệt đối (http/https), giữ nguyên
-    const trimmed = String(path).trim();
-    if (!trimmed) return '/placeholder-avatar.jpg';
-    const dashboardStorageMatch = trimmed.match(/supabase\.com\/dashboard\/project\/[^/]+\/storage\/files\/buckets\/media\/(.+)$/i);
-    if (dashboardStorageMatch?.[1]) {
-      const objectPath = decodeURIComponent(dashboardStorageMatch[1]).replace(/^\/+/, '');
-      const { data } = supabase.storage.from('media').getPublicUrl(objectPath);
-      return data.publicUrl;
-    }
-
-    if (/^(https?:|data:|blob:)/i.test(trimmed)) return trimmed;
-    if (trimmed.startsWith('/')) return trimmed;
-
-    // 3. Nếu là đường dẫn nội bộ nhưng thiếu dấu gạch chéo, thêm vào
-    // Đây là cái fix lỗi cho "authors/..." -> "/authors/..."
-    const normalizedPath = trimmed.replace(/^media\//, '').replace(/^\/+/, '');
-
-    // 4. Nếu dùng Supabase Storage, lấy public URL
-    const { data } = supabase.storage.from('media').getPublicUrl(normalizedPath);
+  // 2. Nếu đã là link tuyệt đối (http/https), giữ nguyên
+  const trimmed = String(path).trim();
+  if (!trimmed) return '/placeholder-avatar.jpg';
+  const dashboardStorageMatch = trimmed.match(/supabase\.com\/dashboard\/project\/[^/]+\/storage\/files\/buckets\/media\/(.+)$/i);
+  if (dashboardStorageMatch?.[1]) {
+    const objectPath = decodeURIComponent(dashboardStorageMatch[1]).replace(/^\/+/, '');
+    const { data } = supabase.storage.from('media').getPublicUrl(objectPath);
     return data.publicUrl;
-  };
+  }
 
-  const tiptapNodeToText = (node: any): string => {
-    if (!node) return '';
-    if (typeof node === 'string') return node;
-    if (Array.isArray(node)) return node.map(tiptapNodeToText).filter(Boolean).join('\n\n');
-    if (node.type === 'text') return node.text || '';
+  if (/^(https?:|data:|blob:)/i.test(trimmed)) return trimmed;
+  if (trimmed.startsWith('/')) return trimmed;
 
-    const children = Array.isArray(node.content) ? node.content.map(tiptapNodeToText).filter(Boolean) : [];
-    if (node.type === 'bulletList' || node.type === 'orderedList') return children.join('\n');
-    if (node.type === 'listItem') return children.length ? `- ${children.join(' ')}` : '';
-    if (node.type === 'heading') return children.join(' ');
-    if (node.type === 'paragraph') return children.join('');
-    if (node.type === 'hardBreak') return '\n';
-    return children.join('\n\n');
-  };
+  // 3. Nếu là đường dẫn nội bộ nhưng thiếu dấu gạch chéo, thêm vào
+  // Đây là cái fix lỗi cho "authors/..." -> "/authors/..."
+  const normalizedPath = trimmed.replace(/^media\//, '').replace(/^\/+/, '');
 
-  const getProgramDetailedContent = (program: any): string => {
-    if (typeof program.detailed_content === 'string') return program.detailed_content;
-    if (typeof program.content === 'string') return program.content;
-    if (program.content && typeof program.content === 'object') return tiptapNodeToText(program.content);
-    return '';
-  };
+  // 4. Nếu dùng Supabase Storage, lấy public URL
+  const { data } = supabase.storage.from('media').getPublicUrl(normalizedPath);
+  return data.publicUrl;
+};
 
-  const getProgramHighlights = (program: any): string[] => {
-    if (Array.isArray(program.highlights)) return program.highlights.filter(Boolean).map(String);
-    if (typeof program.highlights === 'string') {
-      try {
-        const parsed = JSON.parse(program.highlights);
-        if (Array.isArray(parsed)) return parsed.filter(Boolean).map(String);
-      } catch {
-        return program.highlights
-          .split('\n')
-          .map((highlight: string) => highlight.trim())
-          .filter(Boolean);
-      }
+const tiptapNodeToText = (node: any): string => {
+  if (!node) return '';
+  if (typeof node === 'string') return node;
+  if (Array.isArray(node)) return node.map(tiptapNodeToText).filter(Boolean).join('\n\n');
+  if (node.type === 'text') return node.text || '';
+
+  const children = Array.isArray(node.content) ? node.content.map(tiptapNodeToText).filter(Boolean) : [];
+  if (node.type === 'bulletList' || node.type === 'orderedList') return children.join('\n');
+  if (node.type === 'listItem') return children.length ? `- ${children.join(' ')}` : '';
+  if (node.type === 'heading') return children.join(' ');
+  if (node.type === 'paragraph') return children.join('');
+  if (node.type === 'hardBreak') return '\n';
+  return children.join('\n\n');
+};
+
+const getProgramDetailedContent = (program: any): string => {
+  if (typeof program.detailed_content === 'string') return program.detailed_content;
+  if (typeof program.content === 'string') return program.content;
+  if (program.content && typeof program.content === 'object') return tiptapNodeToText(program.content);
+  return '';
+};
+
+const getProgramHighlights = (program: any): string[] => {
+  if (Array.isArray(program.highlights)) return program.highlights.filter(Boolean).map(String);
+  if (typeof program.highlights === 'string') {
+    try {
+      const parsed = JSON.parse(program.highlights);
+      if (Array.isArray(parsed)) return parsed.filter(Boolean).map(String);
+    } catch {
+      return program.highlights
+        .split('\n')
+        .map((highlight: string) => highlight.trim())
+        .filter(Boolean);
     }
-    return [];
-  };
+  }
+  return [];
+};
 
-  const toStringList = (value: any): string[] => {
-    if (Array.isArray(value)) return value.filter(Boolean).map(String);
-    if (typeof value === 'string') {
-      const trimmed = value.trim();
-      if (!trimmed) return [];
-      try {
-        const parsed = JSON.parse(trimmed);
-        if (Array.isArray(parsed)) return parsed.filter(Boolean).map(String);
-      } catch {
-        // Plain text below.
-      }
-      return trimmed.split('\n').map(item => item.trim()).filter(Boolean);
+const toStringList = (value: any): string[] => {
+  if (Array.isArray(value)) return value.filter(Boolean).map(String);
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return [];
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) return parsed.filter(Boolean).map(String);
+    } catch {
+      // Plain text below.
     }
-    return [];
+    return trimmed.split('\n').map(item => item.trim()).filter(Boolean);
+  }
+  return [];
+};
+
+const toText = (value: any): string => {
+  if (!value) return '';
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value)) return value.filter(Boolean).map(String).join(', ');
+  if (typeof value === 'object') {
+    return Object.values(value).flatMap(toStringList).filter(Boolean).join(', ');
+  }
+  return String(value);
+};
+
+const normalizeMentor = (mentor: any): Mentor => ({
+  ...mentor,
+  avatar_url: getPublicUrl(mentor.avatar_url),
+  organizations: toText(mentor.organizations),
+  specialties: toStringList(mentor.specialties),
+  practical_projects: toStringList(mentor.practical_projects),
+  research_projects: toStringList(mentor.research_projects),
+  awards: toStringList(mentor.awards),
+  tech_business_achievements: toStringList(mentor.tech_business_achievements),
+  background: {
+    education: toText(mentor.background?.education),
+    experience: toText(mentor.background?.experience),
+  },
+}) as Mentor;
+
+// ==========================================
+// --- ĐỊNH NGHĨA TYPES (Data Models) ---
+// ==========================================
+
+export interface gzver {
+  id: string;
+  full_name: string;
+  slug: string;
+  company: string;
+  position: string;
+  department_id?: string | null;
+  department_name?: string | null;
+  role_level?: string | null;
+  headline?: string | null;
+  location?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  website_url?: string | null;
+  avatar_url: string;
+  cover_image_url?: string | null;
+  avatar_position_x?: number;
+  avatar_position_y?: number;
+  avatar_scale?: number;
+  cover_position_x?: number;
+  cover_position_y?: number;
+  cover_scale?: number;
+  cv_url?: string;
+  achievement_summary: string;
+  testimonial: string;
+  graduation_year: string;
+  promotion_path: string;
+  social_impact: string;
+  social_links?: Array<{
+    label?: string;
+    platform?: string;
+    icon?: string;
+    href?: string;
+    url?: string;
+    visible?: boolean;
+    sort_order?: number;
+  }>;
+  profile_tabs?: Array<{
+    key?: string;
+    label?: string;
+    label_en?: string;
+    type?: string;
+    source?: string;
+    content?: string;
+    items?: string[];
+    visible?: boolean;
+    sort_order?: number;
+  }>;
+  profile_badges?: Array<{
+    label?: string;
+    icon?: string;
+    color?: string;
+    visible?: boolean;
+    sort_order?: number;
+  }>;
+  course_taken: string;
+  skills: string[];
+  achievements_list: string[];
+  mentoring_content: string;
+  background: {
+    education: string;
+    previous_role: string; // Đồng bộ snake_case để khớp DB
+    experience: string;
   };
-
-  const toText = (value: any): string => {
-    if (!value) return '';
-    if (typeof value === 'string') return value;
-    if (Array.isArray(value)) return value.filter(Boolean).map(String).join(', ');
-    if (typeof value === 'object') {
-      return Object.values(value).flatMap(toStringList).filter(Boolean).join(', ');
-    }
-    return String(value);
-  };
-
-  const normalizeMentor = (mentor: any): Mentor => ({
-    ...mentor,
-    avatar_url: getPublicUrl(mentor.avatar_url),
-    organizations: toText(mentor.organizations),
-    specialties: toStringList(mentor.specialties),
-    practical_projects: toStringList(mentor.practical_projects),
-    research_projects: toStringList(mentor.research_projects),
-    awards: toStringList(mentor.awards),
-    tech_business_achievements: toStringList(mentor.tech_business_achievements),
-    background: {
-      education: toText(mentor.background?.education),
-      experience: toText(mentor.background?.experience),
-    },
-  }) as Mentor;
-
-  // ==========================================
-  // --- ĐỊNH NGHĨA TYPES (Data Models) ---
-  // ==========================================
-
-  export interface gzver {
+  is_active: boolean;
+  is_director: boolean;
+  order?: number;
+  gzver_departments?: {
     id: string;
-    full_name: string;
-    slug: string;
-    company: string;
-    position: string;
-    department_id?: string | null;
-    department_name?: string | null;
-    role_level?: string | null;
-    headline?: string | null;
-    location?: string | null;
-    email?: string | null;
-    phone?: string | null;
-    website_url?: string | null;
-    avatar_url: string;
-    cover_image_url?: string | null;
-    avatar_position_x?: number;
-    avatar_position_y?: number;
-    avatar_scale?: number;
-    cover_position_x?: number;
-    cover_position_y?: number;
-    cover_scale?: number;
-    cv_url?: string;
-    achievement_summary: string;
-    testimonial: string;
-    graduation_year: string;
-    promotion_path: string;
-    social_impact: string;
-    social_links?: Array<{
-      label?: string;
-      platform?: string;
-      icon?: string;
-      href?: string;
-      url?: string;
-      visible?: boolean;
-      sort_order?: number;
-    }>;
-    profile_tabs?: Array<{
-      key?: string;
-      label?: string;
-      label_en?: string;
-      type?: string;
-      source?: string;
-      content?: string;
-      items?: string[];
-      visible?: boolean;
-      sort_order?: number;
-    }>;
-    profile_badges?: Array<{
-      label?: string;
-      icon?: string;
-      color?: string;
-      visible?: boolean;
-      sort_order?: number;
-    }>;
-    course_taken: string;
-    skills: string[];
-    achievements_list: string[];
-    mentoring_content: string;
-    background: {
-      education: string;
-      previous_role: string; // Đồng bộ snake_case để khớp DB
-      experience: string;
-    };
-    is_active: boolean;
-    is_director: boolean;
-    order?: number;
-    gzver_departments?: {
-      id: string;
-      name: string;
-      slug: string;
-      description?: string | null;
-      color?: string | null;
-      sort_order?: number | null;
-    } | null;
-  }
-
-  export interface Mentor {
-    id: string;
-    full_name: string;
-    slug: string;
-    title: string;
-    description: string;
-    email: string;
-    phone?: string;
-    avatar_url: string;
-    organizations?: string;
-    company?: string;
-    specialties: string[];
-    practical_projects: string[];
-    research_projects: string[];
-    awards: string[];
-    tech_business_achievements: string[];
-    background: {
-      education: string;
-      experience: string;
-    };
-    is_active: boolean;
-    order?: number;
-  }
-
-  export interface Program {
-    id: string;
-    title: string;
-    slug: string;
-    description?: string;
-    short_description?: string;
-    content?: any;                  // JSONB (Tiptap) – nội dung chi tiết
-    detailed_content?: string;       // Markdown/HTML string used by the public detail page
-    highlights?: string[];
-    // Fields đã map từ DB cho UI cũ:
-    image?: string;                 // map từ thumbnail_url
-    duration?: string;              // map từ estimated_duration
-    students?: string;              // map từ total_lessons (số bài học)
-    price?: string;                 // map từ price_sale ?? price_original
-    // Raw columns (đầy đủ):
-    thumbnail_url?: string;
-    video_banner_url?: string;
-    gallery?: any;
-    level?: string;
-    category?: string;
-    price_original?: number;
-    price_sale?: number;
-    total_lessons?: number;
-    estimated_duration?: string;
-    theme_color?: string;
-    status?: 'draft' | 'published';
-    is_featured?: boolean;
-    created_at: string;
-    updated_at: string;
-  }
-
-  export interface Project {
-    id: string;
-    title: string;
-    description: string;
-    detailproject?: string; 
-    thumbnail_url?: string;
-    image?: string;
-    video_url?: string;
-    hashtags?: string;
-    order_index?: number;
-    seo_title?: string;
-    technologies?: string[];
-    featured?: boolean;
-    author_ids?: string[];
-    project_authors?: {
-      name: string;
-      avatar: string;
-      profile_link: string;
-      title?: string;
-    }[];
-    status?: 'ongoing' | 'completed' | 'planning';
-    slug: string;
-    category?: string;
-    created_at?: string;
-  }
-
-  export interface UserData {
-    id: string;
-    email: string;
     name: string;
-    fullName?: string;
-    avatar?: string;
-    phone?: string;
-    university?: string;
-    major?: string;
-    role?: string;
-    status?: string;
-  }
-
-  export interface BlogPost {
-    id: string;
-    title: string;
-    content: string;
-    excerpt?: string;
-    image?: string;
-    category?: string;
     slug: string;
-    publish_date: string;
-    read_time?: string;
-    authors: {
-      full_name: string;
-      avatar_url: string;
-      slug: string;
-      title?: string;
-    }[];
-    tags?: string[];
-    views?: number;
-  }
+    description?: string | null;
+    color?: string | null;
+    sort_order?: number | null;
+  } | null;
+}
 
-  export interface RegisterData {
-    name: string;
-    fullName: string;
-    email: string;
-    phone: string;
-    password?: string;
-    confirmPassword?: string;
-  }
-
-  // ==========================================
-  // 1. QUẢN LÝ XÁC THỰC (authAPI)
-  // ==========================================
-  export const authAPI = {
-    /**
-     * Lấy thông tin người dùng đang đăng nhập
-     */
-    getCurrentUser: async (): Promise<UserData | null> => {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (error || !user) return null;
-      
-      return {
-        id: user.id,
-        email: user.email || '',
-        name: user.user_metadata?.full_name || user.email || 'Người dùng',
-        fullName: user.user_metadata?.full_name,
-        avatar: getPublicUrl(user.user_metadata?.avatar_url), // Xử lý link avatar
-        phone: user.user_metadata?.phone,
-        university: user.user_metadata?.university,
-        major: user.user_metadata?.major
-      };
-    },
-
-    /**
-     * Hàm Đăng ký tài khoản mới (Sign Up)
-     */
-    register: async (data: RegisterData) => {
-      try {
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: data.email,
-          password: data.password!,
-          options: {
-            data: {
-              full_name: data.fullName,
-              phone: data.phone,
-            }
-          }
-        });
-
-        if (authError) throw authError;
-        return { success: true, data: authData };
-      } catch (error: any) {
-        return { success: false, error: error.message };
-      }
-    },
-
-    /**
-     * Hàm Đăng nhập (Sign In)
-     */
-    login: async (email: string, password: string) => {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      return {
-        success: !error,
-        data,
-        error: error?.message
-      };
-    },
-
-    /**
-     * Hàm Đăng xuất (Sign Out)
-     */
-    logout: async () => {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-    },
+export interface Mentor {
+  id: string;
+  full_name: string;
+  slug: string;
+  title: string;
+  description: string;
+  email: string;
+  phone?: string;
+  avatar_url: string;
+  organizations?: string;
+  company?: string;
+  specialties: string[];
+  practical_projects: string[];
+  research_projects: string[];
+  awards: string[];
+  tech_business_achievements: string[];
+  background: {
+    education: string;
+    experience: string;
   };
+  is_active: boolean;
+  order?: number;
+}
 
-  // ⚡ SWR Cache helper for API Supabase
-  const apiMemoryCache = new Map<string, { data: any; expiry: number }>()
-  const API_CACHE_TTL = 60 * 1000 // 60s fresh cache
+export interface Program {
+  id: string;
+  title: string;
+  slug: string;
+  description?: string;
+  short_description?: string;
+  content?: any;                  // JSONB (Tiptap) – nội dung chi tiết
+  detailed_content?: string;       // Markdown/HTML string used by the public detail page
+  highlights?: string[];
+  // Fields đã map từ DB cho UI cũ:
+  image?: string;                 // map từ thumbnail_url
+  duration?: string;              // map từ estimated_duration
+  students?: string;              // map từ total_lessons (số bài học)
+  price?: string;                 // map từ price_sale ?? price_original
+  // Raw columns (đầy đủ):
+  thumbnail_url?: string;
+  video_banner_url?: string;
+  gallery?: any;
+  level?: string;
+  category?: string;
+  price_original?: number;
+  price_sale?: number;
+  total_lessons?: number;
+  estimated_duration?: string;
+  theme_color?: string;
+  status?: 'draft' | 'published';
+  is_featured?: boolean;
+  created_at: string;
+  updated_at: string;
+}
 
-  function getApiCache<T>(key: string): T | null {
-    const mem = apiMemoryCache.get(key)
-    if (mem && Date.now() < mem.expiry) return mem.data as T
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem(`gzv_api_${key}`)
-        if (stored) {
-          const parsed = JSON.parse(stored)
-          if (parsed && parsed.data) {
-            apiMemoryCache.set(key, { data: parsed.data, expiry: Date.now() + API_CACHE_TTL })
-            return parsed.data as T
+export interface Project {
+  id: string;
+  title: string;
+  description: string;
+  detailproject?: string;
+  thumbnail_url?: string;
+  image?: string;
+  video_url?: string;
+  hashtags?: string;
+  order_index?: number;
+  seo_title?: string;
+  technologies?: string[];
+  featured?: boolean;
+  author_ids?: string[];
+  project_authors?: {
+    name: string;
+    avatar: string;
+    profile_link: string;
+    title?: string;
+  }[];
+  status?: 'ongoing' | 'completed' | 'planning';
+  slug: string;
+  category?: string;
+  created_at?: string;
+}
+
+export interface UserData {
+  id: string;
+  email: string;
+  name: string;
+  fullName?: string;
+  avatar?: string;
+  phone?: string;
+  university?: string;
+  major?: string;
+  role?: string;
+  status?: string;
+}
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  content: string;
+  excerpt?: string;
+  image?: string;
+  category?: string;
+  slug: string;
+  publish_date: string;
+  read_time?: string;
+  authors: {
+    full_name: string;
+    avatar_url: string;
+    slug: string;
+    title?: string;
+  }[];
+  tags?: string[];
+  views?: number;
+}
+
+export interface RegisterData {
+  name: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  password?: string;
+  confirmPassword?: string;
+}
+
+// ==========================================
+// 1. QUẢN LÝ XÁC THỰC (authAPI)
+// ==========================================
+export const authAPI = {
+  /**
+   * Lấy thông tin người dùng đang đăng nhập
+   */
+  getCurrentUser: async (): Promise<UserData | null> => {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) return null;
+
+    return {
+      id: user.id,
+      email: user.email || '',
+      name: user.user_metadata?.full_name || user.email || 'Người dùng',
+      fullName: user.user_metadata?.full_name,
+      avatar: getPublicUrl(user.user_metadata?.avatar_url), // Xử lý link avatar
+      phone: user.user_metadata?.phone,
+      university: user.user_metadata?.university,
+      major: user.user_metadata?.major
+    };
+  },
+
+  /**
+   * Hàm Đăng ký tài khoản mới (Sign Up)
+   */
+  register: async (data: RegisterData) => {
+    try {
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password!,
+        options: {
+          data: {
+            full_name: data.fullName,
+            phone: data.phone,
           }
         }
-      } catch (e) {}
+      });
+
+      if (authError) throw authError;
+      return { success: true, data: authData };
+    } catch (error: any) {
+      return { success: false, error: error.message };
     }
-    return null
+  },
+
+  /**
+   * Hàm Đăng nhập (Sign In)
+   */
+  login: async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    return {
+      success: !error,
+      data,
+      error: error?.message
+    };
+  },
+
+  /**
+   * Hàm Đăng xuất (Sign Out)
+   */
+  logout: async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+  },
+};
+
+// ⚡ SWR Cache helper for API Supabase
+const apiMemoryCache = new Map<string, { data: any; expiry: number }>()
+const API_CACHE_TTL = 60 * 1000 // 60s fresh cache
+
+function getApiCache<T>(key: string): T | null {
+  const mem = apiMemoryCache.get(key)
+  if (mem && Date.now() < mem.expiry) return mem.data as T
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem(`gzv_api_${key}`)
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        if (parsed && parsed.data) {
+          apiMemoryCache.set(key, { data: parsed.data, expiry: Date.now() + API_CACHE_TTL })
+          return parsed.data as T
+        }
+      }
+    } catch (e) { }
   }
+  return null
+}
 
-  function setApiCache(key: string, data: any) {
-    apiMemoryCache.set(key, { data, expiry: Date.now() + API_CACHE_TTL })
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem(`gzv_api_${key}`, JSON.stringify({ data, timestamp: Date.now() }))
-      } catch (e) {}
-    }
+function setApiCache(key: string, data: any) {
+  apiMemoryCache.set(key, { data, expiry: Date.now() + API_CACHE_TTL })
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(`gzv_api_${key}`, JSON.stringify({ data, timestamp: Date.now() }))
+    } catch (e) { }
   }
+}
 
-  // ==========================================
-  // 2. QUẢN LÝ DỮ LIỆU CHUNG (api)
-  // ==========================================
-  export const api = {
-    /**
-     * Lấy danh sách gzver
-     */
-    getGzvers: async (): Promise<gzver[]> => {
-      const cached = getApiCache<gzver[]>('gzvers_all')
-      if (cached) return cached
-
+// ==========================================
+// 2. QUẢN LÝ DỮ LIỆU CHUNG (api)
+// ==========================================
+export const api = {
+  /**
+   * Lấy danh sách gzver
+   */
+  getGzvers: async (): Promise<gzver[]> => {
+    const fetchFresh = async () => {
       try {
-        const [gzversRes, mentorsRes] = await Promise.all([
-          supabase.from('gzvers').select('*').eq('is_active', true).order('order', { ascending: true }),
+        const [gzversRes, mentorsRes, deptsRes] = await Promise.all([
+          supabase.from('gzvers').select('*, gzver_departments(*)').eq('is_active', true).order('order', { ascending: true }),
           supabase.from('mentors').select('*').eq('is_active', true).order('order', { ascending: true }),
+          supabase.from('gzver_departments').select('*'),
         ]);
 
-        const gzversList = (gzversRes.data || []).map((m: any) => ({ ...m, avatar_url: getPublicUrl(m.avatar_url || m.image) }));
+        const depts = deptsRes.data || [];
+        const gzversList = (gzversRes.data || []).map((m: any) => {
+          const matchedDept = m.gzver_departments || depts.find((d: any) => d.id === m.department_id || d.slug === m.department_id);
+          return {
+            ...m,
+            department_name: matchedDept?.name || m.department_name,
+            department_slug: matchedDept?.slug || m.department_slug,
+            gzver_departments: matchedDept || null,
+            avatar_url: getPublicUrl(m.avatar_url || m.image),
+          };
+        });
         const existingSlugs = new Set(gzversList.map((g: any) => g.slug));
 
         const mentorsList = (mentorsRes.data || [])
@@ -476,226 +485,235 @@
         console.error("❌ Error fetching gzvers:", error);
         return [];
       }
-    },
+    };
 
-    /**
-     * Lấy danh sách Mentor (Ban giảng huấn)
-     */
-    getMentors: async (): Promise<Mentor[]> => {
-      try {
-        const { data, error } = await supabase
-          .from('mentors')
-          .select('*')
-          .eq('is_active', true)
-          .order('order', { ascending: true });
-        if (error) throw error;
-        return (data || []).map(normalizeMentor);
-      } catch (error) {
-        console.error("❌ Error fetching Mentors:", error);
-        return [];
-      }
-    },
+    const cached = getApiCache<gzver[]>('gzvers_all');
+    if (cached) {
+      fetchFresh();
+      return cached;
+    }
 
-    /**
-     * Lấy chi tiết 1 Mentor qua Slug
-     */
-    getMentorBySlug: async (slug: string): Promise<Mentor | null> => {
-      try {
-        const { data, error } = await supabase
-          .from('mentors')
-          .select('*')
-          .eq('slug', slug)
-          .single();
-        if (error || !data) return null;
-        return normalizeMentor(data);
-      } catch (error) {
-        console.error("❌ Error fetching Mentor detail:", error);
-        return null;
-      }
-    },
+    return await fetchFresh();
+  },
 
-    /**
-     * Lấy danh sách dự án (Kết hợp thông tin Author từ bảng authors)
-     */
-    getProjects: async (): Promise<Project[]> => {
-      try {
-        const { data: projects, error: pError } = await supabase
-          .from('projects')
-          .select('*')
-          .order('order_index', { ascending: true })
-          .order('created_at', { ascending: false });
+  /**
+   * Lấy danh sách Mentor (Ban giảng huấn)
+   */
+  getMentors: async (): Promise<Mentor[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('mentors')
+        .select('*')
+        .eq('is_active', true)
+        .order('order', { ascending: true });
+      if (error) throw error;
+      return (data || []).map(normalizeMentor);
+    } catch (error) {
+      console.error("❌ Error fetching Mentors:", error);
+      return [];
+    }
+  },
 
-        if (pError) throw pError;
+  /**
+   * Lấy chi tiết 1 Mentor qua Slug
+   */
+  getMentorBySlug: async (slug: string): Promise<Mentor | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('mentors')
+        .select('*')
+        .eq('slug', slug)
+        .single();
+      if (error || !data) return null;
+      return normalizeMentor(data);
+    } catch (error) {
+      console.error("❌ Error fetching Mentor detail:", error);
+      return null;
+    }
+  },
 
-        // Lấy danh sách authors (Bỏ cột 'type' do DB hiện tại không có)
-        const { data: authorsData } = await supabase
-          .from('authors')
-          .select('id, full_name, avatar_url, slug, title, position'); 
+  /**
+   * Lấy danh sách dự án (Kết hợp thông tin Author từ bảng authors)
+   */
+  getProjects: async (): Promise<Project[]> => {
+    try {
+      const { data: projects, error: pError } = await supabase
+        .from('projects')
+        .select('*')
+        .order('order_index', { ascending: true })
+        .order('created_at', { ascending: false });
 
-        // ... (các dòng trên giữ nguyên)
-        const mappedProjects = (projects || []).map((p: any) => {
-          const matched = authorsData?.filter(a => p.author_ids?.includes(a.id)) || [];
-          return {
-            ...p,
-            image: getPublicUrl(p.image || p.thumbnail_url),
-            
-            project_authors: matched.map(a => ({
-              name: a.full_name,
-              avatar: getPublicUrl(a.avatar_url),
-              profile_link: `/mentors/${a.slug}`,
-              title: a.title || a.position
-            }))
-          };
-        });
-  // ... (các dòng dưới giữ nguyên)
+      if (pError) throw pError;
 
-        return mappedProjects as Project[];
-      } catch (error) {
-        console.error("❌ Error fetching projects:", error);
-        return [];
-      }
-    },
+      // Lấy danh sách authors (Bỏ cột 'type' do DB hiện tại không có)
+      const { data: authorsData } = await supabase
+        .from('authors')
+        .select('id, full_name, avatar_url, slug, title, position');
 
-    /**
-     * Lấy chi tiết dự án qua Slug
-     */
-    getProjectBySlug: async (slug: string): Promise<Project | null> => {
-      try {
-        const { data: project, error } = await supabase.from('projects').select('*').eq('slug', slug).single();
-        if (error || !project) return null;
+      // ... (các dòng trên giữ nguyên)
+      const mappedProjects = (projects || []).map((p: any) => {
+        const matched = authorsData?.filter(a => p.author_ids?.includes(a.id)) || [];
+        return {
+          ...p,
+          image: getPublicUrl(p.image || p.thumbnail_url),
 
-        if (project.author_ids && project.author_ids.length > 0) {
-          const { data: authorsData } = await supabase
-            .from('authors')
-            .select('id, full_name, avatar_url, slug, title, position')
-            .in('id', project.author_ids);
-          
-          project.project_authors = authorsData?.map(a => ({
+          project_authors: matched.map(a => ({
             name: a.full_name,
             avatar: getPublicUrl(a.avatar_url),
             profile_link: `/mentors/${a.slug}`,
             title: a.title || a.position
-          })) || [];
-        }
-        return { ...project, image: getPublicUrl(project.image || project.thumbnail_url) } as Project;
-      } catch (error) {
-        return null;
-      }
-    },
+          }))
+        };
+      });
+      // ... (các dòng dưới giữ nguyên)
 
-    /**
-     * Lấy danh sách bài viết Blog
-     */
-    getBlogPosts: async (): Promise<BlogPost[]> => {
-      try {
-        const { data, error } = await supabase.from('allblogposts').select('*').order('publish_date', { ascending: false });
-        if (error) throw error;
-        return (data || []).map((post: any) => ({
-          ...post,
-          id: post.id.toString(),
-          authors: post.authors_details || [],
-          publish_date: post.publish_date || post.created_at,
-          read_time: post.read_time || '5 phút đọc',
-          image: getPublicUrl(post.thumbnail_url || post.image)
-        }));
-      } catch (error) {
-        return [];
-      }
-    },
-    getgzverBySlug: async (slug: string): Promise<gzver | null> => {
-      try {
-        const { data, error } = await supabase
-          .from('gzvers')
-          .select('*')
-          .eq('slug', slug)
-          .maybeSingle();
-
-        if (error || !data) return null;
-
-        // Xử lý ảnh đại diện qua Public URL
-        return { 
-          ...data, 
-          avatar_url: getPublicUrl(data.avatar_url),
-          cover_image_url: data.cover_image_url ? getPublicUrl(data.cover_image_url) : null,
-        } as gzver;
-      } catch (error) {
-        console.error("❌ Error fetching gzver detail:", error);
-        return null;
-      }
-    },
-
-    /**
-     * Lấy chi tiết bài viết Blog qua Slug
-     */
-    getBlogPostsByCategory: async (category: string): Promise<BlogPost[]> => {
-      try {
-        const { data, error } = await supabase
-          .from('allblogposts')
-          .select('*')
-          .eq('category', category)
-          .order('publish_date', { ascending: false });
-
-        if (error) throw error;
-        
-        return (data || []).map((post: any) => ({
-          ...post,
-          id: post.id.toString(),
-          authors: post.authors_details || [],
-          publish_date: post.publish_date || post.created_at,
-          read_time: post.read_time || '5 phút đọc',
-          image: getPublicUrl(post.thumbnail_url || post.image)
-        }));
-      } catch (error) {
-        console.error("❌ Error fetching posts by category:", error);
-        return [];
-      }
-    },
-    getBlogPostBySlug: async (slug: string): Promise<BlogPost | null> => {
-      try {
-        const { data, error } = await supabase.from('allblogposts').select('*').eq('slug', slug).single();
-        if (error) return null;
-        return {
-          ...data,
-          id: data.id.toString(),
-          authors: data.authors_details || [],
-          publish_date: data.publish_date || data.created_at,
-          read_time: data.read_time || '5 phút đọc',
-          image: getPublicUrl(data.thumbnail_url || data.image)
-        } as BlogPost;
-      } catch (error) {
-        return null;
-      }
-    },
-
-    /**
-     * Lấy danh sách các chương trình đào tạo
-     */
-    getPrograms: async (): Promise<Program[]> => {
-      try {
-        // Chỉ lấy chương trình đã publish (RLS cho anon cũng chỉ cho đọc 'published')
-        const { data, error } = await supabase
-          .from('programs')
-          .select('*')
-          .eq('status', 'published')
-          .order('is_featured', { ascending: false })
-          .order('created_at', { ascending: false });
-        if (error) throw error;
-        return (data || []).map((p: any) => ({
-          ...p,
-          image: getPublicUrl(p.thumbnail_url || p.image),
-          detailed_content: getProgramDetailedContent(p),
-          highlights: getProgramHighlights(p),
-          duration: p.estimated_duration ?? '',
-          students: p.total_lessons != null ? String(p.total_lessons) : '0',
-          price: p.price_sale != null
-            ? String(p.price_sale)
-            : p.price_original != null ? String(p.price_original) : '',
-        }));
-      } catch (error) {
-        console.error('getPrograms error:', error);
-        return [];
-      }
+      return mappedProjects as Project[];
+    } catch (error) {
+      console.error("❌ Error fetching projects:", error);
+      return [];
     }
-  };
+  },
 
-  export default api;
+  /**
+   * Lấy chi tiết dự án qua Slug
+   */
+  getProjectBySlug: async (slug: string): Promise<Project | null> => {
+    try {
+      const { data: project, error } = await supabase.from('projects').select('*').eq('slug', slug).single();
+      if (error || !project) return null;
+
+      if (project.author_ids && project.author_ids.length > 0) {
+        const { data: authorsData } = await supabase
+          .from('authors')
+          .select('id, full_name, avatar_url, slug, title, position')
+          .in('id', project.author_ids);
+
+        project.project_authors = authorsData?.map(a => ({
+          name: a.full_name,
+          avatar: getPublicUrl(a.avatar_url),
+          profile_link: `/mentors/${a.slug}`,
+          title: a.title || a.position
+        })) || [];
+      }
+      return { ...project, image: getPublicUrl(project.image || project.thumbnail_url) } as Project;
+    } catch (error) {
+      return null;
+    }
+  },
+
+  /**
+   * Lấy danh sách bài viết Blog
+   */
+  getBlogPosts: async (): Promise<BlogPost[]> => {
+    try {
+      const { data, error } = await supabase.from('allblogposts').select('*').order('publish_date', { ascending: false });
+      if (error) throw error;
+      return (data || []).map((post: any) => ({
+        ...post,
+        id: post.id.toString(),
+        authors: post.authors_details || [],
+        publish_date: post.publish_date || post.created_at,
+        read_time: post.read_time || '5 phút đọc',
+        image: getPublicUrl(post.thumbnail_url || post.image)
+      }));
+    } catch (error) {
+      return [];
+    }
+  },
+  getgzverBySlug: async (slug: string): Promise<gzver | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('gzvers')
+        .select('*')
+        .eq('slug', slug)
+        .maybeSingle();
+
+      if (error || !data) return null;
+
+      // Xử lý ảnh đại diện qua Public URL
+      return {
+        ...data,
+        avatar_url: getPublicUrl(data.avatar_url),
+        cover_image_url: data.cover_image_url ? getPublicUrl(data.cover_image_url) : null,
+      } as gzver;
+    } catch (error) {
+      console.error("❌ Error fetching gzver detail:", error);
+      return null;
+    }
+  },
+
+  /**
+   * Lấy chi tiết bài viết Blog qua Slug
+   */
+  getBlogPostsByCategory: async (category: string): Promise<BlogPost[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('allblogposts')
+        .select('*')
+        .eq('category', category)
+        .order('publish_date', { ascending: false });
+
+      if (error) throw error;
+
+      return (data || []).map((post: any) => ({
+        ...post,
+        id: post.id.toString(),
+        authors: post.authors_details || [],
+        publish_date: post.publish_date || post.created_at,
+        read_time: post.read_time || '5 phút đọc',
+        image: getPublicUrl(post.thumbnail_url || post.image)
+      }));
+    } catch (error) {
+      console.error("❌ Error fetching posts by category:", error);
+      return [];
+    }
+  },
+  getBlogPostBySlug: async (slug: string): Promise<BlogPost | null> => {
+    try {
+      const { data, error } = await supabase.from('allblogposts').select('*').eq('slug', slug).single();
+      if (error) return null;
+      return {
+        ...data,
+        id: data.id.toString(),
+        authors: data.authors_details || [],
+        publish_date: data.publish_date || data.created_at,
+        read_time: data.read_time || '5 phút đọc',
+        image: getPublicUrl(data.thumbnail_url || data.image)
+      } as BlogPost;
+    } catch (error) {
+      return null;
+    }
+  },
+
+  /**
+   * Lấy danh sách các chương trình đào tạo
+   */
+  getPrograms: async (): Promise<Program[]> => {
+    try {
+      // Chỉ lấy chương trình đã publish (RLS cho anon cũng chỉ cho đọc 'published')
+      const { data, error } = await supabase
+        .from('programs')
+        .select('*')
+        .eq('status', 'published')
+        .order('is_featured', { ascending: false })
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data || []).map((p: any) => ({
+        ...p,
+        image: getPublicUrl(p.thumbnail_url || p.image),
+        detailed_content: getProgramDetailedContent(p),
+        highlights: getProgramHighlights(p),
+        duration: p.estimated_duration ?? '',
+        students: p.total_lessons != null ? String(p.total_lessons) : '0',
+        price: p.price_sale != null
+          ? String(p.price_sale)
+          : p.price_original != null ? String(p.price_original) : '',
+      }));
+    } catch (error) {
+      console.error('getPrograms error:', error);
+      return [];
+    }
+  }
+};
+
+export default api;
