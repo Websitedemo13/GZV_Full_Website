@@ -2,44 +2,18 @@
 
 import { supabase } from '@/lib/api-supabase'
 
-// ⚡ HIGH-PERFORMANCE CACHING LAYER (Memory + LocalStorage SWR)
-const memoryCache = new Map<string, { data: any; expiry: number }>()
-const CACHE_TTL_MS = 60 * 1000 // 1 phút fresh cache
-
-function getCachedData<T>(key: string): T | null {
-  // 1. Check in-memory cache first (fastest - 0ms)
-  const mem = memoryCache.get(key)
-  if (mem && Date.now() < mem.expiry) {
-    return mem.data as T
-  }
-
-  // 2. Check localStorage cache
-  if (typeof window !== 'undefined') {
-    try {
-      const stored = localStorage.getItem(`gzv_cache_${key}`)
-      if (stored) {
-        const parsed = JSON.parse(stored)
-        if (parsed && parsed.data) {
-          // Put back into memory cache
-          memoryCache.set(key, { data: parsed.data, expiry: Date.now() + CACHE_TTL_MS })
-          return parsed.data as T
-        }
+// ⚡ Clear any leftover stale caches from localStorage on client load
+if (typeof window !== 'undefined') {
+  try {
+    const keysToRemove: string[] = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key && (key.startsWith('gzv_cache_') || key.startsWith('gzv_api_'))) {
+        keysToRemove.push(key)
       }
-    } catch (e) {}
-  }
-  return null
-}
-
-function setCachedData(key: string, data: any) {
-  memoryCache.set(key, { data, expiry: Date.now() + CACHE_TTL_MS })
-  if (typeof window !== 'undefined') {
-    try {
-      localStorage.setItem(
-        `gzv_cache_${key}`,
-        JSON.stringify({ data, timestamp: Date.now() })
-      )
-    } catch (e) {}
-  }
+    }
+    keysToRemove.forEach((k) => localStorage.removeItem(k))
+  } catch (e) {}
 }
 
 export type SiteNavItem = {
@@ -251,9 +225,6 @@ export const defaultBrandingSettings: BrandingSettings = {
 export const getPageSlugFromPath = (pathname: string) => pathname.split('/').filter(Boolean)[0] || 'home'
 
 export async function getSiteNavigation() {
-  const cached = getCachedData<SiteNavItem[]>('site_navigation')
-  if (cached) return cached
-
   try {
     const { data, error } = await supabase
       .from('site_navigation')
@@ -261,9 +232,7 @@ export async function getSiteNavigation() {
       .order('sort_order', { ascending: true })
 
     if (error) throw error
-    const result = (data && data.length ? data : defaultNavigation) as SiteNavItem[]
-    setCachedData('site_navigation', result)
-    return result
+    return (data && data.length ? data : defaultNavigation) as SiteNavItem[]
   } catch (error) {
     console.warn('Using default navigation because site_navigation is unavailable.', error)
     return defaultNavigation
@@ -271,9 +240,6 @@ export async function getSiteNavigation() {
 }
 
 export async function getSiteLoadingSettings() {
-  const cached = getCachedData<SiteLoadingSettings>('site_loading_settings')
-  if (cached) return cached
-
   try {
     const { data, error } = await supabase
       .from('site_loading_settings')
@@ -282,9 +248,7 @@ export async function getSiteLoadingSettings() {
       .maybeSingle()
 
     if (error) throw error
-    const result = { ...defaultLoadingSettings, ...(data || {}) } as SiteLoadingSettings
-    setCachedData('site_loading_settings', result)
-    return result
+    return { ...defaultLoadingSettings, ...(data || {}) } as SiteLoadingSettings
   } catch (error) {
     console.warn('Using default loading settings because site_loading_settings is unavailable.', error)
     return defaultLoadingSettings
@@ -292,10 +256,6 @@ export async function getSiteLoadingSettings() {
 }
 
 export async function getSitePageContent(slug: string) {
-  const cacheKey = `site_page_${slug}`
-  const cached = getCachedData<SitePageContent | null>(cacheKey)
-  if (cached !== null) return cached
-
   try {
     const { data, error } = await supabase
       .from('site_pages')
@@ -304,7 +264,6 @@ export async function getSitePageContent(slug: string) {
       .maybeSingle()
 
     if (error) throw error
-    setCachedData(cacheKey, data)
     return data as SitePageContent | null
   } catch (error) {
     console.warn(`No managed content loaded for ${slug}.`, error)
@@ -313,10 +272,6 @@ export async function getSitePageContent(slug: string) {
 }
 
 export async function getHomeSectionConfig(sectionKey: string) {
-  const cacheKey = `home_section_${sectionKey}`
-  const cached = getCachedData<HomeSectionConfig | null>(cacheKey)
-  if (cached !== null) return cached
-
   try {
     const { data, error } = await supabase
       .from('site_home_sections')
@@ -333,9 +288,6 @@ export async function getHomeSectionConfig(sectionKey: string) {
 }
 
 export async function getHomeSections() {
-  const cached = getCachedData<HomeSectionConfig[]>('site_home_sections')
-  if (cached) return cached
-
   try {
     const { data, error } = await supabase
       .from('site_home_sections')
@@ -343,9 +295,7 @@ export async function getHomeSections() {
       .order('sort_order', { ascending: true })
 
     if (error) throw error
-    const result = (data || []) as HomeSectionConfig[]
-    setCachedData('site_home_sections', result)
-    return result
+    return (data || []) as HomeSectionConfig[]
   } catch (error) {
     console.warn('No managed home sections loaded.', error)
     return []
@@ -353,37 +303,21 @@ export async function getHomeSections() {
 }
 
 export async function getFooterSettings() {
-  const fetchFresh = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('site_footer_settings')
-        .select('*')
-        .eq('id', 1)
-        .maybeSingle()
+  try {
+    const { data, error } = await supabase
+      .from('site_footer_settings')
+      .select('*')
+      .eq('id', 1)
+      .maybeSingle()
 
-      if (error) throw error
-      const result = { ...defaultFooterSettings, ...(data || {}) } as FooterSettings
-      setCachedData('site_footer_settings', result)
-      return result
-    } catch (error) {
-      return defaultFooterSettings
-    }
+    if (error) throw error
+    return { ...defaultFooterSettings, ...(data || {}) } as FooterSettings
+  } catch (error) {
+    return defaultFooterSettings
   }
-
-  const cached = getCachedData<FooterSettings>('site_footer_settings')
-  if (cached) {
-    // Background revalidate
-    fetchFresh()
-    return cached
-  }
-
-  return await fetchFresh()
 }
 
 export async function getFloatingActions() {
-  const cached = getCachedData<FloatingAction[]>('site_floating_actions')
-  if (cached) return cached
-
   try {
     const { data, error } = await supabase
       .from('site_floating_actions')
@@ -392,9 +326,7 @@ export async function getFloatingActions() {
       .order('sort_order', { ascending: true })
 
     if (error) throw error
-    const result = (data || []) as FloatingAction[]
-    setCachedData('site_floating_actions', result)
-    return result
+    return (data || []) as FloatingAction[]
   } catch (error) {
     console.warn('Floating actions are unavailable.', error)
     return []
@@ -402,10 +334,6 @@ export async function getFloatingActions() {
 }
 
 export async function getActivePartners(limit = 40) {
-  const cacheKey = `active_partners_${limit}`
-  const cached = getCachedData<any[]>(cacheKey)
-  if (cached) return cached
-
   try {
     const { data, error } = await supabase
       .from('partners')
@@ -415,7 +343,6 @@ export async function getActivePartners(limit = 40) {
       .limit(limit)
 
     if (error) throw error
-    setCachedData(cacheKey, data || [])
     return data || []
   } catch (error) {
     console.warn('Partners are unavailable.', error)
@@ -424,9 +351,6 @@ export async function getActivePartners(limit = 40) {
 }
 
 export async function getBrandingSettings() {
-  const cached = getCachedData<BrandingSettings>('site_branding_settings')
-  if (cached) return cached
-
   try {
     const { data, error } = await supabase
       .from('site_branding_settings')
@@ -435,9 +359,7 @@ export async function getBrandingSettings() {
       .maybeSingle()
 
     if (error) throw error
-    const result = { ...defaultBrandingSettings, ...(data || {}) } as BrandingSettings
-    setCachedData('site_branding_settings', result)
-    return result
+    return { ...defaultBrandingSettings, ...(data || {}) } as BrandingSettings
   } catch (error) {
     console.warn('Using default branding settings because site_branding_settings is unavailable.', error)
     return defaultBrandingSettings
@@ -445,10 +367,6 @@ export async function getBrandingSettings() {
 }
 
 export async function getPageBlocks(slug: string) {
-  const cacheKey = `page_blocks_${slug}`
-  const cached = getCachedData<PageBlock[]>(cacheKey)
-  if (cached) return cached
-
   try {
     const { data, error } = await supabase
       .from('site_page_blocks')
@@ -458,7 +376,6 @@ export async function getPageBlocks(slug: string) {
       .order('sort_order', { ascending: true })
 
     if (error) throw error
-    setCachedData(cacheKey, data || [])
     return (data || []) as PageBlock[]
   } catch (error) {
     console.warn(`No page blocks loaded for ${slug}.`, error)
@@ -467,9 +384,6 @@ export async function getPageBlocks(slug: string) {
 }
 
 export async function getSectionTemplates() {
-  const cached = getCachedData<SectionTemplate[]>('section_templates')
-  if (cached) return cached
-
   try {
     const { data, error } = await supabase
       .from('site_section_templates')
@@ -478,7 +392,6 @@ export async function getSectionTemplates() {
       .order('sort_order', { ascending: true })
 
     if (error) throw error
-    setCachedData('section_templates', data || [])
     return (data || []) as SectionTemplate[]
   } catch (error) {
     console.warn('No section templates loaded.', error)

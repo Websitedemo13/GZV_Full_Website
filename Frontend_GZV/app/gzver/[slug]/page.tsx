@@ -34,10 +34,10 @@ type SocialLink = NonNullable<gzver["social_links"]>[number]
 
 const defaultSections: ProfileSectionData[] = [
   { key: "overview", label: "Tổng quan", type: "overview", source: "overview", sort_order: 10, visible: true },
-  { key: "journey", label: "Lộ trình phát triển", type: "text", source: "promotion_path", sort_order: 20, visible: true },
-  { key: "achievements", label: "Thành tựu nổi bật", type: "list", source: "achievements_list", sort_order: 30, visible: true },
-  { key: "experience", label: "Năng lực thực chiến", type: "background", source: "experience", sort_order: 40, visible: true },
-  { key: "impact", label: "Tác động xã hội", type: "text", source: "social_impact", sort_order: 50, visible: true },
+  { key: "journey", label: "Lộ trình", type: "text", source: "promotion_path", sort_order: 20, visible: true },
+  { key: "achievements", label: "Thành tựu", type: "list", source: "achievements_list", sort_order: 30, visible: true },
+  { key: "experience", label: "Kinh nghiệm", type: "background", source: "experience", sort_order: 40, visible: true },
+  { key: "impact", label: "Tác động", type: "text", source: "social_impact", sort_order: 50, visible: true },
 ]
 
 const socialIcons: Record<string, any> = {
@@ -294,7 +294,7 @@ export default function GzverDetailPage({ params }: { params: { slug: string } }
 
   const shareProfile = () => {
     if (typeof window !== "undefined" && navigator.share) {
-      navigator.share({ title: member?.full_name, url: window.location.href }).catch(() => {})
+      navigator.share({ title: member?.full_name, url: window.location.href }).catch(() => { })
     } else if (typeof window !== "undefined") {
       navigator.clipboard.writeText(window.location.href)
       alert("Đã sao chép link hồ sơ GZVer!")
@@ -394,10 +394,11 @@ export default function GzverDetailPage({ params }: { params: { slug: string } }
                 </div>
 
                 {/* Badges List */}
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {badges.map((badge, index) => <BadgePill key={`${badge.label}-${index}`} badge={badge} />)}
-                  {!badges.length && <BadgePill badge={{ label: departmentName, icon: "shield", color: "#ed1c24" }} />}
-                </div>
+                {badges.length > 0 && (
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    {badges.map((badge, index) => <BadgePill key={`${badge.label}-${index}`} badge={badge} />)}
+                  </div>
+                )}
 
                 {/* Contact Info Items */}
                 <div className="mt-6 space-y-2.5 border-t border-slate-200 pt-5 text-xs font-semibold text-slate-600 dark:border-white/10 dark:text-slate-300">
@@ -443,14 +444,10 @@ export default function GzverDetailPage({ params }: { params: { slug: string } }
                         return (
                           <button
                             key={key}
-                            onClick={() => {
-                              setActiveTab(key)
-                              const el = document.getElementById(`section-card-${key}`)
-                              if (el) el.scrollIntoView({ behavior: "smooth", block: "start" })
-                            }}
+                            onClick={() => setActiveTab(key)}
                             className={`whitespace-nowrap px-4 py-2.5 text-xs font-black uppercase tracking-wider transition ${isActive
-                                ? "bg-[#ed1c24] text-white shadow-xs"
-                                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white"
+                              ? "bg-[#ed1c24] text-white shadow-xs"
+                              : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white"
                               }`}
                           >
                             {section.label || `Section ${idx + 1}`}
@@ -461,13 +458,28 @@ export default function GzverDetailPage({ params }: { params: { slug: string } }
                   </div>
                 )}
 
-                {/* Sections list */}
-                <div className="space-y-8">
-                  {sections.map((section, index) => (
-                    <div id={`section-card-${section.key || `section-${index}`}`} key={section.key || `${section.label}-${index}`}>
-                      <ProfileSection member={member} section={section} index={index} />
-                    </div>
-                  ))}
+                {/* Active Tab Content Only */}
+                <div>
+                  {(() => {
+                    const currentSectionIndex = sections.findIndex(
+                      (s, idx) => (s.key || `section-${idx}`) === activeTab
+                    )
+                    const activeSection = currentSectionIndex !== -1 ? sections[currentSectionIndex] : sections[0]
+                    const actualIndex = currentSectionIndex !== -1 ? currentSectionIndex : 0
+
+                    if (!activeSection) return null
+
+                    return (
+                      <motion.div
+                        key={activeSection.key || `section-${actualIndex}`}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.25 }}
+                      >
+                        <ProfileSection member={member} section={activeSection} index={actualIndex} />
+                      </motion.div>
+                    )
+                  })()}
                 </div>
               </div>
             </div>
