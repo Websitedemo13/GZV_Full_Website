@@ -402,37 +402,6 @@
     },
   };
 
-  // ⚡ SWR Cache helper for API Supabase
-  const apiMemoryCache = new Map<string, { data: any; expiry: number }>()
-  const API_CACHE_TTL = 60 * 1000 // 60s fresh cache
-
-  function getApiCache<T>(key: string): T | null {
-    const mem = apiMemoryCache.get(key)
-    if (mem && Date.now() < mem.expiry) return mem.data as T
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem(`gzv_api_${key}`)
-        if (stored) {
-          const parsed = JSON.parse(stored)
-          if (parsed && parsed.data) {
-            apiMemoryCache.set(key, { data: parsed.data, expiry: Date.now() + API_CACHE_TTL })
-            return parsed.data as T
-          }
-        }
-      } catch (e) {}
-    }
-    return null
-  }
-
-  function setApiCache(key: string, data: any) {
-    apiMemoryCache.set(key, { data, expiry: Date.now() + API_CACHE_TTL })
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem(`gzv_api_${key}`, JSON.stringify({ data, timestamp: Date.now() }))
-      } catch (e) {}
-    }
-  }
-
   // ==========================================
   // 2. QUẢN LÝ DỮ LIỆU CHUNG (api)
   // ==========================================
@@ -441,9 +410,6 @@
      * Lấy danh sách gzver
      */
     getGzvers: async (): Promise<gzver[]> => {
-      const cached = getApiCache<gzver[]>('gzvers_all')
-      if (cached) return cached
-
       try {
         const [gzversRes, mentorsRes] = await Promise.all([
           supabase.from('gzvers').select('*').eq('is_active', true).order('order', { ascending: true }),
@@ -470,7 +436,6 @@
           }));
 
         const combined = [...gzversList, ...mentorsList];
-        setApiCache('gzvers_all', combined);
         return combined;
       } catch (error) {
         console.error("❌ Error fetching gzvers:", error);

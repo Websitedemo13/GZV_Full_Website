@@ -82,10 +82,10 @@ const convertToSlug = (text: string) =>
 
 const defaultSections: ProfileSection[] = [
   { key: "overview", label: "Tổng quan", label_en: "Overview", type: "overview", source: "overview", visible: true, sort_order: 10 },
-  { key: "journey", label: "Lộ trình phát triển", label_en: "Journey", type: "text", source: "promotion_path", visible: true, sort_order: 20 },
-  { key: "achievements", label: "Thành tựu nổi bật", label_en: "Achievements", type: "list", source: "achievements_list", visible: true, sort_order: 30 },
-  { key: "experience", label: "Năng lực thực chiến", label_en: "Experience", type: "background", source: "experience", visible: true, sort_order: 40 },
-  { key: "impact", label: "Tác động xã hội", label_en: "Impact", type: "text", source: "social_impact", visible: true, sort_order: 50 },
+  { key: "journey", label: "Lộ trình", label_en: "Journey", type: "text", source: "promotion_path", visible: true, sort_order: 20 },
+  { key: "achievements", label: "Thành tựu", label_en: "Achievements", type: "list", source: "achievements_list", visible: true, sort_order: 30 },
+  { key: "experience", label: "Kinh nghiệm", label_en: "Experience", type: "background", source: "experience", visible: true, sort_order: 40 },
+  { key: "impact", label: "Tác động", label_en: "Impact", type: "text", source: "social_impact", visible: true, sort_order: 50 },
 ]
 
 const defaultForm = {
@@ -120,10 +120,7 @@ const defaultForm = {
     { label: "Zalo", platform: "zalo", href: "", visible: true, sort_order: 30 },
   ] as SocialLink[],
   profile_tabs: defaultSections,
-  profile_badges: [
-    { label: "Core Team", icon: "shield", color: "#ed1c24", visible: true, sort_order: 10 },
-    { label: "Top Performer", icon: "star", color: "#f59e0b", visible: true, sort_order: 20 },
-  ] as ProfileBadge[],
+  profile_badges: [] as ProfileBadge[],
   avatar_position_x: 50,
   avatar_position_y: 32,
   avatar_scale: 100,
