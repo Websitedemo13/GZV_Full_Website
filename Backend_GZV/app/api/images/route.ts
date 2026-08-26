@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { uploadFile } from '@/lib/supabase-storage'
-import fs from 'fs'
-import path from 'path'
+import { uploadFile, listFiles, getPublicUrl } from '@/lib/supabase-storage'
+import { createClient } from '@supabase/supabase-js'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -10,12 +9,61 @@ export const revalidate = 0
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml', 'video/mp4', 'video/webm']
 const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const folder = searchParams.get('folder') || 'site'
     const limit = parseInt(searchParams.get('limit') || '100', 10)
 
+    // 1. First try listing from Supabase Storage & Media Files table
+    if (supabaseUrl && supabaseKey) {
+      try {
+        const supabase = createClient(supabaseUrl, supabaseKey)
+        const { data: dbFiles } = await supabase
+          .from('media_files')
+          .select('*')
+          .ilike('folder_path', `%${folder}%`)
+          .order('created_at', { ascending: false })
+          .limit(limit)
+
+        if (dbFiles && dbFiles.length > 0) {
+          const files = dbFiles.map((f: any) => ({
+            name: f.file_name || f.storage_path?.split('/').pop() || 'media',
+            url: f.file_url,
+            size: f.file_size_bytes || 0,
+            mimetype: f.mime_type || 'image/jpeg',
+            path: f.storage_path || `${folder}/${f.file_name}`,
+          }))
+          return NextResponse.json({
+            success: true,
+            data: { files, total: files.length },
+          })
+        }
+
+        // Try direct bucket list if DB empty
+        const storageList = await listFiles(folder)
+        if (storageList.success && storageList.data?.files?.length > 0) {
+          const files = storageList.data.files.slice(0, limit).map((f: any) => ({
+            name: f.name,
+            url: f.url || getPublicUrl(`${folder}/${f.name}`),
+            size: f.metadata?.size || 0,
+            mimetype: f.metadata?.mimetype || (f.name.endsWith('.webp') ? 'image/webp' : 'image/jpeg'),
+            path: `${folder}/${f.name}`,
+          }))
+          return NextResponse.json({
+            success: true,
+            data: { files, total: files.length },
+          })
+        }
+      } catch (sbErr) {
+        console.warn('Supabase storage list error, trying fallback:', sbErr)
+      }
+    }
+
+    // 2. Safe static fallback list if running in development locally
     const files: Array<{
       name: string
       url: string
@@ -24,44 +72,28 @@ export async function GET(req: NextRequest) {
       path: string
     }> = []
 
-    // 1. Scan Backend public/ folder
-    const targetDir = path.join(process.cwd(), 'public', folder)
-    if (fs.existsSync(targetDir)) {
-      const dirEntries = fs.readdirSync(targetDir, { withFileTypes: true })
-      for (const entry of dirEntries) {
-        if (entry.isFile() && /\.(png|jpe?g|webp|gif|svg|avif|mp4|webm|ogg|mov)$/i.test(entry.name)) {
-          const filePath = path.join(targetDir, entry.name)
-          const stats = fs.statSync(filePath)
-          files.push({
-            name: entry.name,
-            url: `/${folder}/${entry.name}`,
-            size: stats.size,
-            mimetype: entry.name.endsWith('.webp') ? 'image/webp' : 'image/jpeg',
-            path: `${folder}/${entry.name}`,
-          })
-        }
-      }
-    }
-
-    // 2. Also scan root public/ if folder is 'site' or 'root'
-    if (folder === 'site') {
-      const rootDir = path.join(process.cwd(), 'public')
-      if (fs.existsSync(rootDir)) {
-        const rootEntries = fs.readdirSync(rootDir, { withFileTypes: true })
-        for (const entry of rootEntries) {
-          if (entry.isFile() && /\.(png|jpe?g|webp|gif|svg|avif|mp4|webm|ogg|mov)$/i.test(entry.name)) {
-            const filePath = path.join(rootDir, entry.name)
-            const stats = fs.statSync(filePath)
-            files.push({
-              name: entry.name,
-              url: `/${entry.name}`,
-              size: stats.size,
-              mimetype: entry.name.endsWith('.webp') ? 'image/webp' : 'image/jpeg',
-              path: `site/${entry.name}`,
-            })
+    if (process.env.NODE_ENV !== 'production') {
+      try {
+        const fs = await import('fs')
+        const path = await import('path')
+        const targetDir = path.join(process.cwd(), 'public', folder)
+        if (fs.existsSync(targetDir)) {
+          const dirEntries = fs.readdirSync(targetDir, { withFileTypes: true })
+          for (const entry of dirEntries) {
+            if (entry.isFile() && /\.(png|jpe?g|webp|gif|svg|avif|mp4|webm|ogg|mov)$/i.test(entry.name)) {
+              const filePath = path.join(targetDir, entry.name)
+              const stats = fs.statSync(filePath)
+              files.push({
+                name: entry.name,
+                url: `/${folder}/${entry.name}`,
+                size: stats.size,
+                mimetype: entry.name.endsWith('.webp') ? 'image/webp' : 'image/jpeg',
+                path: `${folder}/${entry.name}`,
+              })
+            }
           }
         }
-      }
+      } catch { }
     }
 
     return NextResponse.json({
@@ -104,57 +136,60 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Dung lượng file vượt quá giới hạn 50MB' }, { status: 400 })
     }
 
-    // 1. Try Supabase Storage first if token exists
-    if (token) {
-      try {
-        const result = await uploadFile(file, folder, token)
-        if (result.success && result.data) {
-          return NextResponse.json(result)
-        }
-      } catch (err) {
-        console.warn('Supabase storage upload failed, saving to local public folder:', err)
-      }
-    }
-
-    // 2. Local File System Storage (Backend public/ and Frontend public/)
-    const arrayBuffer = await file.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
-    const safeName = file.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9._-]/g, '')
-    const fileName = `${Date.now()}_${safeName}`
-
-    // Destination in Backend public
-    const backendTargetDir = path.join(process.cwd(), 'public', folder)
-    if (!fs.existsSync(backendTargetDir)) {
-      fs.mkdirSync(backendTargetDir, { recursive: true })
-    }
-    const backendFilePath = path.join(backendTargetDir, fileName)
-    fs.writeFileSync(backendFilePath, new Uint8Array(arrayBuffer))
-
-    // Sync to Frontend public folder if exists
-    const frontendPublicDir = path.join(process.cwd(), '../Frontend_GZV/public', folder)
+    // 1. Upload to Supabase Storage as primary cloud storage
     try {
-      if (!fs.existsSync(frontendPublicDir)) {
-        fs.mkdirSync(frontendPublicDir, { recursive: true })
+      const result = await uploadFile(file, folder, token)
+      if (result.success && result.data) {
+        return NextResponse.json(result)
       }
-      fs.writeFileSync(path.join(frontendPublicDir, fileName), new Uint8Array(arrayBuffer))
-    } catch (e) {
-      console.warn('Could not sync to Frontend public dir:', e)
+      if (result.error && !result.data) {
+        console.warn('Supabase storage upload returned error:', result.error)
+      }
+    } catch (err) {
+      console.warn('Supabase storage upload failed:', err)
     }
 
-    const publicUrl = `/${folder}/${fileName}`
+    // 2. In local dev environment only, allow local filesystem save fallback
+    if (process.env.NODE_ENV !== 'production') {
+      try {
+        const fs = await import('fs')
+        const path = await import('path')
+        const arrayBuffer = await file.arrayBuffer()
+        const safeName = file.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9._-]/g, '')
+        const fileName = `${Date.now()}_${safeName}`
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        id: fileName,
-        name: file.name,
-        url: publicUrl,
-        size: file.size,
-        mimetype: file.type,
-        path: `${folder}/${fileName}`,
-        created_at: new Date().toISOString(),
+        const backendTargetDir = path.join(process.cwd(), 'public', folder)
+        if (!fs.existsSync(backendTargetDir)) {
+          fs.mkdirSync(backendTargetDir, { recursive: true })
+        }
+        const backendFilePath = path.join(backendTargetDir, fileName)
+        fs.writeFileSync(backendFilePath, new Uint8Array(arrayBuffer))
+
+        const publicUrl = `/${folder}/${fileName}`
+        return NextResponse.json({
+          success: true,
+          data: {
+            id: fileName,
+            name: file.name,
+            url: publicUrl,
+            size: file.size,
+            mimetype: file.type,
+            path: `${folder}/${fileName}`,
+            created_at: new Date().toISOString(),
+          },
+        })
+      } catch (localErr) {
+        console.warn('Local fallback upload failed:', localErr)
+      }
+    }
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Không thể tải ảnh lên. Vui lòng kiểm tra kết nối Supabase Storage.',
       },
-    })
+      { status: 500 }
+    )
   } catch (error) {
     console.error('Error uploading image:', error)
     return NextResponse.json(

@@ -177,6 +177,25 @@ function SiteContentManager() {
         let nextPages = ((pagesResult.data || []) as PageContent[]).filter(
           (p) => p.slug !== "dong-hanh" && p.slug !== "mentors" && p.slug !== "mentor"
         )
+        const fetchedBrandingRaw = (brandingResult.data || {}) as any
+        let headerMetaRaw: any = {}
+        try {
+          if (fetchedBrandingRaw.default_keywords && fetchedBrandingRaw.default_keywords.startsWith("{")) {
+            headerMetaRaw = JSON.parse(fetchedBrandingRaw.default_keywords)
+          }
+        } catch (e) {
+          headerMetaRaw = {}
+        }
+        const pageBannersConfig = headerMetaRaw.page_banners || {}
+        nextPages = nextPages.map((p) => {
+          const cfg = pageBannersConfig[p.slug] || {}
+          return {
+            ...p,
+            show_badge: cfg.show_badge !== undefined ? cfg.show_badge : (p.show_badge !== undefined ? p.show_badge : true),
+            show_title: cfg.show_title !== undefined ? cfg.show_title : (p.show_title !== undefined ? p.show_title : true),
+            show_subtitle: cfg.show_subtitle !== undefined ? cfg.show_subtitle : (p.show_subtitle !== undefined ? p.show_subtitle : true),
+          }
+        })
         setPages(nextPages)
         setSelectedSlug(nextPages[0]?.slug || "gioi-thieu")
         const validHomeKeys = ["hero", "about_gzv", "projects", "services_three", "about_boxes", "partners", "news"]
@@ -599,6 +618,17 @@ function SiteContentManager() {
         social_links: socialLinksPayload,
       }
 
+      const pageBannersMap: Record<string, any> = {}
+      pages.forEach((p) => {
+        if (p.slug) {
+          pageBannersMap[p.slug] = {
+            show_badge: p.show_badge !== undefined ? p.show_badge : true,
+            show_title: p.show_title !== undefined ? p.show_title : true,
+            show_subtitle: p.show_subtitle !== undefined ? p.show_subtitle : true,
+          }
+        }
+      })
+
       const headerMeta = {
         show_topbar: branding.show_topbar !== false,
         show_topbar_email: branding.show_topbar_email !== false,
@@ -617,6 +647,7 @@ function SiteContentManager() {
         og_url: branding.og_url || "",
         global_banner: globalBannerConfig,
         sync_all_banners: syncAllBanners,
+        page_banners: pageBannersMap,
       }
 
       const brandingPayload = {

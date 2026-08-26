@@ -33,6 +33,16 @@ const nextConfig = {
       },
     ];
   },
+  experimental: {
+    outputFileTracingExcludes: {
+      '*': [
+        './public/**/*',
+        './public/dao-tao/**/*',
+        './public/gioi-thieu/**/*',
+        './public/Intro.mp4',
+      ],
+    },
+  },
   allowedDevOrigins: ['*'],
 }
 

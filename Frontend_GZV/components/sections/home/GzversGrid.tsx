@@ -152,22 +152,30 @@ export default function GzversGrid({
     const deptSlug = (dept?.slug || tab.id).toLowerCase()
     const deptName = (dept?.name || tab.label).toLowerCase()
 
-    // 1. Direct ID match
+    // 1. Direct ID match (Highest priority)
     if (deptId && (m.department_id === deptId || m.gzver_departments?.id === deptId)) {
       return true
     }
 
     // 2. Direct Name / Slug match
     const mDeptName = (m.department_name || m.gzver_departments?.name || "").toLowerCase()
-    if (mDeptName && (mDeptName === deptName || mDeptName.includes(deptName))) {
+    const mDeptSlug = (m.department_slug || m.gzver_departments?.slug || "").toLowerCase()
+    if (mDeptName && (mDeptName === deptName || mDeptName.includes(deptName) || deptName.includes(mDeptName))) {
+      return true
+    }
+    if (mDeptSlug && (mDeptSlug === deptSlug || mDeptSlug.includes(deptSlug))) {
       return true
     }
 
-    // 3. Fallback for Director / Advisor / Executor flags
+    // 3. If member already has an assigned department, do not run legacy fallbacks
+    if (m.department_id || m.department_name || m.gzver_departments) {
+      return false
+    }
+
+    // 4. Legacy fallback for old records without department_id
     if (deptSlug.includes("dieu-hanh") || deptName.includes("điều hành") || deptSlug.includes("director")) {
       return Boolean(
         m.is_director ||
-        mDeptName.includes("điều hành") ||
         m.position?.toLowerCase().includes("ceo") ||
         m.position?.toLowerCase().includes("director")
       )
@@ -177,7 +185,6 @@ export default function GzversGrid({
       return Boolean(
         m.is_advisor ||
         m.is_mentor ||
-        mDeptName.includes("cố vấn") ||
         m.position?.toLowerCase().includes("cố vấn") ||
         m.position?.toLowerCase().includes("advisor") ||
         m.position?.toLowerCase().includes("mentor")
@@ -188,9 +195,7 @@ export default function GzversGrid({
       return Boolean(
         !m.is_director &&
         !m.is_advisor &&
-        !m.is_mentor &&
-        !mDeptName.includes("cố vấn") &&
-        !mDeptName.includes("điều hành")
+        !m.is_mentor
       )
     }
 
