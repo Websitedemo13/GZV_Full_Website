@@ -131,6 +131,14 @@ export function GZVerQuickAddModal({
 
     setLoading(true)
     try {
+      const defaultProfileTabs = [
+        { key: "overview", label: "TỔNG QUAN", label_en: "Overview", type: "overview", source: "overview", visible: true, sort_order: 10 },
+        { key: "journey", label: "LỘ TRÌNH", label_en: "Journey", type: "text", source: "promotion_path", visible: true, sort_order: 20 },
+        { key: "achievements", label: "THÀNH TỰU", label_en: "Achievements", type: "list", source: "achievements_list", visible: true, sort_order: 30 },
+        { key: "experience", label: "KINH NGHIỆM", label_en: "Experience", type: "background", source: "experience", visible: true, sort_order: 40 },
+        { key: "impact", label: "TÁC ĐỘNG", label_en: "Impact", type: "text", source: "social_impact", visible: true, sort_order: 50 },
+      ]
+
       const payload: any = {
         full_name: fullName.trim(),
         slug: finalSlug,
@@ -139,6 +147,16 @@ export function GZVerQuickAddModal({
         company: company.trim() || "GZV",
         department_id: selectedDept?.id || null,
         department_name: selectedDept?.name || "Chưa gán ban",
+        profile_tabs: defaultProfileTabs,
+        profile_badges: [
+          { label: "Core Team", icon: "shield", color: "#ed1c24", visible: true, sort_order: 10 },
+          { label: "Top Performer", icon: "star", color: "#f59e0b", visible: true, sort_order: 20 },
+        ],
+        social_links: [
+          { label: "LinkedIn", platform: "linkedin", href: "", visible: true, sort_order: 10 },
+          { label: "Facebook", platform: "facebook", href: "", visible: true, sort_order: 20 },
+          { label: "Zalo", platform: "zalo", href: "", visible: true, sort_order: 30 },
+        ],
         is_active: true,
         order: 0,
       }
