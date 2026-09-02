@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
@@ -33,7 +33,23 @@ import {
   Instagram,
   ArrowUpRight,
   Send,
+  GripVertical,
 } from "lucide-react"
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core"
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
 
 function updateAdminFavicon(url?: string | null) {
   if (!url || typeof document === "undefined") return
@@ -63,6 +79,99 @@ function TikTokIcon({ className }: { className?: string }) {
     <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
       <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5.84 19.4a6.34 6.34 0 0 0 10.86-4.43V8.27a8.16 8.16 0 0 0 4.77 1.52V6.34a4.85 4.85 0 0 1-1.88.35z" />
     </svg>
+  )
+}
+
+function SortableAddressRow({
+  id,
+  item,
+  index,
+  total,
+  onUpdate,
+  onDelete,
+}: {
+  id: string
+  item: { id: string; label: string; value: string }
+  index: number
+  total: number
+  onUpdate: (index: number, patch: { label?: string; value?: string }) => void
+  onDelete: (index: number) => void
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 20 : 1,
+    opacity: isDragging ? 0.6 : 1,
+  }
+
+  const isPrimary = index === 0
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`flex items-center gap-2 p-2 border transition-all ${
+        isPrimary
+          ? "border-slate-300 bg-slate-100/70 dark:border-white/20 dark:bg-slate-900/90"
+          : "border-slate-200 bg-slate-50/80 dark:border-white/10 dark:bg-slate-900/60"
+      }`}
+    >
+      {/* 1. Drag handle */}
+      <button
+        type="button"
+        {...attributes}
+        {...listeners}
+        title="Kéo thả để sắp xếp thứ tự"
+        className="cursor-grab active:cursor-grabbing text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 shrink-0"
+      >
+        <GripVertical className="h-4 w-4 text-slate-500 hover:text-slate-900 dark:hover:text-white" />
+      </button>
+
+      {/* 2. Ô riêng hiển thị số thứ tự (#) - màu đen/trắng tiêu chuẩn */}
+      <div className="w-9 h-9 flex items-center justify-center border border-slate-300 bg-white font-mono text-xs font-black text-slate-700 shrink-0 dark:border-white/10 dark:bg-slate-950 dark:text-slate-300">
+        #{index + 1}
+      </div>
+
+      {/* 3. Ô riêng chỉnh sửa Tên/Nhãn cơ sở (Trụ sở chính, Cơ sở 2...) - giữ nguyên chữ hoa/thường người dùng gõ */}
+      <div className="w-36 sm:w-44 shrink-0">
+        <Input
+          value={item.label}
+          onChange={(e) => onUpdate(index, { label: e.target.value })}
+          placeholder={isPrimary ? "Trụ sở chính" : `Cơ sở ${index + 1}`}
+          className="h-9 text-xs font-bold rounded-none border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 dark:border-white/15 dark:bg-slate-950 dark:text-slate-100"
+        />
+      </div>
+
+      {/* 4. Ô nhập chi tiết Địa chỉ */}
+      <Input
+        value={item.value}
+        onChange={(e) => onUpdate(index, { value: e.target.value })}
+        placeholder={isPrimary ? "Địa chỉ trụ sở chính (Số nhà, đường, quận, TP...)" : `Địa chỉ cơ sở ${index + 1}`}
+        className="h-9 text-xs rounded-none border-slate-300 font-semibold bg-white text-slate-900 placeholder:text-slate-400 dark:border-white/15 dark:bg-slate-950 dark:text-slate-100 flex-1"
+      />
+
+      {/* 5. Nút Xóa hoặc Cố định cho #1 */}
+      {isPrimary ? (
+        <span
+          title="Địa chỉ #1 là cơ sở mặc định, không được phép xóa"
+          className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 py-1 select-none shrink-0"
+        >
+          Cố định
+        </span>
+      ) : (
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          onClick={() => onDelete(index)}
+          title="Xóa cơ sở này"
+          className="h-8 w-8 p-0 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 shrink-0"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      )}
+    </div>
   )
 }
 
@@ -189,6 +298,110 @@ export function HeaderFooterSeoTab({
 
   const contactAddress = footer.address || ""
   const setContactAddress = (val: string) => setFooter({ ...footer, address: val })
+
+  // Multi-address state with stable IDs and explicit label & value
+  const parseAddressLines = (addrStr?: string | null): Array<{ id: string; label: string; value: string }> => {
+    if (!addrStr || !addrStr.trim()) {
+      return [{ id: `addr-init-0`, label: "Trụ sở chính", value: "" }]
+    }
+    const lines = addrStr.split("\n")
+    return lines.map((line, idx) => {
+      let label = idx === 0 ? "Trụ sở chính" : `Cơ sở ${idx + 1}`
+      let value = line
+      if (line.includes(": ")) {
+        const colonIdx = line.indexOf(": ")
+        const prefix = line.substring(0, colonIdx).trim()
+        if (prefix.length > 0 && prefix.length <= 40) {
+          label = prefix
+          value = line.substring(colonIdx + 2)
+        }
+      }
+      return {
+        id: `addr-${idx}-${Math.random().toString(36).slice(2, 7)}`,
+        label,
+        value,
+      }
+    })
+  }
+
+  const serializeAddressItems = (items: Array<{ id: string; label: string; value: string }>): string => {
+    return items
+      .map((item) => {
+        const trimmedLabel = item.label.trim()
+        const trimmedVal = item.value.trim()
+        if (trimmedLabel && trimmedVal) {
+          return `${trimmedLabel}: ${trimmedVal}`
+        }
+        return trimmedVal || trimmedLabel || ""
+      })
+      .join("\n")
+  }
+
+  const [addressItems, setAddressItems] = useState<Array<{ id: string; label: string; value: string }>>(() =>
+    parseAddressLines(footer.address)
+  )
+
+  // Sync state ONLY when footer.address is modified from outside (e.g. initial DB load or tab switch)
+  const isInternalAddressUpdate = React.useRef(false)
+  useEffect(() => {
+    if (isInternalAddressUpdate.current) {
+      isInternalAddressUpdate.current = false
+      return
+    }
+    if (footer.address !== undefined) {
+      setAddressItems(parseAddressLines(footer.address))
+    }
+  }, [footer.address])
+
+  const addressSensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
+
+  const syncAddressToFooter = (newItems: Array<{ id: string; label: string; value: string }>) => {
+    setAddressItems(newItems)
+    isInternalAddressUpdate.current = true
+    const joined = serializeAddressItems(newItems)
+    setFooter({ ...footer, address: joined })
+  }
+
+  const addAddress = () => {
+    const newIdx = addressItems.length + 1
+    const newItems = [
+      ...addressItems,
+      { id: `addr-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`, label: `Cơ sở ${newIdx}`, value: "" },
+    ]
+    syncAddressToFooter(newItems)
+  }
+
+  const updateAddress = (index: number, patch: { label?: string; value?: string }) => {
+    const newItems = addressItems.map((item, i) => (i === index ? { ...item, ...patch } : item))
+    syncAddressToFooter(newItems)
+  }
+
+  const removeAddress = (index: number) => {
+    if (index === 0) return // Không cho phép xóa địa chỉ #1
+    const newItems = addressItems.filter((_, i) => i !== index)
+    syncAddressToFooter(
+      newItems.length > 0
+        ? newItems
+        : [{ id: `addr-${Date.now()}`, label: "Trụ sở chính", value: "" }]
+    )
+  }
+
+  const handleAddressDragEnd = (event: any) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const oldIndex = addressItems.findIndex((item) => item.id === active.id)
+    const newIndex = addressItems.findIndex((item) => item.id === over.id)
+    if (oldIndex === -1 || newIndex === -1) return
+
+    const newItems = [...addressItems]
+    const [moved] = newItems.splice(oldIndex, 1)
+    newItems.splice(newIndex, 0, moved)
+    syncAddressToFooter(newItems)
+  }
 
   const contactPhone = footer.phone_label || ""
   const setContactPhone = (val: string) => setFooter({ ...footer, phone_label: val })
@@ -843,10 +1056,32 @@ export function HeaderFooterSeoTab({
                       {brandTagline || "GZV Center — Hệ sinh thái đào tạo, tư vấn và triển khai dự án thực chiến."}
                     </p>
                     <ul className="space-y-2 text-xs font-semibold">
-                      <li className="flex items-start gap-2 text-slate-300">
-                        <MapPin className="h-3.5 w-3.5 text-[#ed1c24] mt-0.5 shrink-0" />
-                        <span className="leading-relaxed">{contactAddress || "279 Nguyễn Tri Phương, Phường Diên Hồng, TP.HCM"}</span>
-                      </li>
+                      {addressItems.filter((item) => item.value.trim() || item.label.trim()).length > 0 ? (
+                        addressItems
+                          .filter((item) => item.value.trim() || item.label.trim())
+                          .map((item, idx: number) => {
+                            return (
+                              <li key={item.id || idx} className="flex items-start gap-2 text-slate-300">
+                                <MapPin className="h-3.5 w-3.5 text-[#ed1c24] mt-0.5 shrink-0" />
+                                <div className="leading-relaxed">
+                                  {item.label && item.value ? (
+                                    <span>
+                                      <strong className="text-white font-bold">{item.label}: </strong>
+                                      <span>{item.value}</span>
+                                    </span>
+                                  ) : (
+                                    <span>{item.value || item.label}</span>
+                                  )}
+                                </div>
+                              </li>
+                            )
+                          })
+                      ) : (
+                        <li className="flex items-start gap-2 text-slate-300">
+                          <MapPin className="h-3.5 w-3.5 text-[#ed1c24] mt-0.5 shrink-0" />
+                          <span className="leading-relaxed">279 Nguyễn Tri Phương, Phường Diên Hồng, TP.HCM</span>
+                        </li>
+                      )}
                       {contactPhone && (
                         <li className="flex items-center gap-2 text-slate-300">
                           <Phone className="h-3.5 w-3.5 text-[#ed1c24] shrink-0" />
@@ -1150,7 +1385,7 @@ export function HeaderFooterSeoTab({
 
           {/* Active Column Form */}
           <Card className="border-slate-200 rounded-none shadow-xs bg-white dark:border-white/10 dark:bg-slate-900">
-            <CardHeader className="pb-3 border-b border-slate-200 dark:border-white/10">
+            <CardHeader className="pb-3 border-b border-slate-200 dark:border-white/10 flex flex-row items-center justify-between">
               <CardTitle className="text-sm font-black uppercase tracking-wider flex items-center gap-2 text-slate-900 dark:text-white">
                 <FileText className="h-4 w-4 text-[#ed1c24]" />
                 {activeFooterCol === 1 && "Chỉnh sửa Cột 1: Thông tin thương hiệu và địa chỉ"}
@@ -1159,6 +1394,18 @@ export function HeaderFooterSeoTab({
                 {activeFooterCol === 4 && "Chỉnh sửa Cột 4: Đăng ký nhận tin và thông tin liên hệ"}
                 {activeFooterCol === "copyright" && "Chỉnh sửa Mục riêng: Bản quyền & Điều khoản (Bottom Bar)"}
               </CardTitle>
+              {onSave && (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={onSave}
+                  disabled={saving}
+                  className="h-8 px-3 rounded-none bg-[#ed1c24] text-xs font-black uppercase text-white hover:bg-[#c91218]"
+                >
+                  <Save className="mr-1.5 h-3.5 w-3.5" />
+                  {saving ? "Đang lưu..." : "Lưu thay đổi"}
+                </Button>
+              )}
             </CardHeader>
             <CardContent className="space-y-5 pt-6">
               {/* Form Cột 1 */}
@@ -1206,13 +1453,50 @@ export function HeaderFooterSeoTab({
                     />
                   </div>
                   <div>
-                    <Label className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">Địa chỉ trụ sở (Contact Address)</Label>
-                    <Input
-                      value={contactAddress}
-                      onChange={(e) => setContactAddress(e.target.value)}
-                      placeholder="Số nhà, tên đường, quận/huyện, thành phố..."
-                      className="mt-1.5 rounded-none border-slate-200 text-xs font-semibold h-10 dark:border-white/10"
-                    />
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div>
+                        <Label className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
+                          Danh sách địa chỉ / Cơ sở ({addressItems.length})
+                        </Label>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
+                          Kéo <span className="text-[#ed1c24]">⠿</span> để đổi thứ tự. Ô <b>#</b> hiển thị thứ tự, ô tiếp theo chỉnh sửa tên/nhãn (Trụ sở chính, Cơ sở 2...), ô cuối nhập địa chỉ.
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={addAddress}
+                        className="h-7 text-[10px] font-black uppercase rounded-none border-slate-200 dark:border-white/10"
+                      >
+                        <Plus className="h-3 w-3 mr-1 text-[#ed1c24]" /> Thêm địa chỉ
+                      </Button>
+                    </div>
+
+                    <DndContext
+                      sensors={addressSensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={handleAddressDragEnd}
+                    >
+                      <SortableContext
+                        items={addressItems.map((item) => item.id)}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        <div className="space-y-2 mt-2">
+                          {addressItems.map((item, idx: number) => (
+                            <SortableAddressRow
+                              key={item.id}
+                              id={item.id}
+                              item={item}
+                              index={idx}
+                              total={addressItems.length}
+                              onUpdate={updateAddress}
+                              onDelete={removeAddress}
+                            />
+                          ))}
+                        </div>
+                      </SortableContext>
+                    </DndContext>
                   </div>
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>

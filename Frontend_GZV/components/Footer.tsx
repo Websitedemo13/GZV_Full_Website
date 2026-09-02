@@ -252,12 +252,40 @@ export default function Footer({ overrideConfig, activeColumn, onSelectColumn }:
               {fc.brand_tagline || "GZV Center — Hệ sinh thái đào tạo, tư vấn và triển khai dự án thực chiến."}
             </p>
             <ul className="space-y-3 text-xs font-semibold">
-              {(fc.contact_address || "Tầng 3, Tòa nhà GZV, Hà Nội") && (
-                <li className="flex items-start gap-2.5 text-slate-300">
-                  <MapPin className="h-4 w-4 text-[#ed1c24] mt-0.5 shrink-0" />
-                  <span className="leading-relaxed">{fc.contact_address || "Hệ sinh thái GZV Center"}</span>
-                </li>
-              )}
+              {(() => {
+                const addressStr = fc.contact_address || "279 Nguyễn Tri Phương, Phường Diên Hồng, TP.Hồ Chí Minh"
+                const addrList = addressStr.split("\n").map((s: string) => s.trim()).filter(Boolean)
+                const finalAddrs = addrList.length > 0 ? addrList : ["279 Nguyễn Tri Phương, Phường Diên Hồng, TP.Hồ Chí Minh"]
+                return finalAddrs.map((addr: string, idx: number) => {
+                  let label = ""
+                  let content = addr
+
+                  if (addr.includes(": ")) {
+                    const colonIdx = addr.indexOf(": ")
+                    const prefix = addr.substring(0, colonIdx).trim()
+                    if (prefix.length > 0 && prefix.length <= 40) {
+                      label = prefix
+                      content = addr.substring(colonIdx + 2).trim()
+                    }
+                  }
+
+                  return (
+                    <li key={idx} className="flex items-start gap-2.5 text-slate-300">
+                      <MapPin className="h-4 w-4 text-[#ed1c24] mt-0.5 shrink-0" />
+                      <div className="leading-relaxed">
+                        {label ? (
+                          <span>
+                            <strong className="text-white font-bold">{label}: </strong>
+                            <span>{content}</span>
+                          </span>
+                        ) : (
+                          <span>{content}</span>
+                        )}
+                      </div>
+                    </li>
+                  )
+                })
+              })()}
               {fc.contact_phone && (
                 <li>
                   <a href={`tel:${fc.contact_phone}`} className="flex items-center gap-2.5 text-slate-300 hover:text-[#ed1c24] transition-colors" onClick={(e) => onSelectColumn && e.preventDefault()}>
