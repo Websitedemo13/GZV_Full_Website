@@ -125,7 +125,7 @@ export default function ProjectDetailPage({ params }: Props) {
                   priority
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
-                
+
                 {/* Title overlay at bottom */}
                 <div className="absolute bottom-0 inset-x-0 p-6 sm:p-8 text-white">
                   <h1 className="text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-tight text-white leading-tight">
