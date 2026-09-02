@@ -128,18 +128,6 @@ export default function ProjectDetailPage({ params }: Props) {
                 
                 {/* Title overlay at bottom */}
                 <div className="absolute bottom-0 inset-x-0 p-6 sm:p-8 text-white">
-                  <div className="flex flex-wrap items-center gap-2 mb-3">
-                    {project.category && (
-                      <span className="bg-[#ed1c24] text-white px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest shadow-sm">
-                        {project.category}
-                      </span>
-                    )}
-                    {project.order_index && (
-                      <span className="bg-white/20 backdrop-blur-xs text-white px-2.5 py-0.5 text-[10px] font-bold">
-                        Dự án #{project.order_index}
-                      </span>
-                    )}
-                  </div>
                   <h1 className="text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-tight text-white leading-tight">
                     {project.title}
                   </h1>
@@ -358,7 +346,7 @@ export default function ProjectDetailPage({ params }: Props) {
         </div>
 
         {/* Related Projects Section */}
-        {relatedProjects.length > 0 && (
+        {relatedProjects.length >= 0 && (
           <section className="mt-16 pt-12 border-t border-slate-200 dark:border-white/10">
             <div className="flex items-center justify-between mb-8">
               <div>
