@@ -7,6 +7,9 @@ import { Clock, ArrowUpRight } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { api, supabase } from "@/lib/api-supabase"
+import { summarize } from "@/lib/utils"
+
+const summaryOf = (article: any, max = 180) => summarize([article?.excerpt, article?.content], max)
 
 export interface NewsGridProps {
   title?: string
@@ -42,9 +45,9 @@ export default function NewsGrid({
   useEffect(() => {
     let active = true
 
-    const fetchData = async () => {
+    const fetchData = async (showLoading = true) => {
       try {
-        setLoading(true)
+        if (showLoading) setLoading(true)
         const [homeRes, blockRes, blogPosts] = await Promise.all([
           supabase.from("site_home_sections").select("*").eq("section_key", "news").maybeSingle(),
           supabase.from("site_page_blocks").select("props").eq("component_type", "news_grid").limit(1).maybeSingle(),
@@ -73,6 +76,8 @@ export default function NewsGrid({
           const { data } = await supabase
             .from("allblogposts")
             .select("*")
+            .eq("status", "published")
+            .lte("published_at", new Date().toISOString())
             .order("publish_date", { ascending: false })
             .limit(4)
           if (active && data) {
@@ -82,14 +87,23 @@ export default function NewsGrid({
       } catch (err: any) {
         console.error("Lỗi tải tin tức:", err)
       } finally {
-        if (active) setLoading(false)
+        if (active && showLoading) setLoading(false)
       }
     }
 
     fetchData()
 
+    const channel = supabase
+      .channel("home-news:sync")
+      .on("postgres_changes", { event: "*", schema: "public", table: "articles" }, () => fetchData(false))
+      .on("postgres_changes", { event: "*", schema: "public", table: "authors" }, () => fetchData(false))
+      .on("postgres_changes", { event: "*", schema: "public", table: "site_home_sections" }, () => fetchData(false))
+      .on("postgres_changes", { event: "*", schema: "public", table: "site_page_blocks" }, () => fetchData(false))
+      .subscribe()
+
     return () => {
       active = false
+      supabase.removeChannel(channel)
     }
   }, [])
 
@@ -220,6 +234,9 @@ export default function NewsGrid({
                     <h3 className="font-black text-xl sm:text-2xl uppercase tracking-tight text-slate-950 dark:text-white group-hover:text-[#ed1c24] transition-colors line-clamp-2 leading-snug">
                       {featured.title}
                     </h3>
+                    {summaryOf(featured, 220) && (
+                      <p className="line-clamp-3 text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-300">{summaryOf(featured, 220)}</p>
+                    )}
 
                     <div className="pt-2 flex items-center text-xs font-black uppercase text-[#ed1c24] tracking-wider">
                       <span>ĐỌC BÀI</span>
@@ -275,6 +292,9 @@ export default function NewsGrid({
                       <h4 className="font-black text-sm sm:text-base uppercase line-clamp-3 text-slate-950 dark:text-white group-hover:text-[#ed1c24] transition-colors leading-snug">
                         {article.title}
                       </h4>
+                      {summaryOf(article, 120) && (
+                        <p className="mt-1.5 hidden text-xs font-medium leading-relaxed text-slate-500 line-clamp-2 dark:text-slate-400 sm:block">{summaryOf(article, 120)}</p>
+                      )}
 
                       {(article.published_at || article.created_at || article.publish_date) && (
                         <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase flex items-center gap-1.5 pt-2">

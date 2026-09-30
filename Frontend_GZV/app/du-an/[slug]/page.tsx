@@ -1,8 +1,26 @@
+import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import ProjectDetailClient from "./ProjectDetailClient"
-import { getInitialProjects } from "@/lib/site-content-server"
+import { getInitialProject, getInitialProjects } from "@/lib/site-content-server"
+import { summarize } from "@/lib/utils"
 
 export const dynamic = "force-dynamic"
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params
+  const project = await getInitialProject(slug)
+  if (!project) return { title: "Dự án" }
+  const title = project.title || project.name || "Dự án GZV"
+  const description = summarize([project.description, project.excerpt, project.detailproject], 160) || "Dự án nổi bật của GZV LTD."
+  const image = project.image || "/og-cover.jpg"
+  return {
+    title,
+    description,
+    alternates: { canonical: `/du-an/${project.slug}` },
+    openGraph: { title, description, type: "article", url: `/du-an/${project.slug}`, siteName: "GZV LTD", images: [{ url: image, alt: title }] },
+    twitter: { card: "summary_large_image", title, description, images: [image] },
+  }
+}
 
 export default async function ProjectDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params

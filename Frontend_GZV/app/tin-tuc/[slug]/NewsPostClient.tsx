@@ -3,19 +3,30 @@
 import { notFound } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { ArrowLeft, Calendar, User, Clock, Tag, Share2, ChevronRight, BookOpen, ArrowRight, Facebook, Twitter, Linkedin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { api, BlogPost } from "@/lib/api-supabase"
+import { api, BlogPost, supabase } from "@/lib/api-supabase"
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
+import { richMediaComponents } from "@/components/RichMediaEmbed"
+import { prepareRichContent } from "@/lib/media-url"
+import { summarize } from "@/lib/utils"
+
+const hasReadableCaption = (alt?: string) => {
+  const value = alt?.trim()
+  if (!value) return false
+  return !/^[^/\\]+\.(?:avif|gif|jpe?g|png|svg|webp)$/i.test(value)
+}
 
 // Custom styling for markdown content
 const customMarkdownComponents = {
+  ...richMediaComponents,
   h1: (props: any) => <h1 className="text-3xl font-black uppercase tracking-tight mt-10 mb-5 text-slate-950 dark:text-white sm:text-4xl" {...props} />,
   h2: (props: any) => <h2 className="text-2xl font-black uppercase tracking-tight mt-10 mb-4 text-slate-950 dark:text-white sm:text-3xl border-b border-slate-200 dark:border-white/10 pb-2" {...props} />,
   h3: (props: any) => <h3 className="text-xl font-bold uppercase tracking-tight mt-8 mb-3 text-slate-900 dark:text-slate-100" {...props} />,
@@ -39,34 +50,53 @@ const customMarkdownComponents = {
         unoptimized
         className="w-full h-auto object-cover rounded-none"
       />
-      {props.alt && (
+      {hasReadableCaption(props.alt) && (
         <figcaption className="p-3 text-center text-sm text-slate-500 border-t border-slate-200 dark:border-white/10 dark:text-slate-400">
           {props.alt}
         </figcaption>
       )}
     </figure>
   ),
+  figure: ({ className, ...props }: any) => <figure className={`my-8 max-w-full overflow-hidden ${className || ""}`} {...props} />,
+  iframe: ({ src, title, ...props }: any) => (
+    <span className="my-8 block aspect-video max-w-full overflow-hidden bg-black">
+      <iframe
+        src={src}
+        title={title || "Video"}
+        className="h-full w-full border-0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowFullScreen
+        {...props}
+      />
+    </span>
+  ),
+  video: ({ src, ...props }: any) => <video src={src} controls playsInline className="my-8 h-auto w-full max-w-full bg-black" {...props} />,
   a: (props: any) => <a className="text-[#ed1c24] hover:underline font-bold" target="_blank" rel="noopener noreferrer" {...props} />,
 };
 
 export default function NewsPostClient({ initialPost, initialRelatedPosts, initialLatestPosts }: any) {
+  const router = useRouter()
   const [post, setPost] = useState<BlogPost | null>(initialPost)
   const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>(initialRelatedPosts)
   const [latestPosts, setLatestPosts] = useState<BlogPost[]>(initialLatestPosts)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
+    let active = true
+
     const fetchData = async () => {
       try {
         const currentPost = await api.getBlogPostBySlug(initialPost.slug)
 
         if (!currentPost) {
-          notFound()
+          router.replace('/tin-tuc')
           return
         }
+        if (!active) return
         setPost(currentPost)
 
         const allPosts = await api.getBlogPosts()
+        if (!active) return
 
         if (currentPost.category) {
           const related = allPosts
@@ -87,8 +117,17 @@ export default function NewsPostClient({ initialPost, initialRelatedPosts, initi
       }
     }
 
-    if (!initialPost) fetchData()
-  }, [initialPost])
+    const channel = supabase
+      .channel(`news-post:${initialPost.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'articles' }, fetchData)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'authors' }, fetchData)
+      .subscribe()
+
+    return () => {
+      active = false
+      supabase.removeChannel(channel)
+    }
+  }, [initialPost.id, initialPost.slug, router])
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return null;
@@ -134,7 +173,7 @@ export default function NewsPostClient({ initialPost, initialRelatedPosts, initi
     : 'GZV Editorial'
 
   return (
-    <div className="min-h-screen bg-slate-100/60 text-slate-900 dark:bg-[#070707] dark:text-slate-100 selection:bg-[#ed1c24] selection:text-white">
+    <div className="min-h-screen min-w-0 overflow-x-clip bg-slate-100/60 text-slate-900 dark:bg-[#070707] dark:text-slate-100 selection:bg-[#ed1c24] selection:text-white">
       {/* ══════════ HERO ══════════ */}
       <section className="relative w-full overflow-hidden">
         {/* Full-width cover image */}
@@ -242,20 +281,20 @@ export default function NewsPostClient({ initialPost, initialRelatedPosts, initi
       </section>
 
       {/* ══════════ ARTICLE BODY ══════════ */}
-      <div className="container max-w-4xl mx-auto px-4 py-10 md:py-14">
-        <div className="max-w-3xl mx-auto">
+      <div className="container min-w-0 max-w-4xl mx-auto px-4 py-10 md:py-14">
+        <div className="min-w-0 max-w-3xl mx-auto">
           <motion.article
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="prose prose-lg max-w-none dark:prose-invert"
+            className="gzv-rich-content prose prose-lg max-w-none dark:prose-invert"
           >
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeRaw]}
               components={customMarkdownComponents}
             >
-              {post.content || post.excerpt || ''}
+              {prepareRichContent(post.content || post.excerpt || '')}
             </ReactMarkdown>
           </motion.article>
 
@@ -301,7 +340,17 @@ export default function NewsPostClient({ initialPost, initialRelatedPosts, initi
                     <Card className="overflow-hidden h-full border border-slate-200 bg-white dark:border-white/10 dark:bg-[#0d0d0d] rounded-none hover:border-[#ed1c24] hover:shadow-md transition-all duration-200">
                       <div className="relative h-44 overflow-hidden bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-white/10">
                         {a.image ? (
-                          <Image src={a.image} alt={a.title} fill unoptimized className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                          <Image
+                            src={a.image}
+                            alt={a.title}
+                            fill
+                            unoptimized
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                            style={{
+                              objectPosition: `${a.image_position_x ?? 50}% ${a.image_position_y ?? 50}%`,
+                              transform: `scale(${(a.image_scale ?? 100) / 100})`,
+                            }}
+                          />
                         ) : (
                           <div className="w-full h-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center">
                             <BookOpen className="h-10 w-10 text-slate-400 dark:text-white/20" />
@@ -313,7 +362,7 @@ export default function NewsPostClient({ initialPost, initialRelatedPosts, initi
                       </div>
                       <CardContent className="p-5">
                         <h3 className="font-black uppercase text-slate-950 dark:text-white leading-snug line-clamp-2 mb-2 group-hover:text-[#ed1c24] transition-colors text-sm">{a.title}</h3>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed font-semibold">{a.excerpt || a.content?.replace(/<[^>]*>/g, "").slice(0, 120)}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed font-semibold">{summarize([a.excerpt, a.content], 120)}</p>
                         <div className="flex items-center gap-3 mt-4 text-[10px] font-bold text-slate-400 uppercase">
                           <span className="flex items-center gap-1"><Clock className="h-3 w-3 text-[#ed1c24]" />{a.read_time || `${readingTime(a.content || '')} phút`}</span>
                           {a.publish_date && <span>{formatDate(a.publish_date)}</span>}
@@ -349,7 +398,18 @@ export default function NewsPostClient({ initialPost, initialRelatedPosts, initi
                 <motion.div key={a.id} initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
                   <Link href={`/tin-tuc/${a.slug}`} className="flex items-center gap-4 p-4 rounded-none border border-slate-200 bg-white dark:border-white/10 dark:bg-[#0d0d0d] hover:border-[#ed1c24] transition-all duration-200 group">
                     {a.image ? (
-                      <Image src={a.image} alt={a.title} width={80} height={80} unoptimized className="w-20 h-20 rounded-none object-cover shrink-0 border border-slate-200 dark:border-white/10" />
+                      <Image
+                        src={a.image}
+                        alt={a.title}
+                        width={80}
+                        height={80}
+                        unoptimized
+                        className="w-20 h-20 rounded-none object-cover shrink-0 border border-slate-200 dark:border-white/10"
+                        style={{
+                          objectPosition: `${a.image_position_x ?? 50}% ${a.image_position_y ?? 50}%`,
+                          transform: `scale(${(a.image_scale ?? 100) / 100})`,
+                        }}
+                      />
                     ) : (
                       <div className="w-20 h-20 rounded-none bg-slate-100 dark:bg-slate-900 flex items-center justify-center shrink-0 border border-slate-200 dark:border-white/10">
                         <BookOpen className="h-6 w-6 text-slate-400 dark:text-white/20" />
@@ -357,7 +417,7 @@ export default function NewsPostClient({ initialPost, initialRelatedPosts, initi
                     )}
                     <div className="flex-1 min-w-0">
                       <h3 className="font-black uppercase text-slate-950 dark:text-white text-sm line-clamp-2 group-hover:text-[#ed1c24] transition-colors leading-snug">{a.title}</h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1 mt-1 font-semibold">{a.excerpt || a.content?.replace(/<[^>]*>/g, "").slice(0, 80)}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1 mt-1 font-semibold">{summarize([a.excerpt, a.content], 80)}</p>
                       <div className="flex items-center gap-3 mt-2 text-[10px] font-bold text-slate-400 uppercase">
                         {a.publish_date && <span>{formatDate(a.publish_date)}</span>}
                         <span className="flex items-center gap-1"><Clock className="h-3 w-3 text-[#ed1c24]" />{a.read_time || `${readingTime(a.content || '')} phút`}</span>

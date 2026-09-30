@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Project } from "@/lib/api-supabase"
+import { summarize } from "@/lib/utils"
 
 interface ProjectCardProps {
   project: Project
@@ -28,6 +29,10 @@ export default function ProjectCard({ project }: ProjectCardProps) {
             src={imageUrl}
             alt={project.title}
             className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+            style={{
+              objectPosition: `${project.image_position_x ?? 50}% ${project.image_position_y ?? 50}%`,
+              transform: `scale(${(project.image_scale ?? 100) / 100})`,
+            }}
           />
 
           <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
@@ -44,7 +49,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
         </CardTitle>
 
         <p className="mb-6 line-clamp-3 flex-1 text-sm font-medium leading-7 text-slate-500 dark:text-neutral-400">
-          {project.description}
+          {summarize([project.description, (project as any).excerpt, (project as any).detailproject], 200)}
         </p>
 
         <div className="rounded-none border border-slate-100 bg-slate-50/80 p-4 dark:border-neutral-700 dark:bg-neutral-800/70">
