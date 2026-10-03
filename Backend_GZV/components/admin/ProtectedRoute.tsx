@@ -4,21 +4,24 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { CMS_ROLES, type CmsRole, isCmsRole } from '@/lib/cms-roles'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
-  allowedRoles?: ('admin' | 'collab')[]
+  allowedRoles?: readonly CmsRole[]
   redirectTo?: string
 }
 
+const DEFAULT_ROLES: readonly CmsRole[] = CMS_ROLES
+
 export function ProtectedRoute({ 
   children, 
-  allowedRoles = ['admin', 'collab'],
+  allowedRoles = DEFAULT_ROLES,
   redirectTo = '/admin-login'
 }: ProtectedRouteProps) {
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
-  const [userRole, setUserRole] = useState<string>('collab')
+  const [userRole, setUserRole] = useState<string>('user')
   const router = useRouter()
 
   useEffect(() => {
@@ -41,17 +44,17 @@ export function ProtectedRoute({
 
         if (profileError) throw profileError
 
-        const role = profile?.role || 'collab'
+        const role = profile?.role || 'user'
         localStorage.setItem('user_role', role)
 
         setUserRole(role)
 
         // Check if user role is allowed for this route
-        if (!allowedRoles.includes(role as 'admin' | 'collab')) {
+        if (!isCmsRole(role) || !allowedRoles.includes(role)) {
           // Redirect based on role
           if (role === 'admin') {
             router.push('/admin/dashboard')
-          } else if (role === 'collab') {
+          } else if (role === 'collab' || role === 'editor') {
             router.push('/admin/articles')
           } else {
             router.push(redirectTo)
@@ -90,7 +93,7 @@ export function ProtectedRoute({
     )
   }
 
-  if (!user || !allowedRoles.includes(userRole as 'admin' | 'collab')) {
+  if (!user || !isCmsRole(userRole) || !allowedRoles.includes(userRole)) {
     return null
   }
 

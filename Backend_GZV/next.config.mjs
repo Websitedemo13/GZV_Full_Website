@@ -1,10 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   images: {
     unoptimized: true,
@@ -17,6 +17,12 @@ const nextConfig = {
         pathname: '/storage/v1/object/public/**',
       },
     ],
+  },
+  async redirects() {
+    return [
+      { source: '/', destination: '/admin/dashboard', permanent: false },
+      { source: '/admin', destination: '/admin/dashboard', permanent: false },
+    ]
   },
   // Cho phép kết nối API từ bên ngoài (CORS)
   async headers() {
